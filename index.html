@@ -220,9 +220,8 @@
                                         
                                         <div class="p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-xs">
                                             <div>
+                                                <!-- DIPERBAIKI: Nombor telefon di bawah nama telah dibuang sepenuhnya -->
                                                 <h4 class="font-bold text-sm text-gray-900 dark:text-white" x-text="activeChat.customerName"></h4>
-                                                <!-- DIPERBAIKI: Memastikan nombor telefon di panel kanan merujuk tepat pada activeChat.phone -->
-                                                <span class="text-xs text-gray-500" x-text="activeChat.phone"></span>
                                             </div>
 
                                             <div class="flex items-center space-x-2">
@@ -425,7 +424,7 @@
         &copy; 2026 LEEA SYSTEM. All Rights Reserved.
     </footer>
 
-    <!-- SCRIPT ALPINEJS & API INTEGRATION (UPDATED DINAMIK) -->
+    <!-- SCRIPT ALPINEJS & API INTEGRATION -->
     <script>
         function appData() {
             return {
@@ -451,7 +450,6 @@
 
                 init() {
                     this.fetchClientsFromBot();
-                    // Auto-refresh live chats setiap 5 saat jika pengguna sedang login sebagai klien
                     setInterval(() => {
                         if (this.isLoggedIn && this.currentUser && this.currentUser.role === 'client') {
                             this.fetchLiveChats();
@@ -459,7 +457,6 @@
                     }, 5000);
                 },
 
-                // Dapatkan URL Railway secara dinamik berdasarkan profil pengguna yang log masuk
                 getCurrentRailwayUrl() {
                     const defaultUrl = 'https://web-production-07b92.up.railway.app';
                     if (!this.currentUser) return defaultUrl;
@@ -467,7 +464,6 @@
                     return (client && client.railwayUrl) ? client.railwayUrl : defaultUrl;
                 },
 
-                // Sambungan API Live Chat ke Railway Backend yang Dinamik
                 async fetchLiveChats() {
                     const baseUrl = this.getCurrentRailwayUrl();
                     if (!baseUrl) return;
@@ -590,7 +586,6 @@
                         if (found) {
                             this.currentUser = { username: found.username, role: 'client', status: found.status, expiryDate: found.expiryDate };
                             this.isLoggedIn = true;
-                            // Panggil perbualan sebenar sejurus selepas log masuk
                             this.fetchLiveChats();
                         } else {
                             this.loginError = this.lang === 'ms' ? 'Nama pengguna atau kata laluan salah!' : 'Invalid username or password!';
