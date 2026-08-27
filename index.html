@@ -220,7 +220,6 @@
                                         
                                         <div class="p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-xs">
                                             <div>
-                                                <!-- DIPERBAIKI: Nombor telefon di bawah nama telah dibuang sepenuhnya -->
                                                 <h4 class="font-bold text-sm text-gray-900 dark:text-white" x-text="activeChat.customerName"></h4>
                                             </div>
 
@@ -237,12 +236,13 @@
                                             </div>
                                         </div>
 
-                                        <!-- Chat History Stream -->
+                                        <!-- Chat History Stream (Diperbetulkan Arah Posisi Kiri/Kanan) -->
                                         <div class="p-4 overflow-y-auto space-y-3 flex-grow max-h-[380px]">
                                             <template x-for="msg in activeChat.messages">
-                                                <div class="flex" :class="msg.sender === 'client' ? 'justify-end' : 'justify-start'">
+                                                <!-- Jika 'customer' paparkan di KIRI (justify-start), jika 'ai'/'client' paparkan di KANAN (justify-end) -->
+                                                <div class="flex" :class="msg.sender === 'customer' ? 'justify-start' : 'justify-end'">
                                                     <div class="max-w-[80%] rounded-2xl px-4 py-2 text-xs shadow-sm"
-                                                         :class="msg.sender === 'client' ? 'bg-emerald-600 text-white rounded-br-none' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none border dark:border-gray-600'">
+                                                         :class="msg.sender === 'customer' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none border dark:border-gray-600' : 'bg-emerald-600 text-white rounded-br-none'">
                                                         <p x-text="msg.text"></p>
                                                         <span class="text-[9px] block text-right mt-1 opacity-70" x-text="msg.time"></span>
                                                     </div>
