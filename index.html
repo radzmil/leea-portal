@@ -128,19 +128,24 @@
                     </button>
                 </div>
 
-                <!-- Tab Content: Dashboard -->
+                <!-- Tab Content: Dashboard (Mula dari 0 & Realtime) -->
                 <div x-show="clientTab === 'dashboard'" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Jumlah WhatsApp Chat -->
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                             <span class="text-xs font-semibold text-gray-400 uppercase" x-text="lang === 'ms' ? 'Jumlah WhatsApp Chat' : 'Total WhatsApp Chats'"></span>
-                            <h3 class="text-3xl font-extrabold mt-2 text-emerald-600" x-text="liveChats.length + 1240"></h3>
-                            <span class="text-xs text-emerald-500 mt-1 block">↑ 12% dari bulan lalu</span>
+                            <h3 class="text-3xl font-extrabold mt-2 text-emerald-600" x-text="getTotalChatCount()"></h3>
+                            <span class="text-xs text-gray-400 mt-1 block" x-text="lang === 'ms' ? 'Kira secara realtime' : 'Counted in realtime'"></span>
                         </div>
+                        
+                        <!-- AI Auto-Pilot Selesai -->
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                             <span class="text-xs font-semibold text-gray-400 uppercase" x-text="lang === 'ms' ? 'AI Auto-Pilot Selesai' : 'AI Handled Chats'"></span>
-                            <h3 class="text-3xl font-extrabold mt-2 text-blue-600">89%</h3>
-                            <span class="text-xs text-gray-400 mt-1 block">Baki 11% diambil alih ejen</span>
+                            <h3 class="text-3xl font-extrabold mt-2 text-blue-600" x-text="getAiHandledPercentage()"></h3>
+                            <span class="text-xs text-gray-400 mt-1 block" x-text="lang === 'ms' ? 'Nisbah mod AI aktif' : 'Active AI mode ratio'"></span>
                         </div>
+
+                        <!-- Status Akaun -->
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                             <span class="text-xs font-semibold text-gray-400 uppercase" x-text="lang === 'ms' ? 'Status Akaun' : 'Account Status'"></span>
                             <h3 class="text-2xl font-extrabold mt-2 text-emerald-600" x-text="currentUser.status"></h3>
@@ -691,7 +696,17 @@
                             totalMessages += chat.messages.length;
                         }
                     });
-                    return totalMessages;
+                    return totalMessages; // Bermula dari 0
+                },
+
+                getAiHandledPercentage() {
+                    if (this.liveChats.length === 0) return '0%';
+                    let aiCount = 0;
+                    this.liveChats.forEach(chat => {
+                        if (chat.mode === 'ai') aiCount++;
+                    });
+                    let percentage = Math.round((aiCount / this.liveChats.length) * 100);
+                    return percentage + '%'; // Bermula dari 0%
                 },
 
                 getRemainingFreeQuota() {
@@ -720,7 +735,7 @@
 
                 approveRenewal(index) {
                     this.clients[index].status = 'Paid 🟢';
-                    this.clients[index].expiryDate = '27/10/2026';
+                    this.expiryDate = '27/10/2026';
                     alert(this.lang === 'ms' ? 'Langganan berjaya diluluskan (+1 Bulan)!' : 'Subscription successfully approved (+1 Month)!');
                 },
 
