@@ -397,7 +397,7 @@
                         <input type="text" x-model="clientForm.username" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Nombor Telefon' : 'Phone Number'"></label>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Nombor Telefon (Klien/Pemilik)' : 'Phone Number (Client/Owner)'"></label>
                         <input type="text" x-model="clientForm.phone" placeholder="+60123456789" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
                     <div>
@@ -460,9 +460,10 @@
 
                 // Dapatkan URL Railway secara dinamik berdasarkan profil pengguna yang log masuk
                 getCurrentRailwayUrl() {
-                    if (!this.currentUser) return 'https://web-production-07b92.up.railway.app';
+                    const defaultUrl = 'https://web-production-07b92.up.railway.app';
+                    if (!this.currentUser) return defaultUrl;
                     const client = this.clients.find(c => c.username === this.currentUser.username);
-                    return (client && client.railwayUrl) ? client.railwayUrl : 'https://web-production-07b92.up.railway.app';
+                    return (client && client.railwayUrl) ? client.railwayUrl : defaultUrl;
                 },
 
                 // Sambungan API Live Chat ke Railway Backend yang Dinamik
