@@ -152,25 +152,36 @@
                 <!-- Tab Content: Live Chat & Bot Control -->
                 <div x-show="clientTab === 'livechat'" class="space-y-6">
                     
-                    <!-- WIDGET KIRAAN KUOTA PERCUMA & KOS META DI DALAM LIVE CHAT -->
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                        <div class="flex items-center space-x-3">
-                            <div class="p-3 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 rounded-xl">
-                                <i class="fa-solid fa-ticket text-xl"></i>
-                            </div>
-                            <div>
-                                <span class="text-xs font-semibold uppercase text-gray-400" x-text="lang === 'ms' ? 'Baki Kuota Token Meta Percuma' : 'Remaining Free Meta Quota'"></span>
-                                <div class="text-xl font-black text-gray-900 dark:text-white">
-                                    <span x-text="getRemainingFreeQuota()"></span> / 1,000 <span class="text-xs font-normal text-gray-500">chat</span>
+                    <!-- WIDGET KIRAAN KUOTA PERCUMA & KOS META + NOTA TELUS -->
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 space-y-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                            <div class="flex items-center space-x-3">
+                                <div class="p-3 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 rounded-xl">
+                                    <i class="fa-solid fa-ticket text-xl"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-semibold uppercase text-gray-400" x-text="lang === 'ms' ? 'Baki Kuota Token Meta Percuma (Bulan Semasa)' : 'Remaining Free Meta Quota (Current Month)'"></span>
+                                    <div class="text-xl font-black text-gray-900 dark:text-white">
+                                        <span x-text="getRemainingFreeQuota()"></span> / 1,000 <span class="text-xs font-normal text-gray-500">chat</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 flex justify-between items-center">
-                            <div>
-                                <span class="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400" x-text="lang === 'ms' ? 'Anggaran Kos Meta API Semasa' : 'Current Estimated Meta API Cost'"></span>
-                                <div class="text-lg font-black text-emerald-700 dark:text-emerald-300" x-text="calculateMetaCost()"></div>
+                            <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 flex justify-between items-center">
+                                <div>
+                                    <span class="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400" x-text="lang === 'ms' ? 'Anggaran Kos Berbayar Meta' : 'Estimated Paid Meta Cost'"></span>
+                                    <div class="text-lg font-black text-emerald-700 dark:text-emerald-300" x-text="calculateMetaCost()"></div>
+                                </div>
+                                <span class="text-[10px] text-gray-400 text-right max-w-[150px]" x-text="lang === 'ms' ? 'Jalan selepas kuota percuma habis' : 'Active after free quota finishes'"></span>
                             </div>
-                            <span class="text-[10px] text-gray-400 text-right max-w-[150px]" x-text="lang === 'ms' ? 'Auto-turun setiap kali mesej masuk' : 'Auto-decreases on incoming messages'"></span>
+                        </div>
+
+                        <!-- NOTA PENERANGAN TIADA KOMISEN -->
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2.5 rounded-xl border border-gray-100 dark:border-gray-700 flex items-start space-x-2">
+                            <i class="fa-solid fa-circle-info text-emerald-600 dark:text-emerald-400 mt-0.5"></i>
+                            <div>
+                                <span class="font-bold text-gray-700 dark:text-gray-300" x-text="lang === 'ms' ? 'Nota Telus:' : 'Transparent Note:'"></span>
+                                <span x-text="lang === 'ms' ? ' Yuran langganan bulanan anda adalah untuk sewa sistem bot dan khidmat pengaturcaraan kami sahaja. Token mesej WhatsApp diuruskan terus oleh Meta, dan kami tidak mengambil sebarang komisen.' : ' Your monthly subscription covers our bot system rental and programming services only. WhatsApp message tokens are handled directly by Meta, and we take zero commission.'"></span>
+                            </div>
                         </div>
                     </div>
 
@@ -674,28 +685,28 @@
                 },
 
                 getTotalChatCount() {
-                    // Mengambil jumlah mesej keseluruhan dari live chats untuk menggerakkan kuota automatik
-                    let count = 1240; 
+                    let totalMessages = 0;
                     this.liveChats.forEach(chat => {
                         if (chat.messages && chat.messages.length) {
-                            count += chat.messages.length;
-                        } else {
-                            count += 1;
+                            totalMessages += chat.messages.length;
                         }
                     });
-                    return count;
+                    return totalMessages;
                 },
 
                 getRemainingFreeQuota() {
                     let total = this.getTotalChatCount();
-                    let remaining = 1000 - total;
-                    return remaining > 0 ? remaining : 0;
+                    let monthlyTotal = total > 1000 ? total % 1000 : total;
+                    let remaining = 1000 - monthlyTotal;
+                    return remaining >= 0 ? remaining : 0;
                 },
 
                 calculateMetaCost() {
                     let total = this.getTotalChatCount();
                     let paidChats = total - 1000;
-                    if (paidChats <= 0) return 'RM 0.00 (Dalam Kuota Percuma)';
+                    if (paidChats <= 0) {
+                        return 'RM 0.00 (Dalam Kuota Percuma)';
+                    }
                     return 'RM ' + (paidChats * 0.07).toFixed(2);
                 },
 
