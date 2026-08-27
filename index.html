@@ -151,19 +151,19 @@
                     <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-bold mb-2 flex items-center">
                             <i class="fa-solid fa-calculator text-emerald-600 mr-2"></i> 
-                            <span x-text="lang === 'ms' ? 'Anggaran Pengiraan Pembayaran Meta Chat (>10 Chat)' : 'Meta Chat Cost Estimation Calculator (>10 Chats)'"></span>
+                            <span x-text="lang === 'ms' ? 'Anggaran Pengiraan Pembayaran Meta Chat (Selepas Kuota Token Meta)' : 'Meta Chat Cost Estimation Calculator (After Meta Token Quota)'"></span>
                         </h3>
-                        <p class="text-xs text-gray-500 mb-4" x-text="lang === 'ms' ? 'Kira anggaran kos tambahan mesej WhatsApp Business API melebihi kuota asas.' : 'Calculate estimated extra costs for WhatsApp Business API messages beyond base quota.'"></p>
+                        <p class="text-xs text-gray-500 mb-4" x-text="lang === 'ms' ? 'Kira anggaran kos tambahan selepas menolak kuota token Meta percuma (1,000 chat pertama).' : 'Calculate estimated extra costs after deducting free Meta token quota (first 1,000 chats). '"></p>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                             <div>
-                                <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-2" x-text="lang === 'ms' ? 'Jumlah Chat Sebulan (Minimum 10)' : 'Total Chats Per Month (Min 10)'"></label>
-                                <input type="number" min="10" x-model.number="metaChats" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-2" x-text="lang === 'ms' ? 'Jumlah Chat Sebulan' : 'Total Chats Per Month'"></label>
+                                <input type="number" min="0" x-model.number="metaChats" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                             </div>
                             <div class="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 text-center">
                                 <span class="text-xs uppercase font-bold text-emerald-600 dark:text-emerald-400" x-text="lang === 'ms' ? 'Anggaran Kos Meta API' : 'Estimated Meta API Cost'"></span>
-                                <div class="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1" x-text="'RM ' + calculateMetaCost()"></div>
-                                <span class="text-[10px] text-gray-500 mt-1 block" x-text="lang === 'ms' ? '*Kadar anggaran purata RM0.07 per sesi perbualan berniaga.' : '*Average estimated rate RM0.07 per conversation session.'"></span>
+                                <div class="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1" x-text="calculateMetaCost()"></div>
+                                <span class="text-[10px] text-gray-500 mt-1 block" x-text="lang === 'ms' ? '*Termasuk potongan kuota token Meta percuma untuk 1,000 chat pertama.' : '*Includes free Meta token quota deduction for the first 1,000 chats.'"></span>
                             </div>
                         </div>
                     </div>
@@ -185,7 +185,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-12 min-h-[500px]">
                             
-                            <!-- Senarai Kotak Chat (Kiri) - Dikemaskini Papar Nombor Telefon[cite: 5] -->
+                            <!-- Senarai Kotak Chat (Kiri) -->
                             <div class="md:col-span-5 border-r border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[550px] divide-y divide-gray-100 dark:divide-gray-700">
                                 <template x-for="chat in liveChats" :key="chat.id">
                                     <div @click="selectActiveChat(chat)" 
@@ -193,7 +193,6 @@
                                          :class="activeChat && activeChat.id === chat.id ? 'bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-600' : ''">
                                         
                                         <div class="flex justify-between items-center">
-                                            <!-- Paparan Nombor Telefon Pelanggan -->
                                             <span class="font-bold text-sm text-gray-900 dark:text-white" x-text="chat.phone"></span>
                                             <span class="text-[10px] text-gray-400" x-text="chat.time"></span>
                                         </div>
@@ -275,7 +274,7 @@
                     </div>
                 </div>
 
-                <!-- Tab Content: Billing (Disertakan Konfigurasi ToyyibPay & Emel Pentadbir) -->
+                <!-- Tab Content: Billing -->
                 <div x-show="clientTab === 'billing'" class="space-y-6">
                     <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-bold mb-4" x-text="lang === 'ms' ? 'Maklumat Pelan Langganan Semasa' : 'Current Subscription Plan'"></h3>
@@ -311,7 +310,7 @@
                     </div>
                 </div>
 
-                <!-- Tab Content: Profil & Tetapan Klien (Tanpa URL Railway) -->
+                <!-- Tab Content: Profil & Tetapan Klien -->
                 <div x-show="clientTab === 'profile'" class="space-y-6">
                     <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-bold mb-1 flex items-center">
@@ -443,7 +442,7 @@
             </div>
         </template>
 
-        <!-- MODAL KLIEN (ADMIN) - TERMASUK INPUT RAILWAY URL -->
+        <!-- MODAL KLIEN (ADMIN) -->
         <div x-show="showClientModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" style="display: none;">
             <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
                 <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
@@ -492,7 +491,7 @@
                 darkMode: false,
                 isLoggedIn: false,
                 clientTab: 'dashboard',
-                metaChats: 15,
+                metaChats: 1248,
                 loginForm: { username: '', password: '' },
                 loginError: '',
                 currentUser: null,
@@ -506,7 +505,6 @@
                 editIndex: null,
                 clientForm: { username: '', phone: '', email: '', railwayUrl: '' },
                 
-                // Form Profil Klien Semasa (Tanpa Railway URL)
                 clientProfileForm: {
                     username: '',
                     phone: '',
@@ -705,8 +703,9 @@
                 },
 
                 calculateMetaCost() {
-                    if (this.metaChats < 10) return '0.00';
-                    return (this.metaChats * 0.07).toFixed(2);
+                    let paidChats = this.metaChats - 1000;
+                    if (paidChats <= 0) return 'RM 0.00 (Dalam Kuota Token Meta)';
+                    return 'RM ' + (paidChats * 0.07).toFixed(2);
                 },
 
                 openToyyibPay() {
