@@ -133,7 +133,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                             <span class="text-xs font-semibold text-gray-400 uppercase" x-text="lang === 'ms' ? 'Jumlah WhatsApp Chat' : 'Total WhatsApp Chats'"></span>
-                            <h3 class="text-3xl font-extrabold mt-2 text-emerald-600">1,248</h3>
+                            <h3 class="text-3xl font-extrabold mt-2 text-emerald-600" x-text="liveChats.length + 1240"></h3>
                             <span class="text-xs text-emerald-500 mt-1 block">↑ 12% dari bulan lalu</span>
                         </div>
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
@@ -147,30 +147,33 @@
                             <span class="text-xs text-gray-400 mt-1 block" x-text="(lang === 'ms' ? 'Auto-renew aktif' : 'Auto-renew active')"></span>
                         </div>
                     </div>
-
-                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-bold mb-2 flex items-center">
-                            <i class="fa-solid fa-calculator text-emerald-600 mr-2"></i> 
-                            <span x-text="lang === 'ms' ? 'Anggaran Pengiraan Pembayaran Meta Chat (Selepas Kuota Token Meta)' : 'Meta Chat Cost Estimation Calculator (After Meta Token Quota)'"></span>
-                        </h3>
-                        <p class="text-xs text-gray-500 mb-4" x-text="lang === 'ms' ? 'Kira anggaran kos tambahan selepas menolak kuota token Meta percuma (1,000 chat pertama).' : 'Calculate estimated extra costs after deducting free Meta token quota (first 1,000 chats). '"></p>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                            <div>
-                                <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-2" x-text="lang === 'ms' ? 'Jumlah Chat Sebulan' : 'Total Chats Per Month'"></label>
-                                <input type="number" min="0" x-model.number="metaChats" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                            </div>
-                            <div class="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 text-center">
-                                <span class="text-xs uppercase font-bold text-emerald-600 dark:text-emerald-400" x-text="lang === 'ms' ? 'Anggaran Kos Meta API' : 'Estimated Meta API Cost'"></span>
-                                <div class="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1" x-text="calculateMetaCost()"></div>
-                                <span class="text-[10px] text-gray-500 mt-1 block" x-text="lang === 'ms' ? '*Termasuk potongan kuota token Meta percuma untuk 1,000 chat pertama.' : '*Includes free Meta token quota deduction for the first 1,000 chats.'"></span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Tab Content: Live Chat & Bot Control -->
                 <div x-show="clientTab === 'livechat'" class="space-y-6">
+                    
+                    <!-- WIDGET KIRAAN KUOTA PERCUMA & KOS META DI DALAM LIVE CHAT -->
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-3 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 rounded-xl">
+                                <i class="fa-solid fa-ticket text-xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs font-semibold uppercase text-gray-400" x-text="lang === 'ms' ? 'Baki Kuota Token Meta Percuma' : 'Remaining Free Meta Quota'"></span>
+                                <div class="text-xl font-black text-gray-900 dark:text-white">
+                                    <span x-text="getRemainingFreeQuota()"></span> / 1,000 <span class="text-xs font-normal text-gray-500">chat</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 flex justify-between items-center">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400" x-text="lang === 'ms' ? 'Anggaran Kos Meta API Semasa' : 'Current Estimated Meta API Cost'"></span>
+                                <div class="text-lg font-black text-emerald-700 dark:text-emerald-300" x-text="calculateMetaCost()"></div>
+                            </div>
+                            <span class="text-[10px] text-gray-400 text-right max-w-[150px]" x-text="lang === 'ms' ? 'Auto-turun setiap kali mesej masuk' : 'Auto-decreases on incoming messages'"></span>
+                        </div>
+                    </div>
+
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                         
                         <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
@@ -291,21 +294,14 @@
                             </div>
                         </div>
 
-                        <!-- Nota Konfigurasi ToyyibPay Callback & Resit E-mel -->
-                        <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 text-xs space-y-2 text-blue-900 dark:text-blue-200">
-                            <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Konfigurasi ToyyibPay Callback & Resit E-mel:</p>
-                            <p>• Notifikasi resit dan makluman transaksi dihantar ke e-mel pentadbir: <strong>radzmil@gmail.com</strong></p>
-                            <p>• Kod Hash Secret Key sistem anda disetkan kepada: <code class="bg-blue-100 dark:bg-blue-800 px-1.5 py-0.5 rounded font-mono">nxehrexd-hx6i-x8au-4idl-3gxlqebywmta</code></p>
-                        </div>
-
                         <div class="border-t pt-4 dark:border-gray-700 flex justify-between items-center">
                             <div>
                                 <span class="text-sm font-semibold block" x-text="lang === 'ms' ? 'Pembaharuan Langganan Seterusnya' : 'Next Subscription Renewal'"></span>
-                                <span class="text-xs text-gray-500" x-text="(lang === 'ms' ? 'Sila buat bayaran melalui ToyyibPay di bawah. Notifikasi callback akan dihantar ke e-mel pentadbir.' : 'Please make payment via ToyyibPay below. Callback notification will be sent to the administrator email.')"></span>
+                                <span class="text-xs text-gray-500" x-text="(lang === 'ms' ? 'Sila buat bayaran melalui ToyyibPay di bawah.' : 'Please make payment via ToyyibPay below.')"></span>
                             </div>
-                            <button @click="openToyyibPay()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-md transition flex items-center">
+                            <a href="https://toyyibpay.com/Architech-Labs-starter-Plan" target="_blank" @click="markPending()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-md transition flex items-center">
                                 <i class="fa-solid fa-file-invoice-dollar mr-2"></i> <span x-text="lang === 'ms' ? 'Bayar & Renew Langganan (RM130)' : 'Pay & Renew Subscription (RM130)'"></span>
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -333,22 +329,6 @@
                                 <div>
                                     <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Alamat E-mel' : 'Email Address'"></label>
                                     <input type="email" x-model="clientProfileForm.email" placeholder="client@example.com" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                                </div>
-                            </div>
-
-                            <hr class="border-gray-200 dark:border-gray-700 my-4">
-
-                            <div>
-                                <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-2" x-text="lang === 'ms' ? 'Tukar Kata Laluan (Opsional)' : 'Change Password (Optional)'"></h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Kata Laluan Baru' : 'New Password'"></label>
-                                        <input type="password" x-model="clientProfileForm.newPassword" placeholder="••••••••" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Sah Semula Kata Laluan' : 'Confirm Password'"></label>
-                                        <input type="password" x-model="clientProfileForm.confirmPassword" placeholder="••••••••" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                                    </div>
                                 </div>
                             </div>
 
@@ -491,7 +471,6 @@
                 darkMode: false,
                 isLoggedIn: false,
                 clientTab: 'dashboard',
-                metaChats: 1248,
                 loginForm: { username: '', password: '' },
                 loginError: '',
                 currentUser: null,
@@ -616,23 +595,15 @@
                 },
 
                 updateClientProfile() {
-                    if (this.clientProfileForm.newPassword && this.clientProfileForm.newPassword !== this.clientProfileForm.confirmPassword) {
-                        alert(this.lang === 'ms' ? 'Kata laluan baru dan sah semula kata laluan tidak sepadan!' : 'New password and confirm password do not match!');
-                        return;
-                    }
-
                     const index = this.clients.findIndex(x => x.username === this.currentUser.username);
                     if (index !== -1) {
                         this.clients[index].username = this.clientProfileForm.username;
                         this.clients[index].phone = this.clientProfileForm.phone;
                         this.clients[index].email = this.clientProfileForm.email;
-                        
                         this.currentUser.username = this.clientProfileForm.username;
                     }
 
                     alert(this.lang === 'ms' ? 'Profil dan tetapan akaun berjaya dikemaskini!' : 'Profile and account settings successfully updated!');
-                    this.clientProfileForm.newPassword = '';
-                    this.clientProfileForm.confirmPassword = '';
                 },
 
                 selectActiveChat(chat) {
@@ -702,14 +673,33 @@
                     this.activeChat = null;
                 },
 
+                getTotalChatCount() {
+                    // Mengambil jumlah mesej keseluruhan dari live chats untuk menggerakkan kuota automatik
+                    let count = 1240; 
+                    this.liveChats.forEach(chat => {
+                        if (chat.messages && chat.messages.length) {
+                            count += chat.messages.length;
+                        } else {
+                            count += 1;
+                        }
+                    });
+                    return count;
+                },
+
+                getRemainingFreeQuota() {
+                    let total = this.getTotalChatCount();
+                    let remaining = 1000 - total;
+                    return remaining > 0 ? remaining : 0;
+                },
+
                 calculateMetaCost() {
-                    let paidChats = this.metaChats - 1000;
-                    if (paidChats <= 0) return 'RM 0.00 (Dalam Kuota Token Meta)';
+                    let total = this.getTotalChatCount();
+                    let paidChats = total - 1000;
+                    if (paidChats <= 0) return 'RM 0.00 (Dalam Kuota Percuma)';
                     return 'RM ' + (paidChats * 0.07).toFixed(2);
                 },
 
-                openToyyibPay() {
-                    alert(this.lang === 'ms' ? 'Pautan ToyyibPay (RM130) dibuka. Sila selesaikan bayaran.' : 'ToyyibPay payment gateway (RM130) opened. Please complete payment.');
+                markPending() {
                     if(this.currentUser) {
                         const c = this.clients.find(x => x.username === this.currentUser.username);
                         if(c) c.status = 'Pending 🟡';
