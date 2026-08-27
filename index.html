@@ -185,7 +185,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-12 min-h-[500px]">
                             
-                            <!-- Senarai Kotak Chat (Kiri) -->
+                            <!-- Senarai Kotak Chat (Kiri) - Dikemaskini Papar Nombor Telefon [source: 5] -->
                             <div class="md:col-span-5 border-r border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[550px] divide-y divide-gray-100 dark:divide-gray-700">
                                 <template x-for="chat in liveChats" :key="chat.id">
                                     <div @click="selectActiveChat(chat)" 
@@ -193,7 +193,8 @@
                                          :class="activeChat && activeChat.id === chat.id ? 'bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-600' : ''">
                                         
                                         <div class="flex justify-between items-center">
-                                            <span class="font-bold text-sm text-gray-900 dark:text-white" x-text="chat.customerName"></span>
+                                            <!-- Paparan Nombor Telefon Pelanggan -->
+                                            <span class="font-bold text-sm text-gray-900 dark:text-white" x-text="chat.phone"></span>
                                             <span class="text-[10px] text-gray-400" x-text="chat.time"></span>
                                         </div>
                                         
@@ -203,7 +204,7 @@
                                             <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase"
                                                   :class="chat.mode === 'ai' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300'"
                                                   x-text="chat.mode === 'ai' ? 'AI Bot' : 'Human Touch'"></span>
-                                            <span class="text-[10px] text-gray-400" x-text="chat.phone"></span>
+                                            <span class="text-[10px] text-gray-400" x-text="chat.id"></span>
                                         </div>
                                     </div>
                                 </template>
@@ -223,7 +224,7 @@
                                         
                                         <div class="p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-xs">
                                             <div>
-                                                <h4 class="font-bold text-sm text-gray-900 dark:text-white" x-text="activeChat.customerName"></h4>
+                                                <h4 class="font-bold text-sm text-gray-900 dark:text-white" x-text="activeChat.phone"></h4>
                                             </div>
 
                                             <div class="flex items-center space-x-2">
