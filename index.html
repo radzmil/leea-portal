@@ -29,13 +29,7 @@
     <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="bg-emerald-600 text-white p-2 rounded-lg font-bold text-lg">
-                    <i class="fa-solid fa-robot"></i>
-                </div>
-                <div>
-                    <span class="text-xl font-extrabold tracking-tight">LEEA SYSTEM</span>
-                    <span class="text-xs block text-gray-500 dark:text-gray-400" x-text="lang === 'ms' ? 'Platform Automasi WhatsApp' : 'WhatsApp Automation Platform'"></span>
-                </div>
+                <!-- Logo & Tajuk Atas -->
             </div>
 
             <!-- CONTROLS -->
@@ -71,30 +65,39 @@
 
         <!-- 1. SKRIN LOGIN -->
         <template x-if="!isLoggedIn">
-            <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 mt-10">
-                <div class="p-8">
-                    <div class="text-center mb-6">
-                        <h2 class="text-2xl font-bold" x-text="lang === 'ms' ? 'Log Masuk Sistem' : 'System Login'"></h2>
-                        <p class="text-sm text-gray-500" x-text="lang === 'ms' ? 'Masukkan butiran akaun anda' : 'Enter your account details'"></p>
-                    </div>
+            <div class="max-w-md mx-auto space-y-4">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 mt-6">
+                    <div class="p-8">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-black uppercase tracking-wider text-gray-900 dark:text-white">SISTEM LEEA</h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Sistem Automasi AI Bot Untuk Whatsapp</p>
+                        </div>
 
-                    <form @submit.prevent="login()" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Nama Pengguna' : 'Username'"></label>
-                            <input type="text" x-model="loginForm.username" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Kata Laluan' : 'Password'"></label>
-                            <input type="password" x-model="loginForm.password" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                        </div>
-                        <div class="text-red-500 text-xs" x-text="loginError"></div>
-                        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition shadow-lg" x-text="lang === 'ms' ? 'Log Masuk' : 'Sign In'"></button>
-                    </form>
-                    <div class="mt-6 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-xs text-gray-500 text-center">
-                        <span class="block font-semibold mb-1">Demo Akaun:</span>
-                        Client: <code class="bg-gray-200 dark:bg-gray-600 px-1 py-0.5 rounded">aluzlia</code> / <code class="bg-gray-200 dark:bg-gray-600 px-1 py-0.5 rounded">1q2w3e4r5t</code><br>
-                        Admin: <code class="bg-gray-200 dark:bg-gray-600 px-1 py-0.5 rounded">admin</code> / <code class="bg-gray-200 dark:bg-gray-600 px-1 py-0.5 rounded">adminpassword123</code>
+                        <form @submit.prevent="login()" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Nama Pengguna' : 'Username'"></label>
+                                <input type="text" x-model="loginForm.username" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Kata Laluan' : 'Password'"></label>
+                                <input type="password" x-model="loginForm.password" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            </div>
+                            <div class="text-red-500 text-xs" x-text="loginError"></div>
+                            <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition shadow-lg" x-text="lang === 'ms' ? 'Log Masuk' : 'Sign In'"></button>
+                        </form>
                     </div>
+                </div>
+
+                <!-- Live Support WhatsApp Button dengan Lampu Merah Kedip-Kedip -->
+                <div class="text-center">
+                    <a href="https://wa.link/mvtkdr" target="_blank" class="inline-flex items-center justify-center space-x-2 px-5 py-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:-translate-y-0.5">
+                        <span class="relative flex h-3 w-3">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                        <i class="fa-brands fa-whatsapp text-sm text-green-300"></i>
+                        <span x-text="lang === 'ms' ? 'Live Support WhatsApp' : 'WhatsApp Live Support'"></span>
+                    </a>
                 </div>
             </div>
         </template>
@@ -114,7 +117,7 @@
                     </div>
                 </div>
 
-                <!-- Tabs Menu (Kini ditambah tab Live Chat & Bot Control) -->
+                <!-- Tabs Menu -->
                 <div class="flex space-x-2 border-b border-gray-200 dark:border-gray-700 pb-2 overflow-x-auto">
                     <button @click="clientTab = 'dashboard'" :class="clientTab === 'dashboard' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
                         <i class="fa-solid fa-chart-line mr-2"></i> Dashboard & Analytics
@@ -129,7 +132,6 @@
 
                 <!-- Tab Content: Dashboard -->
                 <div x-show="clientTab === 'dashboard'" class="space-y-6">
-                    <!-- Metrics Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                             <span class="text-xs font-semibold text-gray-400 uppercase" x-text="lang === 'ms' ? 'Jumlah WhatsApp Chat' : 'Total WhatsApp Chats'"></span>
@@ -148,7 +150,6 @@
                         </div>
                     </div>
 
-                    <!-- KOTAK ANGGARAN PENGIRAAN PEMBAYARAN META CHAT (>10 CHAT) -->
                     <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-bold mb-2 flex items-center">
                             <i class="fa-solid fa-calculator text-emerald-600 mr-2"></i> 
@@ -183,7 +184,6 @@
                             </span>
                         </div>
 
-                        <!-- Senarai Sesi Chat Pelanggan -->
                         <div class="space-y-4">
                             <template x-for="chat in liveChats" :key="chat.id">
                                 <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -196,14 +196,18 @@
                                         <span class="text-[10px] text-gray-400 block" x-text="'Masa: ' + chat.time"></span>
                                     </div>
 
-                                    <!-- Kawalan Suis Bot vs Human Touch -->
                                     <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-gray-200 dark:border-gray-700">
                                         <div class="text-right">
                                             <span class="text-xs block font-semibold" x-text="chat.mode === 'ai' ? 'Mod AI Bot Aktif' : 'Mod Human Touch Aktif'"></span>
                                             <span class="text-[10px]" :class="chat.mode === 'ai' ? 'text-blue-500' : 'text-amber-500'" x-text="chat.mode === 'ai' ? 'Automatik dilayan AI' : 'Diambil alih Ejen Manusia'"></span>
                                         </div>
+                                        <!-- Butang Lihat Mesej / View Chat -->
+                                        <button @click="openViewChat(chat)" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow">
+                                            <i class="fa-solid fa-eye mr-1"></i> <span x-text="lang === 'ms' ? 'Lihat Mesej' : 'View Chat'"></span>
+                                        </button>
+                                        <!-- Butang Suis Mod -->
                                         <button @click="toggleChatMode(chat.id)" 
-                                                class="px-4 py-2 rounded-lg text-xs font-bold text-white transition shadow"
+                                                class="px-3 py-2 rounded-lg text-xs font-bold text-white transition shadow"
                                                 :class="chat.mode === 'ai' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'">
                                             <i :class="chat.mode === 'ai' ? 'fa-solid fa-headset mr-1' : 'fa-solid fa-robot mr-1'"></i>
                                             <span x-text="chat.mode === 'ai' ? (lang === 'ms' ? 'Tukar ke Human' : 'Switch to Human') : (lang === 'ms' ? 'Tukar ke AI Bot' : 'Switch to AI Bot')"></span>
@@ -249,7 +253,6 @@
         <!-- 3. PORTAL ADMIN -->
         <template x-if="isLoggedIn && currentUser.role === 'admin'">
             <div class="space-y-6">
-                <!-- Admin Header -->
                 <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg flex justify-between items-center">
                     <div>
                         <h1 class="text-2xl font-bold" x-text="lang === 'ms' ? 'Dashboard Pentadbir (Admin)' : 'Administrator Dashboard'"></h1>
@@ -261,7 +264,6 @@
                     </div>
                 </div>
 
-                <!-- Admin Table Container -->
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                         <h3 class="font-bold text-lg" x-text="lang === 'ms' ? 'Senarai Akaun Klien' : 'Client Accounts List'"></h3>
@@ -293,15 +295,12 @@
                                         </td>
                                         <td class="p-4 text-xs" x-text="client.expiryDate"></td>
                                         <td class="p-4 text-center space-x-2">
-                                            <!-- Tombol Luluskan Renew -->
                                             <button @click="approveRenewal(index)" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded shadow" title="Luluskan Pembayaran (+1 Bulan)">
                                                 <i class="fa-solid fa-check"></i> <span x-text="lang === 'ms' ? 'Luluskan Renew' : 'Approve Renew'"></span>
                                             </button>
-                                            <!-- Tombol Edit -->
                                             <button @click="editClient(index)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded shadow" title="Edit Profil">
                                                 <i class="fa-solid fa-pen"></i>
                                             </button>
-                                            <!-- Tombol Delete -->
                                             <button @click="deleteClient(index)" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded shadow" title="Padam Akaun">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
@@ -314,6 +313,40 @@
                 </div>
             </div>
         </template>
+
+        <!-- MODAL VIEW CHAT -->
+        <div x-show="showChatModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" style="display: none;">
+            <div class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col max-h-[80vh]">
+                <!-- Modal Header -->
+                <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
+                    <div>
+                        <h3 class="font-bold text-base" x-text="activeChat ? activeChat.customerName : ''"></h3>
+                        <span class="text-xs text-gray-500" x-text="activeChat ? activeChat.phone : ''"></span>
+                    </div>
+                    <button @click="showChatModal = false" class="text-gray-400 hover:text-red-500 text-lg p-2">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <!-- Modal Body (Chat History Bubbles) -->
+                <div class="p-4 overflow-y-auto space-y-3 flex-grow bg-slate-50 dark:bg-gray-900/50">
+                    <div class="text-center text-[10px] text-gray-400 my-2">— Sejarah Perbualan Live Chat —</div>
+                    <template x-for="msg in (activeChat ? activeChat.messages : [])">
+                        <div class="flex" :class="msg.sender === 'client' ? 'justify-end' : 'justify-start'">
+                            <div class="max-w-[80%] rounded-2xl px-4 py-2 text-xs shadow-sm"
+                                 :class="msg.sender === 'client' ? 'bg-emerald-600 text-white rounded-br-none' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none border dark:border-gray-600'">
+                                <p x-text="msg.text"></p>
+                                <span class="text-[9px] block text-right mt-1 opacity-70" x-text="msg.time"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <!-- Modal Footer -->
+                <div class="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800 text-right">
+                    <button @click="showChatModal = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-lg" x-text="lang === 'ms' ? 'Tutup' : 'Close'"></button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- FOOTER -->
@@ -335,11 +368,48 @@
                 currentUser: null,
                 clients: [],
                 
-                // Data simulasi Live Chat & Suis Bot untuk klien
+                showChatModal: false,
+                activeChat: null,
+                
                 liveChats: [
-                    { id: 1, customerName: 'Ahmad bin Ali', phone: '+60123456789', lastMessage: 'Berapa harga pakej sebulan?', time: '11:02 AM', mode: 'ai' },
-                    { id: 2, customerName: 'Siti Nurhaliza', phone: '+60198765432', lastMessage: 'Saya nak minta tolong tukar alamat.', time: '10:45 AM', mode: 'human' },
-                    { id: 3, customerName: 'Ravi Kumar', phone: '+60171122334', lastMessage: 'Adakah bot ni support bahasa tamil?', time: '09:15 AM', mode: 'ai' }
+                    { 
+                        id: 1, 
+                        customerName: 'Ahmad bin Ali', 
+                        phone: '+60123456789', 
+                        lastMessage: 'Berapa harga pakej sebulan?', 
+                        time: '11:02 AM', 
+                        mode: 'ai',
+                        messages: [
+                            { sender: 'customer', text: 'Hi, selamat tengah hari.', time: '11:00 AM' },
+                            { sender: 'client', text: 'Hi Ahmad, ada apa yang boleh saya bantu?', time: '11:01 AM' },
+                            { sender: 'customer', text: 'Berapa harga pakej sebulan?', time: '11:02 AM' }
+                        ]
+                    },
+                    { 
+                        id: 2, 
+                        customerName: 'Siti Nurhaliza', 
+                        phone: '+60198765432', 
+                        lastMessage: 'Saya nak minta tolong tukar alamat.', 
+                        time: '10:45 AM', 
+                        mode: 'human',
+                        messages: [
+                            { sender: 'customer', text: 'Hello admin', time: '10:40 AM' },
+                            { sender: 'client', text: 'Ya Siti, silakan.', time: '10:42 AM' },
+                            { sender: 'customer', text: 'Saya nak minta tolong tukar alamat.', time: '10:45 AM' }
+                        ]
+                    },
+                    { 
+                        id: 3, 
+                        customerName: 'Ravi Kumar', 
+                        phone: '+60171122334', 
+                        lastMessage: 'Adakah bot ni support bahasa tamil?', 
+                        time: '09:15 AM', 
+                        mode: 'ai',
+                        messages: [
+                            { sender: 'customer', text: 'Vanakkam!', time: '09:14 AM' },
+                            { sender: 'customer', text: 'Adakah bot ni support bahasa tamil?', time: '09:15 AM' }
+                        ]
+                    }
                 ],
 
                 init() {
@@ -347,11 +417,15 @@
                 },
 
                 async fetchClientsFromBot() {
+                    this.clients = [
+                        { username: 'aluzlia', password: '1q2w3e4r5t', plan: 'Standard (RM130/mo)', status: 'Paid 🟢', expiryDate: '27/09/2026' }
+                    ];
+
                     try {
                         const response = await fetch('http://localhost:5000/api/clients');
                         const result = await response.json();
                         
-                        if (result.status === 'success' && result.data) {
+                        if (result.status === 'success' && result.data && result.data.length > 0) {
                             this.clients = result.data.map(client => ({
                                 username: client.nama || client.ref_id,
                                 password: '1q2w3e4r5t',
@@ -361,11 +435,15 @@
                             }));
                         }
                     } catch (error) {
-                        console.error('Ralat menyambung ke API Bot:', error);
+                        console.log('Menggunakan mod offline/fallback untuk klien.');
                     }
                 },
 
-                // Fungsi menukar mod antara AI Bot dan Human Touch
+                openViewChat(chat) {
+                    this.activeChat = chat;
+                    this.showChatModal = true;
+                },
+
                 toggleChatMode(chatId) {
                     const chat = this.liveChats.find(c => c.id === chatId);
                     if (chat) {
