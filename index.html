@@ -383,6 +383,7 @@
                             <thead>
                                 <tr class="bg-gray-50 dark:bg-gray-700/50 text-xs uppercase text-gray-500 font-semibold border-b dark:border-gray-700">
                                     <th class="p-4" x-text="lang === 'ms' ? 'Nama Syarikat / Pengguna' : 'Company / Username'"></th>
+                                    <th class="p-4" x-text="lang === 'ms' ? 'Kata Laluan' : 'Password'"></th>
                                     <th class="p-4" x-text="lang === 'ms' ? 'No. Telefon & E-mel' : 'Phone & Email'"></th>
                                     <th class="p-4" x-text="lang === 'ms' ? 'Domain Railway Bot (Admin Only)' : 'Railway Bot Domain (Admin Only)'"></th>
                                     <th class="p-4" x-text="lang === 'ms' ? 'Status' : 'Status'"></th>
@@ -394,6 +395,10 @@
                                 <template x-for="(client, index) in clients" :key="index">
                                     <tr>
                                         <td class="p-4 font-bold" x-text="client.username"></td>
+                                        <!-- Paparan Kata Laluan untuk Admin -->
+                                        <td class="p-4">
+                                            <code class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-emerald-600 dark:text-emerald-400" x-text="client.password || '-'"></code>
+                                        </td>
                                         <td class="p-4 text-xs">
                                             <div x-text="client.phone || '-'"></div>
                                             <div class="text-gray-400" x-text="client.email || '-'"></div>
@@ -449,6 +454,11 @@
                         <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Nama Syarikat / Username' : 'Company / Username'"></label>
                         <input type="text" x-model="clientForm.username" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
+                    <!-- Medan Kata Laluan Klien untuk Admin -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Kata Laluan Klien' : 'Client Password'"></label>
+                        <input type="text" x-model="clientForm.password" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Masukkan kata laluan klien">
+                    </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Nombor Telefon (Klien/Pemilik)' : 'Phone Number (Client/Owner)'"></label>
                         <input type="text" x-model="clientForm.phone" placeholder="+60123456789" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
@@ -495,7 +505,7 @@
                 showClientModal: false,
                 modalMode: 'add',
                 editIndex: null,
-                clientForm: { username: '', phone: '', email: '', railwayUrl: '' },
+                clientForm: { username: '', password: '', phone: '', email: '', railwayUrl: '' },
                 
                 clientProfileForm: {
                     username: '',
@@ -589,8 +599,8 @@
 
                 async fetchClientsFromBot() {
                     this.clients = [
-                        { username: 'aluzlia', phone: '+60123334455', email: 'aluzlia@gmail.com', railwayUrl: '', plan: 'Standard (RM130/mo)', status: 'Paid 🟢', expiryDate: '27/09/2026' },
-                        { username: 'sbltransport', phone: '+60132434200', email: 'sbltransport.my@gmail.com', railwayUrl: 'https://web-production-07b92.up.railway.app', plan: 'Standard (RM130/mo)', status: 'Paid 🟢', expiryDate: '27/10/2026' }
+                        { username: 'aluzlia', password: 'password123', phone: '+60123334455', email: 'aluzlia@gmail.com', railwayUrl: '', plan: 'Standard (RM130/mo)', status: 'Paid 🟢', expiryDate: '27/09/2026' },
+                        { username: 'sbltransport', password: 'securepass456', phone: '+60132434200', email: 'sbltransport.my@gmail.com', railwayUrl: 'https://web-production-07b92.up.railway.app', plan: 'Standard (RM130/mo)', status: 'Paid 🟢', expiryDate: '27/10/2026' }
                     ];
                 },
 
@@ -628,10 +638,10 @@
                     if (mode === 'edit' && index !== null) {
                         this.editIndex = index;
                         const c = this.clients[index];
-                        this.clientForm = { username: c.username, phone: c.phone || '', email: c.email || '', railwayUrl: c.railwayUrl || '' };
+                        this.clientForm = { username: c.username, password: c.password || '', phone: c.phone || '', email: c.email || '', railwayUrl: c.railwayUrl || '' };
                     } else {
                         this.editIndex = null;
-                        this.clientForm = { username: '', phone: '', email: '', railwayUrl: '' };
+                        this.clientForm = { username: '', password: '', phone: '', email: '', railwayUrl: '' };
                     }
                     this.showClientModal = true;
                 },
@@ -640,6 +650,7 @@
                     if (this.modalMode === 'add') {
                         this.clients.push({
                             username: this.clientForm.username,
+                            password: this.clientForm.password,
                             phone: this.clientForm.phone,
                             email: this.clientForm.email,
                             railwayUrl: this.clientForm.railwayUrl,
@@ -649,6 +660,7 @@
                         });
                     } else if (this.modalMode === 'edit' && this.editIndex !== null) {
                         this.clients[this.editIndex].username = this.clientForm.username;
+                        this.clients[this.editIndex].password = this.clientForm.password;
                         this.clients[this.editIndex].phone = this.clientForm.phone;
                         this.clients[this.editIndex].email = this.clientForm.email;
                         this.clients[this.editIndex].railwayUrl = this.clientForm.railwayUrl;
@@ -666,7 +678,7 @@
                         this.currentUser = { username: 'admin', role: 'admin' };
                         this.isLoggedIn = true;
                     } else {
-                        const found = this.clients.find(c => c.username === this.loginForm.username);
+                        const found = this.clients.find(c => c.username === this.loginForm.username && c.password === this.loginForm.password);
                         if (found) {
                             this.currentUser = { username: found.username, role: 'client', status: found.status, expiryDate: found.expiryDate };
                             this.isLoggedIn = true;
