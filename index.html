@@ -30,6 +30,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <!-- Logo & Tajuk Atas -->
+                <span class="font-black text-lg tracking-wider text-emerald-600 dark:text-emerald-400">LEEA SYSTEM</span>
             </div>
 
             <!-- CONTROLS -->
@@ -171,50 +172,116 @@
                     </div>
                 </div>
 
-                <!-- Tab Content: Live Chat & Bot Control -->
+                <!-- Tab Content: Live Chat & Bot Control (Layout Kotak & Ruang Chat Baru) -->
                 <div x-show="clientTab === 'livechat'" class="space-y-6">
-                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b dark:border-gray-700">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        
+                        <!-- Tajuk Atas -->
+                        <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
                             <div>
-                                <h3 class="text-lg font-bold" x-text="lang === 'ms' ? 'Papan Pemantauan Live Chat & Suis Mod Bot' : 'Live Chat Monitoring & Bot Mode Switcher'"></h3>
-                                <p class="text-xs text-gray-500 mt-1" x-text="lang === 'ms' ? 'Pantau perbualan pelanggan secara langsung dan tukar kawalan daripada AI kepada Ejen Manusia (Human Touch).' : 'Monitor customer conversations live and switch control from AI to Human Touch.'"></p>
+                                <h3 class="font-bold text-base" x-text="lang === 'ms' ? 'Pusat Kawalan Live Chat & Bot' : 'Live Chat & Bot Control Center'"></h3>
+                                <p class="text-xs text-gray-500" x-text="lang === 'ms' ? 'Pilih kotak chat di sebelah kiri untuk mula membaca dan membalas mesej.' : 'Select a chat box on the left to start reading and replying.'"></p>
                             </div>
-                            <span class="mt-2 md:mt-0 px-3 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-semibold animate-pulse">
-                                <i class="fa-solid fa-circle text-[8px] mr-1"></i> Live Connected
+                            <span class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-semibold flex items-center">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-2"></span> Live Connected
                             </span>
                         </div>
 
-                        <div class="space-y-4">
-                            <template x-for="chat in liveChats" :key="chat.id">
-                                <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                    <div class="space-y-1">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="font-bold text-sm" x-text="chat.customerName"></span>
-                                            <span class="text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-600" x-text="chat.phone"></span>
+                        <!-- Layout Utama: Kiri (Senarai Kotak Chat) | Kanan (Ruang Mesej & Butang AI/Human) -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 min-h-[500px]">
+                            
+                            <!-- SEBELAH KIRI: Senarai Kotak Chat Klien (5 Kolom) -->
+                            <div class="md:col-span-5 border-r border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[550px] divide-y divide-gray-100 dark:divide-gray-700">
+                                <template x-for="chat in liveChats" :key="chat.id">
+                                    <div @click="selectActiveChat(chat)" 
+                                         class="p-4 cursor-pointer transition hover:bg-gray-50 dark:hover:bg-gray-700/50 flex flex-col space-y-1"
+                                         :class="activeChat && activeChat.id === chat.id ? 'bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-600' : ''">
+                                        
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-sm text-gray-900 dark:text-white" x-text="chat.customerName"></span>
+                                            <span class="text-[10px] text-gray-400" x-text="chat.time"></span>
                                         </div>
-                                        <p class="text-xs text-gray-600 dark:text-gray-300 italic" x-text="'\"' + chat.lastMessage + '\"'"></p>
-                                        <span class="text-[10px] text-gray-400 block" x-text="'Masa: ' + chat.time"></span>
+                                        
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 truncate" x-text="chat.lastMessage"></div>
+                                        
+                                        <div class="flex justify-between items-center pt-1">
+                                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase"
+                                                  :class="chat.mode === 'ai' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300'"
+                                                  x-text="chat.mode === 'ai' ? 'AI Bot' : 'Human Touch'"></span>
+                                            <span class="text-[10px] text-gray-400" x-text="chat.phone"></span>
+                                        </div>
                                     </div>
+                                </template>
+                            </div>
 
-                                    <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-gray-200 dark:border-gray-700">
-                                        <div class="text-right">
-                                            <span class="text-xs block font-semibold" x-text="chat.mode === 'ai' ? 'Mod AI Bot Aktif' : 'Mod Human Touch Aktif'"></span>
-                                            <span class="text-[10px]" :class="chat.mode === 'ai' ? 'text-blue-500' : 'text-amber-500'" x-text="chat.mode === 'ai' ? 'Automatik dilayan AI' : 'Diambil alih Ejen Manusia'"></span>
-                                        </div>
-                                        <!-- Butang Lihat Mesej / View Chat -->
-                                        <button @click="openViewChat(chat)" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow">
-                                            <i class="fa-solid fa-eye mr-1"></i> <span x-text="lang === 'ms' ? 'Lihat Mesej' : 'View Chat'"></span>
-                                        </button>
-                                        <!-- Butang Suis Mod -->
-                                        <button @click="toggleChatMode(chat.id)" 
-                                                class="px-3 py-2 rounded-lg text-xs font-bold text-white transition shadow"
-                                                :class="chat.mode === 'ai' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'">
-                                            <i :class="chat.mode === 'ai' ? 'fa-solid fa-headset mr-1' : 'fa-solid fa-robot mr-1'"></i>
-                                            <span x-text="chat.mode === 'ai' ? (lang === 'ms' ? 'Tukar ke Human' : 'Switch to Human') : (lang === 'ms' ? 'Tukar ke AI Bot' : 'Switch to AI Bot')"></span>
-                                        </button>
+                            <!-- SEBELAH KANAN: Paparan Mesej & Panel Tindakan (7 Kolom) -->
+                            <div class="md:col-span-7 flex flex-col bg-slate-50/50 dark:bg-gray-900/30">
+                                
+                                <!-- Jika tiada chat dipilih -->
+                                <template x-if="!activeChat">
+                                    <div class="flex flex-col items-center justify-center flex-grow p-8 text-center text-gray-400">
+                                        <i class="fa-solid fa-comments text-4xl mb-3 text-emerald-500/50"></i>
+                                        <p class="text-sm font-semibold" x-text="lang === 'ms' ? 'Sila pilih mana-mana kotak chat di sebelah kiri.' : 'Please select a chat box on the left.'"></p>
                                     </div>
-                                </div>
-                            </template>
+                                </template>
+
+                                <!-- Jika chat sudah dipilih -->
+                                <template x-if="activeChat">
+                                    <div class="flex flex-col h-full flex-grow">
+                                        
+                                        <!-- Header Kotak Chat Kanan (Nama Pelanggan + Butang Tukar AI/Human) -->
+                                        <div class="p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-xs">
+                                            <div>
+                                                <h4 class="font-bold text-sm text-gray-900 dark:text-white" x-text="activeChat.customerName"></h4>
+                                                <span class="text-xs text-gray-500" x-text="activeChat.phone"></span>
+                                            </div>
+
+                                            <!-- Butang Tukar Mod AI / Human di Sini -->
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-xs font-semibold" :class="activeChat.mode === 'ai' ? 'text-blue-600' : 'text-amber-600'" 
+                                                      x-text="activeChat.mode === 'ai' ? 'Mod: AI Bot' : 'Mod: Human Touch'"></span>
+                                                      
+                                                <button @click="toggleChatMode(activeChat.id)" 
+                                                        class="px-3 py-1.5 rounded-lg text-xs font-bold text-white transition shadow"
+                                                        :class="activeChat.mode === 'ai' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'">
+                                                    <i :class="activeChat.mode === 'ai' ? 'fa-solid fa-headset mr-1' : 'fa-solid fa-robot mr-1'"></i>
+                                                    <span x-text="activeChat.mode === 'ai' ? (lang === 'ms' ? 'Tukar ke Human' : 'Switch to Human') : (lang === 'ms' ? 'Tukar ke AI' : 'Switch to AI')"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Ruangan Bual (Chat History Stream) -->
+                                        <div class="p-4 overflow-y-auto space-y-3 flex-grow max-h-[380px]">
+                                            <template x-for="msg in activeChat.messages">
+                                                <div class="flex" :class="msg.sender === 'client' ? 'justify-end' : 'justify-start'">
+                                                    <div class="max-w-[80%] rounded-2xl px-4 py-2 text-xs shadow-sm"
+                                                         :class="msg.sender === 'client' ? 'bg-emerald-600 text-white rounded-br-none' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none border dark:border-gray-600'">
+                                                        <p x-text="msg.text"></p>
+                                                        <span class="text-[9px] block text-right mt-1 opacity-70" x-text="msg.time"></span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+
+                                        <!-- Kotak Taip & Hantar Mesej -->
+                                        <div class="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                                            <form @submit.prevent="sendReplyMessage()" class="flex items-center space-x-2">
+                                                <input type="text" x-model="replyText" 
+                                                       :placeholder="activeChat.mode === 'human' ? 'Taip mesej balas sebagai ejen...' : 'Sila tukar ke Human Touch untuk mula menaip...'"
+                                                       class="flex-grow px-4 py-2 border rounded-xl text-xs dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                                
+                                                <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center space-x-1">
+                                                    <i class="fa-solid fa-paper-plane"></i>
+                                                    <span x-text="lang === 'ms' ? 'Hantar' : 'Send'"></span>
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                    </div>
+                                </template>
+
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -348,36 +415,6 @@
             </div>
         </div>
 
-        <!-- MODAL VIEW CHAT -->
-        <div x-show="showChatModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" style="display: none;">
-            <div class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col max-h-[80vh]">
-                <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
-                    <div>
-                        <h3 class="font-bold text-base" x-text="activeChat ? activeChat.customerName : ''"></h3>
-                        <span class="text-xs text-gray-500" x-text="activeChat ? activeChat.phone : ''"></span>
-                    </div>
-                    <button @click="showChatModal = false" class="text-gray-400 hover:text-red-500 text-lg p-2">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-                <div class="p-4 overflow-y-auto space-y-3 flex-grow bg-slate-50 dark:bg-gray-900/50">
-                    <div class="text-center text-[10px] text-gray-400 my-2">— Sejarah Perbualan Live Chat —</div>
-                    <template x-for="msg in (activeChat ? activeChat.messages : [])">
-                        <div class="flex" :class="msg.sender === 'client' ? 'justify-end' : 'justify-start'">
-                            <div class="max-w-[80%] rounded-2xl px-4 py-2 text-xs shadow-sm"
-                                 :class="msg.sender === 'client' ? 'bg-emerald-600 text-white rounded-br-none' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none border dark:border-gray-600'">
-                                <p x-text="msg.text"></p>
-                                <span class="text-[9px] block text-right mt-1 opacity-70" x-text="msg.time"></span>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-                <div class="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800 text-right">
-                    <button @click="showChatModal = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-lg" x-text="lang === 'ms' ? 'Tutup' : 'Close'"></button>
-                </div>
-            </div>
-        </div>
-
     </main>
 
     <!-- FOOTER -->
@@ -399,8 +436,9 @@
                 currentUser: null,
                 clients: [],
                 
-                showChatModal: false,
+                // Pembolehubah untuk Split-View Live Chat Baru
                 activeChat: null,
+                replyText: '',
 
                 // Pembolehubah untuk Borang Khas Klien
                 showClientModal: false,
@@ -460,6 +498,31 @@
                     ];
                 },
 
+                // Fungsi Pilihan Chat & Balas Mesej
+                selectActiveChat(chat) {
+                    this.activeChat = chat;
+                },
+
+                sendReplyMessage() {
+                    if (!this.replyText.trim() || !this.activeChat) return;
+                    
+                    this.activeChat.messages.push({
+                        sender: 'client',
+                        text: this.replyText,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    });
+                    
+                    this.activeChat.lastMessage = this.replyText;
+                    this.replyText = '';
+                },
+
+                toggleChatMode(chatId) {
+                    const chat = this.liveChats.find(c => c.id === chatId);
+                    if (chat) {
+                        chat.mode = chat.mode === 'ai' ? 'human' : 'ai';
+                    }
+                },
+
                 openClientModal(mode, index = null) {
                     this.modalMode = mode;
                     if (mode === 'edit' && index !== null) {
@@ -489,22 +552,6 @@
                         this.clients[this.editIndex].email = this.clientForm.email;
                     }
                     this.showClientModal = false;
-                },
-
-                openViewChat(chat) {
-                    this.activeChat = chat;
-                    this.showChatModal = true;
-                },
-
-                toggleChatMode(chatId) {
-                    const chat = this.liveChats.find(c => c.id === chatId);
-                    if (chat) {
-                        chat.mode = chat.mode === 'ai' ? 'human' : 'ai';
-                        const statusMsg = chat.mode === 'human' 
-                            ? (this.lang === 'ms' ? 'Mod ditukar ke Human Touch. Ejen mengambil alih perbualan.' : 'Switched to Human Touch.') 
-                            : (this.lang === 'ms' ? 'Mod ditukar ke AI Bot. Bot kembali aktif.' : 'Switched to AI Bot.');
-                        alert(statusMsg);
-                    }
                 },
 
                 toggleLang() {
