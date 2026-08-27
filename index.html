@@ -185,7 +185,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-12 min-h-[500px]">
                             
-                            <!-- Senarai Kotak Chat (Kiri) - Dikemaskini Papar Nombor Telefon [source: 5] -->
+                            <!-- Senarai Kotak Chat (Kiri) - Dikemaskini Papar Nombor Telefon[cite: 5] -->
                             <div class="md:col-span-5 border-r border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[550px] divide-y divide-gray-100 dark:divide-gray-700">
                                 <template x-for="chat in liveChats" :key="chat.id">
                                     <div @click="selectActiveChat(chat)" 
@@ -275,7 +275,7 @@
                     </div>
                 </div>
 
-                <!-- Tab Content: Billing -->
+                <!-- Tab Content: Billing (Disertakan Konfigurasi ToyyibPay & Emel Pentadbir) -->
                 <div x-show="clientTab === 'billing'" class="space-y-6">
                     <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-bold mb-4" x-text="lang === 'ms' ? 'Maklumat Pelan Langganan Semasa' : 'Current Subscription Plan'"></h3>
@@ -290,6 +290,13 @@
                                 <span class="text-2xl font-black text-emerald-600">RM130</span>
                                 <span class="text-xs text-gray-500 block" x-text="lang === 'ms' ? 'per bulan' : 'per month'"></span>
                             </div>
+                        </div>
+
+                        <!-- Nota Konfigurasi ToyyibPay Callback & Resit E-mel -->
+                        <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 text-xs space-y-2 text-blue-900 dark:text-blue-200">
+                            <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Konfigurasi ToyyibPay Callback & Resit E-mel:</p>
+                            <p>• Notifikasi resit dan makluman transaksi dihantar ke e-mel pentadbir: <strong>radzmil@gmail.com</strong></p>
+                            <p>• Kod Hash Secret Key sistem anda disetkan kepada: <code class="bg-blue-100 dark:bg-blue-800 px-1.5 py-0.5 rounded font-mono">nxehrexd-hx6i-x8au-4idl-3gxlqebywmta</code></p>
                         </div>
 
                         <div class="border-t pt-4 dark:border-gray-700 flex justify-between items-center">
