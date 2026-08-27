@@ -123,6 +123,9 @@
                     <button @click="clientTab = 'billing'" :class="clientTab === 'billing' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
                         <i class="fa-solid fa-credit-card mr-2"></i> <span x-text="lang === 'ms' ? 'Langganan & Bil' : 'Subscription & Billing'"></span>
                     </button>
+                    <button @click="clientTab = 'profile'" :class="clientTab === 'profile' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-user-gear mr-2"></i> <span x-text="lang === 'ms' ? 'Profil & Tetapan' : 'Profile & Settings'"></span>
+                    </button>
                 </div>
 
                 <!-- Tab Content: Dashboard -->
@@ -236,10 +239,9 @@
                                             </div>
                                         </div>
 
-                                        <!-- Chat History Stream (Diperbetulkan Arah Posisi Kiri/Kanan) -->
+                                        <!-- Chat History Stream -->
                                         <div class="p-4 overflow-y-auto space-y-3 flex-grow max-h-[380px]">
                                             <template x-for="msg in activeChat.messages">
-                                                <!-- Jika 'customer' paparkan di KIRI (justify-start), jika 'ai'/'client' paparkan di KANAN (justify-end) -->
                                                 <div class="flex" :class="msg.sender === 'customer' ? 'justify-start' : 'justify-end'">
                                                     <div class="max-w-[80%] rounded-2xl px-4 py-2 text-xs shadow-sm"
                                                          :class="msg.sender === 'customer' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none border dark:border-gray-600' : 'bg-emerald-600 text-white rounded-br-none'">
@@ -257,7 +259,7 @@
                                                        :placeholder="activeChat.mode === 'human' ? 'Taip mesej balas sebagai ejen...' : 'Sila tukar ke Human Touch untuk mula menaip...'"
                                                        class="flex-grow px-4 py-2 border rounded-xl text-xs dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                                                 
-                                                <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center space-x-1">
+                                                <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow transition flex items-center space-x-1">
                                                     <i class="fa-solid fa-paper-plane"></i>
                                                     <span x-text="lang === 'ms' ? 'Hantar' : 'Send'"></span>
                                                 </button>
@@ -300,6 +302,57 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Tab Content: Profil & Tetapan Klien (Tanpa URL Railway) -->
+                <div x-show="clientTab === 'profile'" class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-bold mb-1 flex items-center">
+                            <i class="fa-solid fa-user-pen text-emerald-600 mr-2"></i> 
+                            <span x-text="lang === 'ms' ? 'Kemaskini Profil & Tetapan Akaun' : 'Update Profile & Account Settings'"></span>
+                        </h3>
+                        <p class="text-xs text-gray-500 mb-6" x-text="lang === 'ms' ? 'Urus maklumat peribadi, nombor telefon, e-mel serta tukar kata laluan akaun anda di sini.' : 'Manage personal info, phone number, email and change your account password here.'"></p>
+                        
+                        <form @submit.prevent="updateClientProfile()" class="space-y-4 max-w-xl">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Nama Syarikat / Username' : 'Company / Username'"></label>
+                                <input type="text" x-model="clientProfileForm.username" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Nombor Telefon' : 'Phone Number'"></label>
+                                    <input type="text" x-model="clientProfileForm.phone" placeholder="+60123334455" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Alamat E-mel' : 'Email Address'"></label>
+                                    <input type="email" x-model="clientProfileForm.email" placeholder="client@example.com" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <hr class="border-gray-200 dark:border-gray-700 my-4">
+
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-2" x-text="lang === 'ms' ? 'Tukar Kata Laluan (Opsional)' : 'Change Password (Optional)'"></h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Kata Laluan Baru' : 'New Password'"></label>
+                                        <input type="password" x-model="clientProfileForm.newPassword" placeholder="••••••••" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Sah Semula Kata Laluan' : 'Confirm Password'"></label>
+                                        <input type="password" x-model="clientProfileForm.confirmPassword" placeholder="••••••••" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-2">
+                                <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow transition">
+                                    <i class="fa-solid fa-floppy-disk mr-1"></i> <span x-text="lang === 'ms' ? 'Simpan Perubahan Profil' : 'Save Profile Changes'"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </template>
 
@@ -309,7 +362,7 @@
                 <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg flex justify-between items-center">
                     <div>
                         <h1 class="text-2xl font-bold" x-text="lang === 'ms' ? 'Dashboard Pentadbir (Admin)' : 'Administrator Dashboard'"></h1>
-                        <p class="text-slate-300 text-sm mt-1" x-text="lang === 'ms' ? 'Urus akaun klien, status langganan dan pengesahan bayaran.' : 'Manage client accounts, subscription statuses, and payment verifications.'"></p>
+                        <p class="text-slate-300 text-sm mt-1" x-text="lang === 'ms' ? 'Urus akaun klien, tetapan Railway bot, status langganan dan pengesahan bayaran.' : 'Manage client accounts, Railway bot settings, subscription statuses, and payment verifications.'"></p>
                     </div>
                     <div class="bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md text-right">
                         <span class="block text-xs text-slate-300" x-text="lang === 'ms' ? 'Jumlah Klien' : 'Total Clients'"></span>
@@ -331,7 +384,7 @@
                                 <tr class="bg-gray-50 dark:bg-gray-700/50 text-xs uppercase text-gray-500 font-semibold border-b dark:border-gray-700">
                                     <th class="p-4" x-text="lang === 'ms' ? 'Nama Syarikat / Pengguna' : 'Company / Username'"></th>
                                     <th class="p-4" x-text="lang === 'ms' ? 'No. Telefon & E-mel' : 'Phone & Email'"></th>
-                                    <th class="p-4" x-text="lang === 'ms' ? 'Domain Railway Bot' : 'Railway Bot Domain'"></th>
+                                    <th class="p-4" x-text="lang === 'ms' ? 'Domain Railway Bot (Admin Only)' : 'Railway Bot Domain (Admin Only)'"></th>
                                     <th class="p-4" x-text="lang === 'ms' ? 'Status' : 'Status'"></th>
                                     <th class="p-4" x-text="lang === 'ms' ? 'Tarikh Luput' : 'Expiry Date'"></th>
                                     <th class="p-4 text-center" x-text="lang === 'ms' ? 'Tindakan Pentadbir' : 'Admin Actions'"></th>
@@ -382,7 +435,7 @@
             </div>
         </template>
 
-        <!-- MODAL KLIEN -->
+        <!-- MODAL KLIEN (ADMIN) - TERMASUK INPUT RAILWAY URL -->
         <div x-show="showClientModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" style="display: none;">
             <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
                 <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
@@ -405,10 +458,9 @@
                         <input type="email" x-model="clientForm.email" placeholder="client@example.com" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Domain Railway Bot (URL)' : 'Railway Bot Domain (URL)'"></label>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Domain Railway Bot (URL Admin)' : 'Railway Bot Domain (Admin URL)'"></label>
                         <input type="text" x-model="clientForm.railwayUrl" placeholder="https://web-production-xxxx.up.railway.app" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
-                    <p class="text-[11px] text-amber-500 italic">* Kata laluan menggunakan set default sistem.</p>
                     <div class="flex justify-end space-x-2 pt-2">
                         <button type="button" @click="showClientModal = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-lg" x-text="lang === 'ms' ? 'Batal' : 'Cancel'"></button>
                         <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow" x-text="lang === 'ms' ? 'Simpan' : 'Save'"></button>
@@ -445,6 +497,15 @@
                 modalMode: 'add',
                 editIndex: null,
                 clientForm: { username: '', phone: '', email: '', railwayUrl: '' },
+                
+                // Form Profil Klien Semasa (Tanpa Railway URL)
+                clientProfileForm: {
+                    username: '',
+                    phone: '',
+                    email: '',
+                    newPassword: '',
+                    confirmPassword: ''
+                },
                 
                 liveChats: [],
 
@@ -535,6 +596,39 @@
                     ];
                 },
 
+                loadClientProfileData() {
+                    const c = this.clients.find(x => x.username === this.currentUser.username);
+                    if (c) {
+                        this.clientProfileForm = {
+                            username: c.username,
+                            phone: c.phone || '',
+                            email: c.email || '',
+                            newPassword: '',
+                            confirmPassword: ''
+                        };
+                    }
+                },
+
+                updateClientProfile() {
+                    if (this.clientProfileForm.newPassword && this.clientProfileForm.newPassword !== this.clientProfileForm.confirmPassword) {
+                        alert(this.lang === 'ms' ? 'Kata laluan baru dan sah semula kata laluan tidak sepadan!' : 'New password and confirm password do not match!');
+                        return;
+                    }
+
+                    const index = this.clients.findIndex(x => x.username === this.currentUser.username);
+                    if (index !== -1) {
+                        this.clients[index].username = this.clientProfileForm.username;
+                        this.clients[index].phone = this.clientProfileForm.phone;
+                        this.clients[index].email = this.clientProfileForm.email;
+                        
+                        this.currentUser.username = this.clientProfileForm.username;
+                    }
+
+                    alert(this.lang === 'ms' ? 'Profil dan tetapan akaun berjaya dikemaskini!' : 'Profile and account settings successfully updated!');
+                    this.clientProfileForm.newPassword = '';
+                    this.clientProfileForm.confirmPassword = '';
+                },
+
                 selectActiveChat(chat) {
                     this.activeChat = chat;
                 },
@@ -586,6 +680,7 @@
                         if (found) {
                             this.currentUser = { username: found.username, role: 'client', status: found.status, expiryDate: found.expiryDate };
                             this.isLoggedIn = true;
+                            this.loadClientProfileData();
                             this.fetchLiveChats();
                         } else {
                             this.loginError = this.lang === 'ms' ? 'Nama pengguna atau kata laluan salah!' : 'Invalid username or password!';
