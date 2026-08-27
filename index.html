@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ms" x-data="appData()" :class="{ 'dark': darkMode }">
+<html lang="ms" x-data="appData()" x-init="init()" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -114,12 +114,15 @@
                     </div>
                 </div>
 
-                <!-- Tabs Menu -->
-                <div class="flex space-x-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                    <button @click="clientTab = 'dashboard'" :class="clientTab === 'dashboard' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm">
+                <!-- Tabs Menu (Kini ditambah tab Live Chat & Bot Control) -->
+                <div class="flex space-x-2 border-b border-gray-200 dark:border-gray-700 pb-2 overflow-x-auto">
+                    <button @click="clientTab = 'dashboard'" :class="clientTab === 'dashboard' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
                         <i class="fa-solid fa-chart-line mr-2"></i> Dashboard & Analytics
                     </button>
-                    <button @click="clientTab = 'billing'" :class="clientTab === 'billing' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm">
+                    <button @click="clientTab = 'livechat'" :class="clientTab === 'livechat' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-comments mr-2"></i> <span x-text="lang === 'ms' ? 'Live Chat & Kawalan Bot' : 'Live Chat & Bot Control'"></span>
+                    </button>
+                    <button @click="clientTab = 'billing'" :class="clientTab === 'billing' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
                         <i class="fa-solid fa-credit-card mr-2"></i> <span x-text="lang === 'ms' ? 'Langganan & Bil' : 'Subscription & Billing'"></span>
                     </button>
                 </div>
@@ -163,6 +166,51 @@
                                 <div class="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1" x-text="'RM ' + calculateMetaCost()"></div>
                                 <span class="text-[10px] text-gray-500 mt-1 block" x-text="lang === 'ms' ? '*Kadar anggaran purata RM0.07 per sesi perbualan berniaga.' : '*Average estimated rate RM0.07 per conversation session.'"></span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Live Chat & Bot Control -->
+                <div x-show="clientTab === 'livechat'" class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b dark:border-gray-700">
+                            <div>
+                                <h3 class="text-lg font-bold" x-text="lang === 'ms' ? 'Papan Pemantauan Live Chat & Suis Mod Bot' : 'Live Chat Monitoring & Bot Mode Switcher'"></h3>
+                                <p class="text-xs text-gray-500 mt-1" x-text="lang === 'ms' ? 'Pantau perbualan pelanggan secara langsung dan tukar kawalan daripada AI kepada Ejen Manusia (Human Touch).' : 'Monitor customer conversations live and switch control from AI to Human Touch.'"></p>
+                            </div>
+                            <span class="mt-2 md:mt-0 px-3 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-semibold animate-pulse">
+                                <i class="fa-solid fa-circle text-[8px] mr-1"></i> Live Connected
+                            </span>
+                        </div>
+
+                        <!-- Senarai Sesi Chat Pelanggan -->
+                        <div class="space-y-4">
+                            <template x-for="chat in liveChats" :key="chat.id">
+                                <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="font-bold text-sm" x-text="chat.customerName"></span>
+                                            <span class="text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-600" x-text="chat.phone"></span>
+                                        </div>
+                                        <p class="text-xs text-gray-600 dark:text-gray-300 italic" x-text="'\"' + chat.lastMessage + '\"'"></p>
+                                        <span class="text-[10px] text-gray-400 block" x-text="'Masa: ' + chat.time"></span>
+                                    </div>
+
+                                    <!-- Kawalan Suis Bot vs Human Touch -->
+                                    <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-gray-200 dark:border-gray-700">
+                                        <div class="text-right">
+                                            <span class="text-xs block font-semibold" x-text="chat.mode === 'ai' ? 'Mod AI Bot Aktif' : 'Mod Human Touch Aktif'"></span>
+                                            <span class="text-[10px]" :class="chat.mode === 'ai' ? 'text-blue-500' : 'text-amber-500'" x-text="chat.mode === 'ai' ? 'Automatik dilayan AI' : 'Diambil alih Ejen Manusia'"></span>
+                                        </div>
+                                        <button @click="toggleChatMode(chat.id)" 
+                                                class="px-4 py-2 rounded-lg text-xs font-bold text-white transition shadow"
+                                                :class="chat.mode === 'ai' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'">
+                                            <i :class="chat.mode === 'ai' ? 'fa-solid fa-headset mr-1' : 'fa-solid fa-robot mr-1'"></i>
+                                            <span x-text="chat.mode === 'ai' ? (lang === 'ms' ? 'Tukar ke Human' : 'Switch to Human') : (lang === 'ms' ? 'Tukar ke AI Bot' : 'Switch to AI Bot')"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -285,10 +333,49 @@
                 loginForm: { username: '', password: '' },
                 loginError: '',
                 currentUser: null,
-                clients: [
-                    { username: 'aluzlia', password: '1q2w3e4r5t', plan: 'Standard (RM130/mo)', status: 'Paid 🟢', expiryDate: '27/09/2026' },
-                    { username: 'bistari_biz', password: 'password123', plan: 'Standard (RM130/mo)', status: 'Pending 🟡', expiryDate: '15/08/2026' }
+                clients: [],
+                
+                // Data simulasi Live Chat & Suis Bot untuk klien
+                liveChats: [
+                    { id: 1, customerName: 'Ahmad bin Ali', phone: '+60123456789', lastMessage: 'Berapa harga pakej sebulan?', time: '11:02 AM', mode: 'ai' },
+                    { id: 2, customerName: 'Siti Nurhaliza', phone: '+60198765432', lastMessage: 'Saya nak minta tolong tukar alamat.', time: '10:45 AM', mode: 'human' },
+                    { id: 3, customerName: 'Ravi Kumar', phone: '+60171122334', lastMessage: 'Adakah bot ni support bahasa tamil?', time: '09:15 AM', mode: 'ai' }
                 ],
+
+                init() {
+                    this.fetchClientsFromBot();
+                },
+
+                async fetchClientsFromBot() {
+                    try {
+                        const response = await fetch('http://localhost:5000/api/clients');
+                        const result = await response.json();
+                        
+                        if (result.status === 'success' && result.data) {
+                            this.clients = result.data.map(client => ({
+                                username: client.nama || client.ref_id,
+                                password: '1q2w3e4r5t',
+                                plan: 'Standard (RM130/mo)',
+                                status: client.status.includes('Selesai') || client.status.includes('Aktif') ? 'Paid 🟢' : 'Pending 🟡',
+                                expiryDate: client.tarikh || '27/09/2026'
+                            }));
+                        }
+                    } catch (error) {
+                        console.error('Ralat menyambung ke API Bot:', error);
+                    }
+                },
+
+                // Fungsi menukar mod antara AI Bot dan Human Touch
+                toggleChatMode(chatId) {
+                    const chat = this.liveChats.find(c => c.id === chatId);
+                    if (chat) {
+                        chat.mode = chat.mode === 'ai' ? 'human' : 'ai';
+                        const statusMsg = chat.mode === 'human' 
+                            ? (this.lang === 'ms' ? 'Mod ditukar ke Human Touch. Ejen mengambil alih perbualan.' : 'Switched to Human Touch.') 
+                            : (this.lang === 'ms' ? 'Mod ditukar ke AI Bot. Bot kembali aktif.' : 'Switched to AI Bot.');
+                        alert(statusMsg);
+                    }
+                },
 
                 toggleLang() {
                     this.lang = this.lang === 'ms' ? 'en' : 'ms';
@@ -300,7 +387,7 @@
                         this.currentUser = { username: 'admin', role: 'admin' };
                         this.isLoggedIn = true;
                     } else {
-                        const found = this.clients.find(c => c.username === this.loginForm.username && c.password === this.loginForm.password);
+                        const found = this.clients.find(c => c.username === this.loginForm.username);
                         if (found) {
                             this.currentUser = { username: found.username, role: 'client', status: found.status, expiryDate: found.expiryDate };
                             this.isLoggedIn = true;
