@@ -337,6 +337,10 @@
                         <input type="text" x-model="clientForm.phone" placeholder="+60123456789" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
                     </div>
                     <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1">E-mel Klien</label>
+                        <input type="email" x-model="clientForm.email" placeholder="klien@example.com" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div>
                         <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1">Domain Railway Bot URL</label>
                         <input type="text" x-model="clientForm.railwayUrl" placeholder="https://..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
                     </div>
@@ -420,6 +424,28 @@
 
                 saveClientsToStorage() {
                     localStorage.setItem('leea_admin_clients', JSON.stringify(this.clients));
+                },
+
+                async backupClientToGoogleDrive(clientData) {
+                    const backupUrl = "https://script.google.com/macros/s/AKfycbz6nYrZ1pGF5ZCjEMaxJ1kTHRGVD59aPw940_YCQ-uxL3crMtt6TzR214WfWKRBN6ugZQ/exec";
+                    try {
+                        await fetch(backupUrl, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                timestamp: new Date().toISOString(),
+                                username: clientData.username,
+                                password: clientData.password,
+                                phone: clientData.phone,
+                                email: clientData.email,
+                                domain_url: clientData.railwayUrl
+                            })
+                        });
+                        console.log("Sandaran klien berjaya dihantar ke Google Drive.");
+                    } catch (error) {
+                        console.error("Gagal menghantar sandaran klien:", error);
+                    }
                 },
 
                 getCurrentRailwayUrl() {
@@ -513,19 +539,23 @@
                     this.showClientModal = true;
                 },
 
-                saveClient() {
+                async saveClient() {
+                    let clientDataToSave = {};
+
                     if (this.modalMode === 'edit' && this.editIndex !== null) {
                         this.clients[this.editIndex].username = this.clientForm.username;
                         this.clients[this.editIndex].password = this.clientForm.password;
                         this.clients[this.editIndex].phone = this.clientForm.phone;
                         this.clients[this.editIndex].email = this.clientForm.email;
                         this.clients[this.editIndex].railwayUrl = this.clientForm.railwayUrl;
+                        
+                        clientDataToSave = this.clients[this.editIndex];
                         alert('Maklumat klien berjaya dikemaskini!');
                     } else {
                         const nextIdNum = 1000 + this.clients.length + 1;
                         const newClientId = `CLI-${nextIdNum}`;
 
-                        this.clients.push({
+                        const newClient = {
                             clientId: newClientId,
                             username: this.clientForm.username,
                             password: this.clientForm.password,
@@ -534,11 +564,18 @@
                             railwayUrl: this.clientForm.railwayUrl,
                             status: 'Paid 🟢',
                             expiryDate: '27/09/2026'
-                        });
+                        };
+
+                        this.clients.push(newClient);
+                        clientDataToSave = newClient;
                         alert(`Klien berjaya didaftarkan dengan ID: ${newClientId}`);
                     }
                     
                     this.saveClientsToStorage();
+                    
+                    // Hantar sandaran secara automatik ke fail Google Sheets di Google Drive
+                    await this.backupClientToGoogleDrive(clientDataToSave);
+
                     this.showClientModal = false;
                 },
 
