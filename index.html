@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ms" x-data="appData()" x-init="init()" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEEA System - Portal Rasmi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#059669',
+                        darkBg: '#0f172a'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-darkBg text-gray-800 dark:text-gray-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
+
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="font-black text-lg tracking-wider text-emerald-600 dark:text-emerald-400">LEEA SYSTEM</span>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <button @click="toggleLang()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 transition">
+                    <span x-text="lang === 'ms' ? 'English (EN)' : 'Bahasa Melayu (BM)'"></span>
+                </button>
+
+                <button @click="darkMode = !darkMode" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                    <i :class="darkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i>
+                </button>
+
+                <template x-if="isLoggedIn">
+                    <div class="flex items-center space-x-3 border-l pl-4 border-gray-200 dark:border-gray-700">
+                        <div class="text-right">
+                            <span class="block text-sm font-bold" x-text="currentUser.username"></span>
+                            <span class="text-xs text-emerald-600 dark:text-emerald-400 capitalize" x-text="currentUser.role + ' (' + currentUser.clientId + ')'"></span>
+                        </div>
+                        <button @click="logout()" class="text-red-500 hover:text-red-700 p-2" title="Log Keluar">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <template x-if="!isLoggedIn">
+            <div class="max-w-md mx-auto space-y-4">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 mt-6">
+                    <div class="p-8">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-black uppercase tracking-wider text-gray-900 dark:text-white">SISTEM LEEA</h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Sistem Automasi AI Bot Untuk Whatsapp</p>
+                        </div>
+
+                        <form @submit.prevent="login()" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Nama Pengguna' : 'Username'"></label>
+                                <input type="text" x-model="loginForm.username" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1" x-text="lang === 'ms' ? 'Kata Laluan' : 'Password'"></label>
+                                <input type="password" x-model="loginForm.password" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            </div>
+                            <div class="text-red-500 text-xs" x-text="loginError"></div>
+                            <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition shadow-lg" x-text="lang === 'ms' ? 'Log Masuk' : 'Sign In'"></button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <a href="https://wa.link/mvtkdr" target="_blank" class="inline-flex items-center justify-center space-x-2 px-5 py-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:-translate-y-0.5">
+                        <span class="relative flex h-3 w-3">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                        <i class="fa-brands fa-whatsapp text-sm text-green-300"></i>
+                        <span x-text="lang === 'ms' ? 'Live Support WhatsApp' : 'WhatsApp Live Support'"></span>
+                    </a>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="isLoggedIn && currentUser.role === 'client'">
+            <div class="space-y-6">
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-6 text-white shadow-lg flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold" x-text="(lang === 'ms' ? 'Selamat Datang, ' : 'Welcome, ') + currentUser.username"></h1>
+                        <p class="text-emerald-100 text-sm mt-1" x-text="(lang === 'ms' ? 'ID Klien: ' : 'Client ID: ') + currentUser.clientId + ' | Pakej Standard (RM130/bulan)'"></p>
+                    </div>
+                    <div class="bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md text-right">
+                        <span class="block text-xs text-emerald-200" x-text="lang === 'ms' ? 'Tarikh Luput' : 'Expiry Date'"></span>
+                        <span class="font-bold text-sm" x-text="currentUser.expiryDate"></span>
+                    </div>
+                </div>
+
+                <div class="flex space-x-2 border-b border-gray-200 dark:border-gray-700 pb-2 overflow-x-auto">
+                    <button @click="clientTab = 'dashboard'" :class="clientTab === 'dashboard' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-chart-line mr-2"></i> Dashboard & Analytics
+                    </button>
+                    <button @click="clientTab = 'livechat'" :class="clientTab === 'livechat' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-comments mr-2"></i> <span x-text="lang === 'ms' ? 'Live Chat & Kawalan Bot' : 'Live Chat & Bot Control'"></span>
+                    </button>
+                    <button @click="clientTab = 'billing'" :class="clientTab === 'billing' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-credit-card mr-2"></i> <span x-text="lang === 'ms' ? 'Langganan & Bil' : 'Subscription & Billing'"></span>
+                    </button>
+                    <button @click="clientTab = 'profile'" :class="clientTab === 'profile' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-user-gear mr-2"></i> <span x-text="lang === 'ms' ? 'Profil & Tetapan' : 'Profile & Settings'"></span>
+                    </button>
+                </div>
+
+                <div x-show="clientTab === 'dashboard'" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                            <span class="text-xs font-semibold text-gray-400 uppercase" x-text="lang === 'ms' ? 'Jumlah WhatsApp Chat' : 'Total WhatsApp Chats'"></span>
+                            <h3 class="text-3xl font-extrabold mt-2 text-emerald-600" x-text="getTotalChatCount()">0</h3>
+                            <span class="text-xs text-gray-400 mt-1 block" x-text="lang === 'ms' ? 'Kira secara realtime dari server bot' : 'Counted in realtime from bot server'"></span>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                            <span class="text-xs font-semibold text-gray-400 uppercase" x-text="lang === 'ms' ? 'AI Auto-Pilot Selesai' : 'AI Handled Chats'"></span>
+                            <h3 class="text-3xl font-extrabold mt-2 text-blue-600" x-text="getAiHandledPercentage()">0%</h3>
+                            <span class="text-xs text-gray-400 mt-1 block" x-text="lang === 'ms' ? 'Nisbah mod AI aktif' : 'Active AI mode ratio'"></span>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                            <span class="text-xs font-semibold text-gray-400 uppercase" x-text="lang === 'ms' ? 'Status Akaun' : 'Account Status'"></span>
+                            <h3 class="text-2xl font-extrabold mt-2 text-emerald-600" x-text="currentUser.status"></h3>
+                            <span class="text-xs text-gray-400 mt-1 block" x-text="(lang === 'ms' ? 'Auto-renew aktif' : 'Auto-renew active')"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="clientTab === 'livechat'" class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 space-y-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                            <div class="flex items-center space-x-3">
+                                <div class="p-3 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 rounded-xl">
+                                    <i class="fa-solid fa-ticket text-xl"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-semibold uppercase text-gray-400" x-text="lang === 'ms' ? 'BAKI KUOTA TOKEN LEEA SISTEM' : 'REMAINING TOKEN QUOTA'"></span>
+                                    <div class="text-xl font-black text-gray-900 dark:text-white">
+                                        <span x-text="getRemainingFreeQuota()">1000</span> / 1,000 <span class="text-xs font-normal text-gray-500">chat</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
+                            <h3 class="font-bold text-base" x-text="lang === 'ms' ? 'Pusat Kawalan Live Chat & Bot' : 'Live Chat & Bot Control Center'"></h3>
+                            <span class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-semibold flex items-center">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-2"></span> Live Connected
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-12 min-h-[500px]">
+                            <div class="md:col-span-5 border-r border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[550px] divide-y divide-gray-100 dark:divide-gray-700">
+                                <template x-for="chat in liveChats" :key="chat.id">
+                                    <div @click="selectActiveChat(chat)" 
+                                         class="p-4 cursor-pointer transition hover:bg-gray-50 dark:hover:bg-gray-700/50 flex flex-col space-y-1"
+                                         :class="activeChat && activeChat.id === chat.id ? 'bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-600' : ''">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-sm text-gray-900 dark:text-white" x-text="chat.phone"></span>
+                                            <span class="text-[10px] text-gray-400" x-text="chat.time"></span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 truncate" x-text="chat.lastMessage"></div>
+                                        <div class="flex justify-between items-center pt-1">
+                                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase"
+                                                  :class="chat.mode === 'ai' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'"
+                                                  x-text="chat.mode === 'ai' ? 'AI Bot' : 'Human Touch'"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="md:col-span-7 flex flex-col bg-slate-50/50 dark:bg-gray-900/30">
+                                <template x-if="!activeChat">
+                                    <div class="flex flex-col items-center justify-center flex-grow p-8 text-center text-gray-400">
+                                        <i class="fa-solid fa-comments text-4xl mb-3 text-emerald-500/50"></i>
+                                        <p class="text-sm font-semibold" x-text="lang === 'ms' ? 'Sila pilih kotak chat.' : 'Please select a chat.'"></p>
+                                    </div>
+                                </template>
+
+                                <template x-if="activeChat">
+                                    <div class="flex flex-col h-full flex-grow">
+                                        <div class="p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-xs">
+                                            <h4 class="font-bold text-sm text-gray-900 dark:text-white" x-text="activeChat.phone"></h4>
+                                            <button @click="toggleChatMode(activeChat.id)" class="px-3 py-1.5 rounded-lg text-xs font-bold text-white transition shadow" :class="activeChat.mode === 'ai' ? 'bg-amber-600' : 'bg-emerald-600'">
+                                                <span x-text="activeChat.mode === 'ai' ? 'Tukar ke Human' : 'Tukar ke AI'"></span>
+                                            </button>
+                                        </div>
+
+                                        <div class="p-4 overflow-y-auto space-y-3 flex-grow max-h-[380px]">
+                                            <template x-for="msg in activeChat.messages">
+                                                <div class="flex" :class="msg.sender === 'customer' ? 'justify-start' : 'justify-end'">
+                                                    <div class="max-w-[80%] rounded-2xl px-4 py-2 text-xs shadow-sm" :class="msg.sender === 'customer' ? 'bg-white dark:bg-gray-700 text-gray-800 border' : 'bg-emerald-600 text-white'">
+                                                        <p x-text="msg.text"></p>
+                                                        <span class="text-[9px] block text-right mt-1 opacity-70" x-text="msg.time"></span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+
+                                        <div class="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                                            <form @submit.prevent="sendReplyMessage()" class="flex items-center space-x-2">
+                                                <input type="text" x-model="replyText" placeholder="Taip mesej balas..." class="flex-grow px-4 py-2 border rounded-xl text-xs dark:bg-gray-700 dark:border-gray-600">
+                                                <button type="submit" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg">Hantar</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="clientTab === 'billing'" class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-bold mb-4">Maklumat Pelan Langganan Semasa</h3>
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
+                            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full uppercase">Pakej Standard</span>
+                            <h4 class="text-xl font-bold mt-2">LEEA WhatsApp Automation Standard</h4>
+                            <p class="text-xs text-gray-500 mt-1">RM130 per bulan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="clientTab === 'profile'" class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-bold mb-1">Kemaskini Profil & Tetapan Akaun</h3>
+                        <form @submit.prevent="updateClientProfile()" class="space-y-4 max-w-xl">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1">Nama Syarikat / Username</label>
+                                <input type="text" x-model="clientProfileForm.username" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+                            </div>
+                            <div>
+                                <button type="submit" class="px-6 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-lg shadow">Simpan Perubahan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="isLoggedIn && currentUser.role === 'admin'">
+            <div class="space-y-6">
+                <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold">Dashboard Pentadbir (Admin)</h1>
+                        <p class="text-slate-300 text-sm mt-1">Urus akaun klien beserta Client ID unik.</p>
+                    </div>
+                    <div class="bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md text-right">
+                        <span class="block text-xs text-slate-300">Jumlah Klien</span>
+                        <span class="font-bold text-lg" x-text="clients.length"></span>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                        <h3 class="font-bold text-lg">Senarai Akaun Klien & ID</h3>
+                        <button @click="openClientModal('add')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow transition">
+                            <i class="fa-solid fa-user-plus mr-1"></i> Tambah Klien Baru
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-700/50 text-xs uppercase text-gray-500 font-semibold border-b dark:border-gray-700">
+                                    <th class="p-4">Client ID</th>
+                                    <th class="p-4">Nama Syarikat / Username</th>
+                                    <th class="p-4">Kata Laluan</th>
+                                    <th class="p-4">No. Telefon & E-mel</th>
+                                    <th class="p-4">Domain Railway Bot</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4 text-center">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                                <template x-for="(client, index) in clients" :key="index">
+                                    <tr>
+                                        <td class="p-4 font-mono font-bold text-emerald-600 dark:text-emerald-400" x-text="client.clientId"></td>
+                                        <td class="p-4 font-bold" x-text="client.username"></td>
+                                        <td class="p-4"><code class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono" x-text="client.password || '-'"></code></td>
+                                        <td class="p-4 text-xs">
+                                            <div x-text="client.phone || '-'"></div>
+                                            <div class="text-gray-400" x-text="client.email || '-'"></div>
+                                        </td>
+                                        <td class="p-4 text-xs"><a :href="client.railwayUrl" target="_blank" class="text-blue-500 hover:underline truncate max-w-[150px] block" x-text="client.railwayUrl"></a></td>
+                                        <td class="p-4"><span class="px-2.5 py-1 text-xs font-bold rounded-full" :class="client.status.includes('Paid') ? 'bg-emerald-100 text-emerald-800' : 'bg-yellow-100 text-yellow-800'" x-text="client.status"></span></td>
+                                        <td class="p-4 text-center space-x-1">
+                                            <button @click="openClientModal('edit', index)" class="px-2.5 py-1 bg-blue-600 text-white text-xs rounded shadow">Edit</button>
+                                            <button @click="approveRenewal(index)" class="px-2.5 py-1 bg-emerald-600 text-white text-xs rounded shadow">Renew</button>
+                                            <button @click="deleteClient(index)" class="px-2.5 py-1 bg-red-600 text-white text-xs rounded shadow">Padam</button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <div x-show="showClientModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" style="display: none;">
+            <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+                <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
+                    <h3 class="font-bold text-base" x-text="modalMode === 'edit' ? 'Kemaskini Maklumat Klien' : 'Tambah Klien Baru'"></h3>
+                    <button @click="showClientModal = false" class="text-gray-400 hover:text-red-500 text-lg p-2"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveClient()" class="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1">Nama Syarikat / Username</label>
+                        <input type="text" x-model="clientForm.username" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1">Kata Laluan Klien</label>
+                        <input type="text" x-model="clientForm.password" required class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1">Nombor Telefon</label>
+                        <input type="text" x-model="clientForm.phone" placeholder="+60123456789" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1">Domain Railway Bot URL</label>
+                        <input type="text" x-model="clientForm.railwayUrl" placeholder="https://..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div class="flex justify-end space-x-2 pt-4 border-t">
+                        <button type="button" @click="showClientModal = false" class="px-4 py-2 bg-gray-200 text-xs font-bold rounded-lg">Batal</button>
+                        <button type="submit" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg shadow">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-auto py-6 border-t border-gray-200 dark:border-gray-800 text-center text-xs text-gray-500">
+        &copy; 2026 LEEA SYSTEM. All Rights Reserved.
+    </footer>
+
+    <script>
+        function appData() {
+            return {
+                lang: 'ms',
+                darkMode: false,
+                isLoggedIn: false,
+                clientTab: 'dashboard',
+                loginForm: { username: '', password: '' },
+                loginError: '',
+                currentUser: null,
+                clients: [],
+                activeChat: null,
+                replyText: '',
+                showClientModal: false,
+                modalMode: 'add',
+                editIndex: null,
+                clientForm: { username: '', password: '', phone: '', email: '', railwayUrl: '' },
+                clientProfileForm: { username: '', phone: '', email: '' },
+                liveChats: [],
+
+                init() {
+                    this.fetchClientsFromBot();
+                    
+                    const hash = window.location.hash.replace('#', '');
+                    const savedUser = localStorage.getItem('leea_current_user');
+
+                    if (hash) {
+                        setTimeout(() => {
+                            const foundClient = this.clients.find(c => c.clientId === hash);
+                            if (foundClient) {
+                                this.currentUser = { username: foundClient.username, clientId: foundClient.clientId, role: 'client', status: foundClient.status, expiryDate: foundClient.expiryDate };
+                                this.isLoggedIn = true;
+                                this.loadClientProfileData();
+                                this.fetchLiveChats();
+                            }
+                        }, 200);
+                    } else if (savedUser) {
+                        this.currentUser = JSON.parse(savedUser);
+                        this.isLoggedIn = true;
+                        if (this.currentUser.role === 'client') {
+                            this.loadClientProfileData();
+                            this.fetchLiveChats();
+                        }
+                    }
+
+                    setInterval(() => {
+                        if (this.isLoggedIn && this.currentUser && this.currentUser.role === 'client') {
+                            this.fetchLiveChats();
+                        }
+                    }, 5000);
+                },
+
+                fetchClientsFromBot() {
+                    const savedClients = localStorage.getItem('leea_admin_clients');
+                    if (savedClients) {
+                        this.clients = JSON.parse(savedClients);
+                    } else {
+                        this.clients = [
+                            { clientId: 'CLI-1001', username: 'sbltransport', password: 'securepass456', phone: '+60132434200', email: 'admin@sbltransport.com', railwayUrl: 'https://sbleisure-bot.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' },
+                            { clientId: 'CLI-1002', username: 'architechlaboratory', password: 'H@$$ayang8683', phone: '+601123687357', email: 'radzmil@gmail.com', railwayUrl: 'https://leeasystem-production.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' }
+                        ];
+                        localStorage.setItem('leea_admin_clients', JSON.stringify(this.clients));
+                    }
+                },
+
+                saveClientsToStorage() {
+                    localStorage.setItem('leea_admin_clients', JSON.stringify(this.clients));
+                },
+
+                getCurrentRailwayUrl() {
+                    const defaultUrl = 'https://leeasystem-production.up.railway.app';
+                    if (!this.currentUser) return defaultUrl;
+                    const client = this.clients.find(c => c.username === this.currentUser.username);
+                    return client && client.railwayUrl ? client.railwayUrl : defaultUrl;
+                },
+
+                async fetchLiveChats() {
+                    const baseUrl = this.getCurrentRailwayUrl();
+                    if (!baseUrl) return;
+                    const username = this.currentUser ? this.currentUser.username : 'architechlaboratory';
+
+                    try {
+                        const response = await fetch(`${baseUrl}/api/${username}/chats`);
+                        const data = await response.json();
+                        if (data.success) {
+                            const currentActiveId = this.activeChat ? this.activeChat.id : null;
+                            this.liveChats = data.chats;
+                            if (currentActiveId) {
+                                this.activeChat = this.liveChats.find(c => c.id === currentActiveId) || this.activeChat;
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Gagal menarik data live chats:", error);
+                    }
+                },
+
+                async sendReplyMessage() {
+                    if (!this.replyText.trim() || !this.activeChat) return;
+                    const baseUrl = this.getCurrentRailwayUrl();
+                    const username = this.currentUser ? this.currentUser.username : 'architechlaboratory';
+
+                    try {
+                        const response = await fetch(`${baseUrl}/api/${username}/chats/reply`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ chat_id: this.activeChat.id, phone: this.activeChat.phone, text: this.replyText })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            this.replyText = '';
+                            this.fetchLiveChats();
+                        }
+                    } catch (error) {
+                        console.error("Ralat menghantar mesej:", error);
+                    }
+                },
+
+                async toggleChatMode(chatId) {
+                    const baseUrl = this.getCurrentRailwayUrl();
+                    const username = this.currentUser ? this.currentUser.username : 'architechlaboratory';
+                    try {
+                        await fetch(`${baseUrl}/api/${username}/chats/toggle-mode`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ chat_id: chatId })
+                        });
+                        this.fetchLiveChats();
+                    } catch (error) {
+                        console.error("Ralat tukar mod:", error);
+                    }
+                },
+
+                loadClientProfileData() {
+                    const c = this.clients.find(x => x.username === this.currentUser.username);
+                    if (c) {
+                        this.clientProfileForm = { username: c.username, phone: c.phone || '', email: c.email || '' };
+                    }
+                },
+
+                updateClientProfile() {
+                    alert('Profil berjaya dikemaskini!');
+                },
+
+                selectActiveChat(chat) {
+                    this.activeChat = chat;
+                },
+
+                openClientModal(mode, index = null) {
+                    this.modalMode = mode;
+                    if (mode === 'edit' && index !== null) {
+                        this.editIndex = index;
+                        const c = this.clients[index];
+                        this.clientForm = { username: c.username, password: c.password, phone: c.phone, email: c.email, railwayUrl: c.railwayUrl };
+                    } else {
+                        this.editIndex = null;
+                        this.clientForm = { username: '', password: '', phone: '', email: '', railwayUrl: '' };
+                    }
+                    this.showClientModal = true;
+                },
+
+                saveClient() {
+                    if (this.modalMode === 'edit' && this.editIndex !== null) {
+                        this.clients[this.editIndex].username = this.clientForm.username;
+                        this.clients[this.editIndex].password = this.clientForm.password;
+                        this.clients[this.editIndex].phone = this.clientForm.phone;
+                        this.clients[this.editIndex].email = this.clientForm.email;
+                        this.clients[this.editIndex].railwayUrl = this.clientForm.railwayUrl;
+                        alert('Maklumat klien berjaya dikemaskini!');
+                    } else {
+                        const nextIdNum = 1000 + this.clients.length + 1;
+                        const newClientId = `CLI-${nextIdNum}`;
+
+                        this.clients.push({
+                            clientId: newClientId,
+                            username: this.clientForm.username,
+                            password: this.clientForm.password,
+                            phone: this.clientForm.phone,
+                            email: this.clientForm.email,
+                            railwayUrl: this.clientForm.railwayUrl,
+                            status: 'Paid 🟢',
+                            expiryDate: '27/09/2026'
+                        });
+                        alert(`Klien berjaya didaftarkan dengan ID: ${newClientId}`);
+                    }
+                    
+                    this.saveClientsToStorage();
+                    this.showClientModal = false;
+                },
+
+                toggleLang() {
+                    this.lang = this.lang === 'ms' ? 'en' : 'ms';
+                },
+
+                login() {
+                    this.loginError = '';
+                    if (this.loginForm.username === 'admin' && this.loginForm.password === 'adminpassword123') {
+                        this.currentUser = { username: 'admin', role: 'admin' };
+                        this.isLoggedIn = true;
+                        localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
+                    } else {
+                        const found = this.clients.find(c => c.username === this.loginForm.username && c.password === this.loginForm.password);
+                        if (found) {
+                            this.currentUser = { username: found.username, clientId: found.clientId, role: 'client', status: found.status, expiryDate: found.expiryDate };
+                            this.isLoggedIn = true;
+                            localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
+                            
+                            window.location.hash = found.clientId;
+
+                            this.loadClientProfileData();
+                            this.fetchLiveChats();
+                        } else {
+                            this.loginError = 'Nama pengguna atau kata laluan salah!';
+                        }
+                    }
+                },
+
+                logout() {
+                    this.isLoggedIn = false;
+                    this.currentUser = null;
+                    this.liveChats = [];
+                    this.activeChat = null;
+                    localStorage.removeItem('leea_current_user');
+                    window.location.hash = '';
+                },
+
+                getTotalChatCount() {
+                    let total = 0;
+                    this.liveChats.forEach(c => { if(c.messages) total += c.messages.length; });
+                    return total;
+                },
+
+                getAiHandledPercentage() {
+                    if (this.liveChats.length === 0) return '0%';
+                    let ai = this.liveChats.filter(c => c.mode === 'ai').length;
+                    return Math.round((ai / this.liveChats.length) * 100) + '%';
+                },
+
+                getRemainingFreeQuota() {
+                    let total = this.getTotalChatCount();
+                    let rem = 1000 - (total > 1000 ? total % 1000 : total);
+                    return rem >= 0 ? rem : 0;
+                },
+
+                calculateMetaCost() {
+                    let paid = this.getTotalChatCount() - 1000;
+                    return paid > 0 ? 'RM ' + (paid * 0.07).toFixed(2) : 'RM 0.00';
+                },
+
+                approveRenewal(index) {
+                    this.clients[index].status = 'Paid 🟢';
+                    this.saveClientsToStorage();
+                    alert('Langganan diluluskan!');
+                },
+
+                deleteClient(index) {
+                    if(confirm('Padam akaun ini?')) {
+                        this.clients.splice(index, 1);
+                        this.saveClientsToStorage();
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
