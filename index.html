@@ -531,7 +531,6 @@
                     this.startCountdown();
                     this.updateTimestamp();
 
-                    // Bersihkan semua tanda # yang berulang di URL
                     const rawHash = window.location.hash || '';
                     const cleanHash = rawHash.replace(/^#+/, '').trim();
                     const savedUser = localStorage.getItem('leea_current_user');
@@ -547,7 +546,6 @@
                         this.currentUser = JSON.parse(savedUser);
                         this.isLoggedIn = true;
                     } else {
-                        // Lalai automatik ke sbltransport (CLI-1001)
                         const defaultClient = this.clients[0];
                         if (defaultClient) {
                             this.currentUser = { username: defaultClient.username, clientId: defaultClient.clientId, role: 'client', status: defaultClient.status, expiryDate: defaultClient.expiryDate };
@@ -613,7 +611,7 @@
                 },
 
                 async backupClientToGoogleDrive(clientData) {
-                    const backupUrl = "https://script.google.com/macros/s/AKfycyQ-R-XQ-N-b2SokBH-dB1l1LNDmwHivZv9-8q5H4lVptbiD8JSpqb9ySi_EesA55Ts/exec";
+                    const backupUrl = "https://script.google.com/macros/s/AKfycbz8l_G5GTlh4XILRKXyEWgtk7UTYofa7QcEJceAVaMQYa56C6SDsV9cPCjVfd7GDOU/exec";
                     try {
                         await fetch(backupUrl, {
                             method: 'POST',
@@ -635,7 +633,7 @@
                 },
 
                 async backupChatToGoogleDrive(chatPhone, senderText, senderType) {
-                    const backupChatUrl = "https://script.google.com/macros/s/AKfycyQ-R-XQ-N-b2SokBH-dB1l1LNDmwHivZv9-8q5H4lVptbiD8JSpqb9ySi_EesA55Ts/exec";
+                    const backupChatUrl = "https://script.google.com/macros/s/AKfycbz8l_G5GTlh4XILRKXyEWgtk7UTYofa7QcEJceAVaMQYa56C6SDsV9cPCjVfd7GDOU/exec";
                     const currentClient = this.currentUser ? this.currentUser.username : 'default';
 
                     try {
@@ -666,7 +664,7 @@
                 },
 
                 async fetchLiveChats() {
-                    const sheetsUrl = "https://script.google.com/macros/s/AKfycyQ-R-XQ-N-b2SokBH-dB1l1LNDmwHivZv9-8q5H4lVptbiD8JSpqb9ySi_EesA55Ts/exec?t=" + new Date().getTime();
+                    const sheetsUrl = "https://script.google.com/macros/s/AKfycbz8l_G5GTlh4XILRKXyEWgtk7UTYofa7QcEJceAVaMQYa56C6SDsV9cPCjVfd7GDOU/exec?t=" + new Date().getTime();
                     
                     try {
                         const response = await fetch(sheetsUrl);
