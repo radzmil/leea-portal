@@ -701,31 +701,9 @@
                             if (this.liveChats.length > 0 && !this.activeChat) {
                                 this.activeChat = this.liveChats[0];
                             }
-                        } else {
-                            this.loadFilteredFallbackChats();
                         }
                     } catch (error) {
                         console.error("Gagal menarik data dari Google Sheets:", error);
-                        this.loadFilteredFallbackChats();
-                    }
-                },
-
-                loadFilteredFallbackChats() {
-                    this.liveChats = [
-                        {
-                            id: 'chat-sbl-1',
-                            phone: '601123687357',
-                            lastMessage: 'Hai bos! Boleh saya bantu?',
-                            time: '2026-09-08 04:19',
-                            mode: 'ai',
-                            messages: [
-                                { sender: 'customer', text: 'hi', time: '04:19' },
-                                { sender: 'bot', text: 'Hai bos! Saya Zulfa dari SB Leisure Transport.', time: '04:19' }
-                            ]
-                        }
-                    ];
-                    if (this.liveChats.length > 0 && !this.activeChat) {
-                        this.activeChat = this.liveChats[0];
                     }
                 },
 
