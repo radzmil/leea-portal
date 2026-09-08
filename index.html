@@ -531,11 +531,13 @@
                     this.startCountdown();
                     this.updateTimestamp();
 
-                    const hash = window.location.hash.replace('#', '');
+                    // Bersihkan semua tanda # yang berulang di URL
+                    const rawHash = window.location.hash || '';
+                    const cleanHash = rawHash.replace(/^#+/, '').trim();
                     const savedUser = localStorage.getItem('leea_current_user');
 
-                    if (hash) {
-                        const foundClient = this.clients.find(c => c.clientId === hash);
+                    if (cleanHash) {
+                        const foundClient = this.clients.find(c => c.clientId === cleanHash || c.username === cleanHash);
                         if (foundClient) {
                             this.currentUser = { username: foundClient.username, clientId: foundClient.clientId, role: 'client', status: foundClient.status, expiryDate: foundClient.expiryDate };
                             this.isLoggedIn = true;
@@ -545,7 +547,7 @@
                         this.currentUser = JSON.parse(savedUser);
                         this.isLoggedIn = true;
                     } else {
-                        // Lalai automatik ke sbltransport jika portal dibuka terus tanpa hash
+                        // Lalai automatik ke sbltransport (CLI-1001)
                         const defaultClient = this.clients[0];
                         if (defaultClient) {
                             this.currentUser = { username: defaultClient.username, clientId: defaultClient.clientId, role: 'client', status: defaultClient.status, expiryDate: defaultClient.expiryDate };
