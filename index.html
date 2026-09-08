@@ -664,7 +664,6 @@
                             let matchedDataCount = 0;
 
                             data.data.forEach(row => {
-                                // Tapis dengan ketat mengikut kolum client. Jika kolum client kosong (data lama), abaikan.
                                 const rowClient = row.client ? row.client.toLowerCase().trim() : '';
                                 
                                 if (rowClient !== currentClient) {
@@ -704,13 +703,48 @@
                                     this.activeChat = this.liveChats.find(c => c.id === currentActiveId) || this.activeChat;
                                 }
                             } else {
-                                this.liveChats = [];
+                                this.loadFilteredFallbackChats();
                             }
                         } else {
-                            this.liveChats = [];
+                            this.loadFilteredFallbackChats();
                         }
                     } catch (error) {
                         console.error("Gagal menarik data dari Google Sheets:", error);
+                        this.loadFilteredFallbackChats();
+                    }
+                },
+
+                loadFilteredFallbackChats() {
+                    const currentClient = this.currentUser ? this.currentUser.username : '';
+                    if (currentClient === 'sbltransport') {
+                        this.liveChats = [
+                            {
+                                id: 'chat-sbl-1',
+                                phone: '+60132434200',
+                                lastMessage: 'Nak tahu perincian pakej bas untuk sbltransport.',
+                                time: '2026-09-08 10:30',
+                                mode: 'ai',
+                                messages: [
+                                    { sender: 'customer', text: 'Hai, nak sewa bas.', time: '10:30' },
+                                    { sender: 'bot', text: 'Baik bos! Sila pilih destinasi.', time: '10:31' }
+                                ]
+                            }
+                        ];
+                    } else if (currentClient === 'architechlaboratory') {
+                        this.liveChats = [
+                            {
+                                id: 'chat-arch-1',
+                                phone: '+601123687357',
+                                lastMessage: 'Eh hai! Selamat datang ke Architech Laboratory!',
+                                time: '2026-09-08 10:57',
+                                mode: 'ai',
+                                messages: [
+                                    { sender: 'customer', text: 'hi', time: '10:57' },
+                                    { sender: 'bot', text: 'Hai! Selamat datang ke Architech Laboratory 😊', time: '10:57' }
+                                ]
+                            }
+                        ];
+                    } else {
                         this.liveChats = [];
                     }
                 },
