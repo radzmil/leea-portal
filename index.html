@@ -484,6 +484,14 @@
                     const cleanHash = rawHash.replace(/^#+/, '').trim();
                     const savedUser = localStorage.getItem('leea_current_user');
 
+                    // Sinkronisasi auto-logout jika akaun telah dipadam dari admin panel
+                    if (this.currentUser) {
+                        const exists = this.clients.some(c => c.username === this.currentUser.username);
+                        if (!exists) {
+                            this.logout();
+                        }
+                    }
+
                     if (cleanHash) {
                         const foundClient = this.clients.find(c => c.clientId === cleanHash || c.username === cleanHash);
                         if (foundClient) {
@@ -492,8 +500,14 @@
                             localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
                         }
                     } else if (savedUser) {
-                        this.currentUser = JSON.parse(savedUser);
-                        this.isLoggedIn = true;
+                        const parsedUser = JSON.parse(savedUser);
+                        const foundClient = this.clients.find(c => c.username === parsedUser.username);
+                        if (foundClient) {
+                            this.currentUser = parsedUser;
+                            this.isLoggedIn = true;
+                        } else {
+                            localStorage.removeItem('leea_current_user');
+                        }
                     } else {
                         const defaultClient = this.clients[0];
                         if (defaultClient) {
@@ -511,7 +525,15 @@
                     }
 
                     setInterval(() => {
-                        if (this.isLoggedIn && this.currentUser && this.currentUser.role === 'client') {
+                        this.fetchClientsFromBot();
+                        // Semak berkala jika akaun semasa dipadam oleh admin
+                        if (this.isLoggedIn && this.currentUser) {
+                            const stillExists = this.clients.some(c => c.username === this.currentUser.username);
+                            if (!stillExists) {
+                                alert('Akaun anda telah dipadam oleh Master Admin.');
+                                this.logout();
+                                return;
+                            }
                             this.fetchLiveChats();
                         }
                         this.updateTimestamp();
@@ -557,7 +579,7 @@
                     } else {
                         this.clients = [
                             { clientId: 'CLI-1001', username: 'sbltransport', password: 'securepass456', phone: '+60132434200', email: 'architechlabs.io@gmail.com', railwayUrl: 'https://web-production-07b92.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' },
-                            { clientId: 'CLI-1002', username: 'architechlaboratory', password: 'H@$$ayang8683', phone: '+601123687357', email: 'radzmil@gmail.com', railwayUrl: 'https://leeasystem-production.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' }
+                            { clientId: 'CLI-1002', username: 'architech', password: 'H@$$ayang8683', phone: '+601123687357', email: 'radzmil@gmail.com', railwayUrl: 'https://leeasystem-production.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' }
                         ];
                         localStorage.setItem('leea_admin_clients', JSON.stringify(this.clients));
                     }
@@ -569,7 +591,6 @@
                 },
 
                 async backupChatToGoogleDrive(chatPhone, senderText, senderType) {
-                    // URL Apps Script baharu DB_sbleisure
                     const backupChatUrl = "https://script.google.com/macros/s/AKfycbyvSzjcJblEzJNGMSqxVCwwoCMJts32fVB6Q6MnFV-Cqm8mgZIqIMxV5weJSPDwB1pf3g/exec";
                     const currentClient = this.currentUser ? this.currentUser.username : 'default';
 
@@ -602,7 +623,6 @@
 
                 async fetchLiveChats() {
                     const currentUsername = this.currentUser ? this.currentUser.username : 'sbltransport';
-                    // URL Apps Script baharu DB_sbleisure
                     const sheetsUrl = "https://script.google.com/macros/s/AKfycbyvSzjcJblEzJNGMSqxVCwwoCMJts32fVB6Q6MnFV-Cqm8mgZIqIMxV5weJSPDwB1pf3g/exec?t=" + new Date().getTime();
                     
                     try {
