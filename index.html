@@ -866,7 +866,7 @@
                         this.clients[this.editIndex].password = this.clientForm.password;
                         this.clients[this.editIndex].phone = this.clientForm.phone;
                         this.clients[this.editIndex].email = this.clientForm.email;
-                        this.clients[this.editIndex].railwayUrl = this.clientForm.railwayUrl;
+                        this.clients[this.editIndex].railwayUrl = this.clientForm.railvalueUrl;
                         
                         clientDataToSave = this.clients[this.editIndex];
                         alert('Maklumat klien berjaya dikemaskini!');
@@ -885,7 +885,7 @@
                             expiryDate: '27/09/2026'
                         };
 
-                        this.clients.push(newClient);
+                    this.clients.push(newClient);
                         clientDataToSave = newClient;
                         alert(`Klien berjaya didaftarkan dengan ID: ${newClientId}`);
                     }
