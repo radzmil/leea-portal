@@ -664,6 +664,7 @@
                 },
 
                 async fetchLiveChats() {
+                    const currentUsername = this.currentUser ? this.currentUser.username : 'sbltransport';
                     const sheetsUrl = "https://script.google.com/macros/s/AKfycbz_8nxxhe_UEO-Pgy54s29Ar7ZIqWCYM_K8pngDiJjWx_C5lcrPb3LmgUAyfJebrEBl/exec?t=" + new Date().getTime();
                     
                     try {
@@ -671,10 +672,15 @@
                         const data = await response.json();
                         
                         if (data && data.status === "success" && Array.isArray(data.data) && data.data.length > 0) {
+                            const filteredRows = data.data.filter(row => {
+                                const rowClient = row.client ? String(row.client).toLowerCase().trim() : 'sbltransport';
+                                return rowClient === currentUsername.toLowerCase().trim();
+                            });
+
                             const chatMap = {};
                             let lastKnownPhone = "601123687357";
 
-                            data.data.forEach(row => {
+                            filteredRows.forEach(row => {
                                 let rawPhone = row.phone ? String(row.phone).trim() : "";
                                 if (!rawPhone || rawPhone === "Unknown") {
                                     rawPhone = lastKnownPhone;
@@ -723,9 +729,17 @@
                                     const matched = this.liveChats.find(c => c.phone === activePhone);
                                     if (matched) {
                                         this.activeChat = matched;
+                                    } else {
+                                        this.activeChat = this.liveChats[0];
                                     }
                                 }
+                            } else {
+                                this.activeChat = null;
+                                this.liveChats = [];
                             }
+                        } else {
+                            this.liveChats = [];
+                            this.activeChat = null;
                         }
                     } catch (error) {
                         console.error("Gagal menarik data dari Google Sheets:", error);
