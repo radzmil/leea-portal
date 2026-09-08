@@ -332,16 +332,28 @@
                     <div class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-4">
                         <div class="flex justify-between items-center border-b border-gray-800 pb-4">
                             <div>
-                                <h3 class="text-base font-bold font-mono text-blue-300">Tetapan Prompt Brain Bot (AI Persona)</h3>
-                                <p class="text-xs font-mono text-gray-400 mt-0.5">Konfigurasi parameter neural dan arahan teras bot WhatsApp.</p>
+                                <h3 class="text-base font-bold font-mono text-blue-300">Tetapan Prompt Brain Bot (AI Persona & Info Asas)</h3>
+                                <p class="text-xs font-mono text-gray-400 mt-0.5">Laraskan gaya bahasa, nada suara bot, maklumat harga asas, dan info perniagaan anda.</p>
                             </div>
                             <span class="text-xs font-mono bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1 rounded-full font-bold">Max 2,000 Aksara</span>
+                        </div>
+
+                        <!-- Kotak Amaran & Panduan Khas untuk Klien -->
+                        <div class="p-4 bg-blue-950/40 border border-blue-500/30 rounded-xl text-xs font-mono text-blue-200 space-y-1">
+                            <div class="font-bold text-blue-400 flex items-center space-x-2">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>PANDUAN PENGGUNAAN RUANG INI:</span>
+                            </div>
+                            <p class="text-gray-300 leading-relaxed">
+                                • <strong>Boleh buat:</strong> Tetapkan cara bot menyapa pelanggan, ubah nada (mesra/formal), masukkan senarai harga produk, waktu operasi, atau info asas servis.<br>
+                                • <strong>TIDAK BOLEH:</strong> Ruang ini <u>bukan</u> untuk menulis kod pengaturcaraan, tambah modul sistem baru, atau menyambung sistem pembayaran (payment gateway).
+                            </p>
                         </div>
 
                         <form @submit.prevent="updateBrainBotPrompt()" class="space-y-4">
                             <div>
                                 <label class="block text-xs font-mono uppercase text-blue-400 mb-1">Arahan Sistem / Prompt Bot</label>
-                                <textarea x-model="brainPrompt" maxlength="2000" rows="8" placeholder="Masukkan arahan persona bot..." class="w-full p-4 bg-gray-950 border border-gray-800 rounded-xl text-xs font-mono text-blue-100 focus:border-blue-500 focus:outline-none"></textarea>
+                                <textarea x-model="brainPrompt" maxlength="2000" rows="8" placeholder="Contoh: Awak adalah pembantu khidmat pelanggan. Jawab dengan mesra. Harga produk adalah..." class="w-full p-4 bg-gray-950 border border-gray-800 rounded-xl text-xs font-mono text-blue-100 focus:border-blue-500 focus:outline-none"></textarea>
                                 <div class="flex justify-between text-xs font-mono text-gray-500 mt-1">
                                     <span>Neural buffer limit</span>
                                     <span x-text="brainPrompt.length + ' / 2000 aksara'"></span>
