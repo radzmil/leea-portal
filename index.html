@@ -489,7 +489,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1">Domain Railway Bot URL</label>
-                        <input type="text" x-model="clientForm.railwayUrl" placeholder="https://..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+                        <input type="text" x-model="clientForm.railwayUrl" placeholder="https://..." class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" required>
                     </div>
                     <div class="flex justify-end space-x-2 pt-4 border-t">
                         <button type="button" @click="showClientModal = false" class="px-4 py-2 bg-gray-200 text-xs font-bold rounded-lg">Batal</button>
@@ -583,7 +583,7 @@
                         this.clients = JSON.parse(savedClients);
                     } else {
                         this.clients = [
-                            { clientId: 'CLI-1001', username: 'sbltransport', password: 'securepass456', phone: '+60132434200', email: 'architechlabs.io@gmail.com', railwayUrl: 'https://sbleisure-bot.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' },
+                            { clientId: 'CLI-1001', username: 'sbltransport', password: 'securepass456', phone: '+60132434200', email: 'architechlabs.io@gmail.com', railwayUrl: 'https://web-production-00fc.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' },
                             { clientId: 'CLI-1002', username: 'architechlaboratory', password: 'H@$$ayang8683', phone: '+601123687357', email: 'radzmil@gmail.com', railwayUrl: 'https://leeasystem-production.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' }
                         ];
                         localStorage.setItem('leea_admin_clients', JSON.stringify(this.clients));
@@ -617,10 +617,13 @@
                 },
 
                 getCurrentRailwayUrl() {
-                    const defaultUrl = 'https://leeasystem-production.up.railway.app';
-                    if (!this.currentUser) return defaultUrl;
+                    if (!this.currentUser) return null;
                     const client = this.clients.find(c => c.username === this.currentUser.username);
-                    return client && client.railwayUrl ? client.railwayUrl : defaultUrl;
+                    if (client && client.railwayUrl && client.railwayUrl.trim() !== '') {
+                        return client.railwayUrl;
+                    }
+                    console.error("Ralat Keselamatan: Railway URL untuk klien ini tidak wujud atau kosong!");
+                    return null;
                 },
 
                 async fetchLiveChats() {
@@ -708,18 +711,27 @@
                         return;
                     }
                     const baseUrl = this.getCurrentRailwayUrl();
+                    if (!baseUrl) {
+                        alert('Ralat Keselamatan: Domain Railway Bot untuk akaun anda tidak ditetapkan atau kosong. Sila hubungi Admin.');
+                        return;
+                    }
                     const username = this.currentUser ? this.currentUser.username : '';
 
                     try {
-                        await fetch(`${baseUrl}/api/${username}/prompt`, {
+                        const response = await fetch(`${baseUrl}/api/${username}/prompt`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ prompt: this.brainPrompt })
                         });
-                        alert('Prompt Brain Bot berjaya dikemaskini dan dihantar ke server bot!');
+                        const data = await response.json();
+                        if(data.success) {
+                            alert(`Prompt Brain Bot untuk akaun [${username}] berjaya dikemaskini ke server ${baseUrl}!`);
+                        } else {
+                            alert('Gagal mengemaskini prompt pada server.');
+                        }
                     } catch (error) {
                         console.error('Ralat mengemaskini prompt:', error);
-                        alert('Tetapan prompt disimpan secara local, bot akan dikemaskini.');
+                        alert(`Tetapan prompt untuk ${username} disimpan.`);
                     }
                 },
 
@@ -792,6 +804,11 @@
                 },
 
                 async saveClient() {
+                    if (!this.clientForm.railwayUrl || this.clientForm.railwayUrl.trim() === '') {
+                        alert('Ralat: Domain Railway Bot URL wajib diisi untuk keselamatan akaun!');
+                        return;
+                    }
+
                     let clientDataToSave = {};
 
                     if (this.modalMode === 'edit' && this.editIndex !== null) {
