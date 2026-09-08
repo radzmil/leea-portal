@@ -569,7 +569,8 @@
                 },
 
                 async backupChatToGoogleDrive(chatPhone, senderText, senderType) {
-                    const backupChatUrl = "https://script.google.com/macros/s/AKfycbz_8nxxhe_UEO-Pgy54s29Ar7ZIqWCYM_K8pngDiJjWx_C5lcrPb3LmgUAyfJebrEBl/exec";
+                    // URL Apps Script baharu DB_sbleisure
+                    const backupChatUrl = "https://script.google.com/macros/s/AKfycbyvSzjcJblEzJNGMSqxVCwwoCMJts32fVB6Q6MnFV-Cqm8mgZIqIMxV5weJSPDwB1pf3g/exec";
                     const currentClient = this.currentUser ? this.currentUser.username : 'default';
 
                     try {
@@ -601,7 +602,8 @@
 
                 async fetchLiveChats() {
                     const currentUsername = this.currentUser ? this.currentUser.username : 'sbltransport';
-                    const sheetsUrl = "https://script.google.com/macros/s/AKfycbz_8nxxhe_UEO-Pgy54s29Ar7ZIqWCYM_K8pngDiJjWx_C5lcrPb3LmgUAyfJebrEBl/exec?t=" + new Date().getTime();
+                    // URL Apps Script baharu DB_sbleisure
+                    const sheetsUrl = "https://script.google.com/macros/s/AKfycbyvSzjcJblEzJNGMSqxVCwwoCMJts32fVB6Q6MnFV-Cqm8mgZIqIMxV5weJSPDwB1pf3g/exec?t=" + new Date().getTime();
                     
                     try {
                         const response = await fetch(sheetsUrl);
