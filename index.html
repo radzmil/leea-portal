@@ -76,7 +76,6 @@
 
         <template x-if="!isLoggedIn">
             <div class="max-w-xl mx-auto space-y-6 w-full">
-                <!-- Tema Hari Malaysia dengan Rekaan Latar Belakang & Countdown Menuju 16 September 2026 -->
                 <div class="malaysia-theme-bg rounded-3xl p-6 md:p-8 text-white shadow-2xl relative border border-amber-500/30 backdrop-blur-md">
                     <div class="absolute top-4 right-6 opacity-15 text-8xl font-black pointer-events-none">🇲🇾</div>
                     
@@ -96,7 +95,6 @@
                         <p class="text-xs md:text-sm text-yellow-100 font-semibold tracking-wide">Malaysia Madani Jiwa Merdeka</p>
                     </div>
 
-                    <!-- Kotak Countdown (Hari, Jam, Minit, Saat) hingga 16 September 2026 -->
                     <div class="grid grid-cols-4 gap-2 text-center bg-black/40 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 mb-6 shadow-inner relative z-10">
                         <div>
                             <div class="text-xl md:text-2xl font-black text-yellow-300" x-text="countdown.days">00</div>
@@ -116,7 +114,6 @@
                         </div>
                     </div>
 
-                    <!-- Kotak Borang Log Masuk -->
                     <div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 p-6 md:p-8 relative z-10">
                         <div class="text-center mb-6">
                             <h3 class="text-xl font-black uppercase tracking-wider">SISTEM LEEA</h3>
@@ -209,7 +206,6 @@
                         </div>
                     </div>
 
-                    <!-- Bahagian Analisis Eksklusif & Status Sistem -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 md:col-span-2 space-y-4">
                             <div class="flex justify-between items-center">
@@ -513,7 +509,7 @@
                 lang: 'ms',
                 darkMode: false,
                 isLoggedIn: false,
-                clientTab: 'dashboard',
+                clientTab: 'livechat',
                 loginForm: { username: '', password: '' },
                 loginError: '',
                 currentUser: null,
@@ -534,27 +530,34 @@
                     this.fetchClientsFromBot();
                     this.startCountdown();
                     this.updateTimestamp();
-                    
+
                     const hash = window.location.hash.replace('#', '');
                     const savedUser = localStorage.getItem('leea_current_user');
 
                     if (hash) {
-                        setTimeout(() => {
-                            const foundClient = this.clients.find(c => c.clientId === hash);
-                            if (foundClient) {
-                                this.currentUser = { username: foundClient.username, clientId: foundClient.clientId, role: 'client', status: foundClient.status, expiryDate: foundClient.expiryDate };
-                                this.isLoggedIn = true;
-                                this.loadClientProfileData();
-                                this.fetchLiveChats();
-                            }
-                        }, 200);
+                        const foundClient = this.clients.find(c => c.clientId === hash);
+                        if (foundClient) {
+                            this.currentUser = { username: foundClient.username, clientId: foundClient.clientId, role: 'client', status: foundClient.status, expiryDate: foundClient.expiryDate };
+                            this.isLoggedIn = true;
+                            localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
+                        }
                     } else if (savedUser) {
                         this.currentUser = JSON.parse(savedUser);
                         this.isLoggedIn = true;
-                        if (this.currentUser.role === 'client') {
-                            this.loadClientProfileData();
-                            this.fetchLiveChats();
+                    } else {
+                        // Lalai automatik ke sbltransport jika portal dibuka terus tanpa hash
+                        const defaultClient = this.clients[0];
+                        if (defaultClient) {
+                            this.currentUser = { username: defaultClient.username, clientId: defaultClient.clientId, role: 'client', status: defaultClient.status, expiryDate: defaultClient.expiryDate };
+                            this.isLoggedIn = true;
+                            window.location.hash = defaultClient.clientId;
+                            localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
                         }
+                    }
+
+                    if (this.isLoggedIn && this.currentUser && this.currentUser.role === 'client') {
+                        this.loadClientProfileData();
+                        this.fetchLiveChats();
                     }
 
                     setInterval(() => {
@@ -562,7 +565,7 @@
                             this.fetchLiveChats();
                         }
                         this.updateTimestamp();
-                    }, 5000);
+                    }, 4000);
                 },
 
                 updateTimestamp() {
@@ -672,18 +675,20 @@
                             let lastKnownPhone = "601123687357";
 
                             data.data.forEach(row => {
-                                let phone = row.phone ? String(row.phone).trim() : "";
-                                if (!phone || phone === "Unknown") {
-                                    phone = lastKnownPhone;
+                                let rawPhone = row.phone ? String(row.phone).trim() : "";
+                                if (!rawPhone || rawPhone === "Unknown") {
+                                    rawPhone = lastKnownPhone;
                                 } else {
-                                    lastKnownPhone = phone;
+                                    lastKnownPhone = rawPhone;
                                 }
 
-                                const cleanId = 'chat-' + phone.replace(/[^0-9]/g, '');
-                                if (!chatMap[phone]) {
-                                    chatMap[phone] = {
+                                const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+                                const cleanId = 'chat-' + cleanPhone;
+                                
+                                if (!chatMap[cleanPhone]) {
+                                    chatMap[cleanPhone] = {
                                         id: cleanId,
-                                        phone: phone,
+                                        phone: cleanPhone,
                                         lastMessage: "",
                                         time: "",
                                         mode: 'ai',
@@ -692,14 +697,19 @@
                                 }
                                 
                                 if (row.message) {
-                                    const timeDisplay = row.timestamp ? (row.timestamp.length >= 16 ? row.timestamp.substring(11, 16) : row.timestamp) : "";
-                                    chatMap[phone].messages.push({
+                                    let timeDisplay = "";
+                                    if (row.timestamp) {
+                                        const tStr = String(row.timestamp);
+                                        timeDisplay = tStr.includes('T') ? tStr.split('T')[1].substring(0, 5) : tStr.substring(11, 16);
+                                    }
+                                    
+                                    chatMap[cleanPhone].messages.push({
                                         sender: row.sender || 'customer',
                                         text: row.message,
                                         time: timeDisplay
                                     });
-                                    chatMap[phone].lastMessage = row.message;
-                                    chatMap[phone].time = row.timestamp ? row.timestamp.substring(0, 16).replace('T', ' ') : "";
+                                    chatMap[cleanPhone].lastMessage = row.message;
+                                    chatMap[cleanPhone].time = row.timestamp ? String(row.timestamp).replace('T', ' ').substring(0, 16) : "";
                                 }
                             });
                             
@@ -710,9 +720,9 @@
                                     this.activeChat = this.liveChats[0];
                                 } else {
                                     const activePhone = this.activeChat.phone;
-                                    const updated = this.liveChats.find(c => c.phone === activePhone);
-                                    if (updated) {
-                                        this.activeChat = updated;
+                                    const matched = this.liveChats.find(c => c.phone === activePhone);
+                                    if (matched) {
+                                        this.activeChat = matched;
                                     }
                                 }
                             }
