@@ -554,25 +554,51 @@
                 },
 
                 async fetchLiveChats() {
-                    const baseUrl = this.getCurrentRailwayUrl();
-                    if (!baseUrl) return;
-                    const username = this.currentUser ? this.currentUser.username : 'architechlaboratory';
-
+                    const sheetsUrl = "https://script.google.com/macros/s/AKfycbzQnKjq967MsSmvPTifM1LUPyj_qgtzFTmR8Q5QsyhWuk9aRpBAXNaVX0K9Tog4DX/exec";
+                    
                     try {
-                        const response = await fetch(`${baseUrl}/api/${username}/chats`);
+                        const response = await fetch(sheetsUrl);
                         const data = await response.json();
-                        if (data.success && data.chats && data.chats.length > 0) {
+                        
+                        if (data.status === "success" && data.data && data.data.length > 0) {
+                            const chatMap = {};
+                            
+                            data.data.forEach(row => {
+                                const phone = row.phone || "Unknown";
+                                if (!chatMap[phone]) {
+                                    chatMap[phone] = {
+                                        id: 'chat-' + phone.replace(/[^0-9]/g, ''),
+                                        phone: phone,
+                                        lastMessage: row.message || "",
+                                        time: row.timestamp ? row.timestamp.substring(0, 16).replace('T', ' ') : "",
+                                        mode: 'ai',
+                                        messages: []
+                                    };
+                                }
+                                
+                                if (row.message) {
+                                    chatMap[phone].messages.push({
+                                        sender: row.sender || 'customer',
+                                        text: row.message,
+                                        time: row.timestamp ? row.timestamp.substring(11, 16) : ""
+                                    });
+                                    chatMap[phone].lastMessage = row.message;
+                                    chatMap[phone].time = row.timestamp ? row.timestamp.substring(0, 16).replace('T', ' ') : "";
+                                }
+                            });
+                            
+                            const formattedChats = Object.values(chatMap);
                             const currentActiveId = this.activeChat ? this.activeChat.id : null;
-                            this.liveChats = data.chats;
+                            
+                            this.liveChats = formattedChats;
                             if (currentActiveId) {
                                 this.activeChat = this.liveChats.find(c => c.id === currentActiveId) || this.activeChat;
                             }
                         } else {
-                            // Paparan data sejarah sandaran (fallback/dummy) jika pelayan kosong
                             this.loadFallbackChats();
                         }
                     } catch (error) {
-                        console.error("Gagal menarik data live chats, memuatkan sejarah sandaran:", error);
+                        console.error("Gagal menarik data dari Google Sheets, memuatkan sejarah sandaran:", error);
                         this.loadFallbackChats();
                     }
                 },
