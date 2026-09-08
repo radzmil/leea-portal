@@ -174,7 +174,6 @@
                 </div>
 
                 <div x-show="clientTab === 'dashboard'" class="space-y-6">
-                    <!-- Kotak Profil Bot (Bot Profile Box) -->
                     <div class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-4">
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-4 gap-4">
                             <div class="flex items-center space-x-3">
@@ -189,7 +188,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Kapasiti Bot & Nama Server Dikemaskini -->
                             <div class="flex items-center space-x-4">
                                 <div class="bg-gray-950 px-4 py-2.5 rounded-xl cyber-border text-right">
                                     <span class="block text-[10px] font-mono text-gray-400 uppercase">Kapasiti Memori Bot</span>
@@ -202,7 +200,6 @@
                             </div>
                         </div>
 
-                        <!-- Borang Kemaskini Nama Bot -->
                         <div class="pt-2">
                             <form @submit.prevent="updateBotProfile()" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                                 <div class="md:col-span-2">
@@ -382,7 +379,6 @@
                             <span class="text-xs font-mono bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1 rounded-full font-bold">Max 2,000 Aksara</span>
                         </div>
 
-                        <!-- Kotak Amaran & Panduan Khas untuk Klien -->
                         <div class="p-4 bg-blue-950/40 border border-blue-500/30 rounded-xl text-xs font-mono text-blue-200 space-y-1">
                             <div class="font-bold text-blue-400 flex items-center space-x-2">
                                 <i class="fa-solid fa-circle-info"></i>
@@ -465,7 +461,6 @@
                 liveChats: [],
                 lastUpdatedTime: '',
                 
-                // Data Profil Bot Khas (Label Server ditukar ke Architech Server 01)
                 botProfile: {
                     botName: 'bot-sbltransport',
                     botVersion: 'V1',
@@ -484,7 +479,6 @@
                     const cleanHash = rawHash.replace(/^#+/, '').trim();
                     const savedUser = localStorage.getItem('leea_current_user');
 
-                    // Sinkronisasi auto-logout jika akaun telah dipadam dari admin panel
                     if (this.currentUser) {
                         const exists = this.clients.some(c => c.username === this.currentUser.username);
                         if (!exists) {
@@ -526,7 +520,6 @@
 
                     setInterval(() => {
                         this.fetchClientsFromBot();
-                        // Semak berkala jika akaun semasa dipadam oleh admin
                         if (this.isLoggedIn && this.currentUser) {
                             const stillExists = this.clients.some(c => c.username === this.currentUser.username);
                             if (!stillExists) {
@@ -622,7 +615,6 @@
                 },
 
                 async fetchLiveChats() {
-                    const currentUsername = this.currentUser ? this.currentUser.username : 'sbltransport';
                     const sheetsUrl = "https://script.google.com/macros/s/AKfycbyvSzjcJblEzJNGMSqxVCwwoCMJts32fVB6Q6MnFV-Cqm8mgZIqIMxV5weJSPDwB1pf3g/exec?t=" + new Date().getTime();
                     
                     try {
@@ -630,17 +622,13 @@
                         const data = await response.json();
                         
                         if (data && data.status === "success" && Array.isArray(data.data) && data.data.length > 0) {
-                            const filteredRows = data.data.filter(row => {
-                                const rowClient = row.client ? String(row.client).toLowerCase().trim() : 'sbltransport';
-                                return rowClient === currentUsername.toLowerCase().trim();
-                            });
-
                             const chatMap = {};
                             let lastKnownPhone = "601123687357";
 
-                            filteredRows.forEach(row => {
+                            // Ditarik terus tanpa tapisan nama klien yang tiada dalam Google Sheet
+                            data.data.forEach(row => {
                                 let rawPhone = row.phone ? String(row.phone).trim() : "";
-                                if (!rawPhone || rawPhone === "Unknown") {
+                                if (!rawPhone || rawPhone === "Unknown" || rawPhone === "undefined") {
                                     rawPhone = lastKnownPhone;
                                 } else {
                                     lastKnownPhone = rawPhone;
@@ -825,30 +813,19 @@
                     window.location.hash = '';
                 },
 
-                getTotalChatCount() {
-                    return this.liveChats.length;
-                },
-
-                getTodayChatCount() {
-                    return this.liveChats.length; 
-                },
-
-                getMonthlyChatCount() {
-                    return this.liveChats.length;
-                },
-
+                getTotalChatCount() { return this.liveChats.length; },
+                getTodayChatCount() { return this.liveChats.length; },
+                getMonthlyChatCount() { return this.liveChats.length; },
                 getAiHandledPercentage() {
                     if (this.liveChats.length === 0) return '0%';
                     let ai = this.liveChats.filter(c => c.mode === 'ai').length;
                     return Math.round((ai / this.liveChats.length) * 100) + '%';
                 },
-
                 getRemainingFreeQuota() {
                     let total = this.getTotalChatCount();
                     let rem = 1000 - total;
                     return rem >= 0 ? rem : 0;
                 },
-
                 calculateMetaCost() {
                     let totalChats = this.getTotalChatCount();
                     let paidChats = totalChats - 1000;
