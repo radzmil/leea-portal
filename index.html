@@ -323,10 +323,10 @@
                                         </div>
 
                                         <div class="p-4 overflow-y-auto space-y-3 flex-grow max-h-[380px]">
-                                            <template x-for="msg in activeChat.messages">
+                                            <template x-for="(msg, mIdx) in activeChat.messages" :key="mIdx">
                                                 <div class="flex" :class="msg.sender === 'customer' ? 'justify-start' : 'justify-end'">
                                                     <div class="max-w-[80%] rounded-2xl px-4 py-2 text-xs shadow-sm" :class="msg.sender === 'customer' ? 'bg-white dark:bg-gray-700 text-gray-800 border' : 'bg-emerald-600 text-white'">
-                                                        <p x-text="msg.text"></p>
+                                                        <p x-text="msg.text" class="whitespace-pre-line"></p>
                                                         <span class="text-[9px] block text-right mt-1 opacity-70" x-text="msg.time"></span>
                                                     </div>
                                                 </div>
@@ -624,7 +624,6 @@
                                 domain_url: clientData.railwayUrl
                             })
                         });
-                        console.log("Sandaran klien berjaya dihantar ke Google Sheet pusat.");
                     } catch (error) {
                         console.error("Gagal menghantar sandaran klien:", error);
                     }
@@ -647,7 +646,6 @@
                                 message: senderText
                             })
                         });
-                        console.log(`Auto-backup chat untuk klien [${currentClient}] berjaya dihantar.`);
                     } catch (error) {
                         console.error("Gagal menghantar auto-backup chat:", error);
                     }
@@ -659,25 +657,32 @@
                     if (client && client.railwayUrl && client.railwayUrl.trim() !== '') {
                         return client.railwayUrl;
                     }
-                    console.error("Ralat Keselamatan: Domain Railway Bot untuk akaun anda tidak ditetapkan atau kosong!");
                     return null;
                 },
 
                 async fetchLiveChats() {
-                    const sheetsUrl = "https://script.google.com/macros/s/AKfycbwyfAcm9wvbpd5vYmtkgrNxuBzzAOGcixcb83V_KAc-NcFWqeafzlLu3x-kpzXTyM3H/exec";
+                    const sheetsUrl = "https://script.google.com/macros/s/AKfycbwyfAcm9wvbpd5vYmtkgrNxuBzzAOGcixcb83V_KAc-NcFWqeafzlLu3x-kpzXTyM3H/exec?t=" + new Date().getTime();
                     
                     try {
                         const response = await fetch(sheetsUrl);
                         const data = await response.json();
                         
-                        if (data.status === "success" && data.data && data.data.length > 0) {
+                        if (data && data.status === "success" && Array.isArray(data.data) && data.data.length > 0) {
                             const chatMap = {};
+                            let lastKnownPhone = "601123687357";
 
                             data.data.forEach(row => {
-                                const phone = row.phone || "Unknown";
+                                let phone = row.phone ? String(row.phone).trim() : "";
+                                if (!phone || phone === "Unknown") {
+                                    phone = lastKnownPhone;
+                                } else {
+                                    lastKnownPhone = phone;
+                                }
+
+                                const cleanId = 'chat-' + phone.replace(/[^0-9]/g, '');
                                 if (!chatMap[phone]) {
                                     chatMap[phone] = {
-                                        id: 'chat-' + phone.replace(/[^0-9]/g, ''),
+                                        id: cleanId,
                                         phone: phone,
                                         lastMessage: "",
                                         time: "",
@@ -687,10 +692,11 @@
                                 }
                                 
                                 if (row.message) {
+                                    const timeDisplay = row.timestamp ? (row.timestamp.length >= 16 ? row.timestamp.substring(11, 16) : row.timestamp) : "";
                                     chatMap[phone].messages.push({
                                         sender: row.sender || 'customer',
                                         text: row.message,
-                                        time: row.timestamp ? row.timestamp.substring(11, 16) : ""
+                                        time: timeDisplay
                                     });
                                     chatMap[phone].lastMessage = row.message;
                                     chatMap[phone].time = row.timestamp ? row.timestamp.substring(0, 16).replace('T', ' ') : "";
@@ -698,12 +704,16 @@
                             });
                             
                             this.liveChats = Object.values(chatMap);
+
                             if (this.liveChats.length > 0) {
                                 if (!this.activeChat) {
                                     this.activeChat = this.liveChats[0];
                                 } else {
-                                    const currentActivePhone = this.activeChat.phone;
-                                    this.activeChat = this.liveChats.find(c => c.phone === currentActivePhone) || this.liveChats[0];
+                                    const activePhone = this.activeChat.phone;
+                                    const updated = this.liveChats.find(c => c.phone === activePhone);
+                                    if (updated) {
+                                        this.activeChat = updated;
+                                    }
                                 }
                             }
                         }
@@ -731,7 +741,7 @@
                             body: JSON.stringify({ prompt: this.brainPrompt })
                         });
                         const data = await response.json();
-                        if(data.success) {
+                        if (data.success) {
                             alert(`Prompt Brain Bot untuk akaun [${username}] berjaya dikemaskini ke server ${baseUrl}!`);
                         } else {
                             alert('Gagal mengemaskini prompt pada server.');
