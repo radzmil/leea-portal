@@ -595,7 +595,7 @@
                 },
 
                 async backupClientToGoogleDrive(clientData) {
-                    const backupUrl = "https://script.google.com/macros/s/AKfycbz6nYrZ1pGF5ZCjEMaxJ1kTHRGVD59aPw940_YCQ-uxL3crMtt6TzR214WfWKRBN6ugZQ/exec";
+                    const backupUrl = "https://script.google.com/macros/s/AKfycbwEoglQWQHuLI_SwP8nGWELMQ7wqD5JWJkKad0kRGcPMYBQ1B_O7fHiVNYR22ch8WbA/exec";
                     try {
                         await fetch(backupUrl, {
                             method: 'POST',
@@ -603,6 +603,7 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 timestamp: new Date().toISOString(),
+                                client: clientData.username,
                                 username: clientData.username,
                                 password: clientData.password,
                                 phone: clientData.phone,
@@ -610,9 +611,32 @@
                                 domain_url: clientData.railwayUrl
                             })
                         });
-                        console.log("Sandaran klien berjaya dihantar ke Google Drive.");
+                        console.log("Sandaran klien berjaya dihantar ke Google Drive pusat.");
                     } catch (error) {
                         console.error("Gagal menghantar sandaran klien:", error);
+                    }
+                },
+
+                async backupChatToGoogleDrive(chatPhone, senderText, senderType) {
+                    const backupChatUrl = "https://script.google.com/macros/s/AKfycbwEoglQWQHuLI_SwP8nGWELMQ7wqD5JWJkKad0kRGcPMYBQ1B_O7fHiVNYR22ch8WbA/exec";
+                    const currentClient = this.currentUser ? this.currentUser.username : 'default';
+
+                    try {
+                        await fetch(backupChatUrl, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                timestamp: new Date().toISOString(),
+                                client: currentClient,
+                                phone: chatPhone,
+                                sender: senderType,
+                                message: senderText
+                            })
+                        });
+                        console.log(`Auto-backup chat untuk klien [${currentClient}] berjaya dihantar.`);
+                    } catch (error) {
+                        console.error("Gagal menghantar auto-backup chat:", error);
                     }
                 },
 
@@ -627,7 +651,7 @@
                 },
 
                 async fetchLiveChats() {
-                    const sheetsUrl = "https://script.google.com/macros/s/AKfycbzQnKjq967MsSmvPTifM1LUPyj_qgtzFTmR8Q5QsyhWuk9aRpBAXNaVX0K9Tog4DX/exec";
+                    const sheetsUrl = "https://script.google.com/macros/s/AKfycbwEoglQWQHuLI_SwP8nGWELMQ7wqD5JWJkKad0kRGcPMYBQ1B_O7fHiVNYR22ch8WbA/exec";
                     
                     try {
                         const response = await fetch(sheetsUrl);
@@ -635,8 +659,14 @@
                         
                         if (data.status === "success" && data.data && data.data.length > 0) {
                             const chatMap = {};
+                            const currentClient = this.currentUser ? this.currentUser.username.toLowerCase() : '';
                             
                             data.data.forEach(row => {
+                                // Tapis hanya chat yang sepadan dengan akaun klien yang sedang aktif
+                                if (row.client && row.client.toLowerCase() !== currentClient) {
+                                    return;
+                                }
+
                                 const phone = row.phone || "Unknown";
                                 if (!chatMap[phone]) {
                                     chatMap[phone] = {
@@ -738,13 +768,19 @@
                 async sendReplyMessage() {
                     if (!this.replyText.trim() || !this.activeChat) return;
                     
+                    const replyMsg = this.replyText;
+                    const phoneNum = this.activeChat.phone;
+
                     this.activeChat.messages.push({
                         sender: 'agent',
-                        text: this.replyText,
+                        text: replyMsg,
                         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     });
-                    this.activeChat.lastMessage = this.replyText;
+                    this.activeChat.lastMessage = replyMsg;
                     this.replyText = '';
+
+                    // Auto-backup mesej hantaran agen ke Google Drive pusat
+                    await this.backupChatToGoogleDrive(phoneNum, replyMsg, 'agent');
                 },
 
                 async toggleChatMode(chatId) {
