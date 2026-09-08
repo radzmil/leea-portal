@@ -840,9 +840,9 @@
                     this.activeChat = chat;
                 },
 
-                openClientModal(mode, index = null) {
-                    this.modalMode = mode;
-                    if (mode === 'edit' && index !== null) {
+                openClientModal(key, index = null) {
+                    this.modalMode = key;
+                    if (key === 'edit' && index !== null) {
                         this.editIndex = index;
                         const c = this.clients[index];
                         this.clientForm = { username: c.username, password: c.password, phone: c.phone, email: c.email, railwayUrl: c.railwayUrl };
@@ -866,7 +866,7 @@
                         this.clients[this.editIndex].password = this.clientForm.password;
                         this.clients[this.editIndex].phone = this.clientForm.phone;
                         this.clients[this.editIndex].email = this.clientForm.email;
-                        this.clients[this.editIndex].railwayUrl = this.clientForm.railvalueUrl;
+                        this.clients[this.editIndex].railwayUrl = this.clientForm.railwayUrl;
                         
                         clientDataToSave = this.clients[this.editIndex];
                         alert('Maklumat klien berjaya dikemaskini!');
@@ -885,7 +885,7 @@
                             expiryDate: '27/09/2026'
                         };
 
-                    this.clients.push(newClient);
+                        this.clients.push(newClient);
                         clientDataToSave = newClient;
                         alert(`Klien berjaya didaftarkan dengan ID: ${newClientId}`);
                     }
