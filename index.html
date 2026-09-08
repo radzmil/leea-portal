@@ -659,13 +659,14 @@
                         
                         if (data.status === "success" && data.data && data.data.length > 0) {
                             const chatMap = {};
-                            const currentClient = this.currentUser ? this.currentUser.username.toLowerCase() : '';
+                            const currentClient = this.currentUser ? this.currentUser.username.toLowerCase().trim() : '';
                             
                             let matchedDataCount = 0;
 
                             data.data.forEach(row => {
                                 const rowClient = row.client ? row.client.toLowerCase().trim() : '';
                                 
+                                // Jika nama klien dalam sheet sepadan, masukkan ke dalam senarai live chat portal
                                 if (rowClient !== currentClient) {
                                     return;
                                 }
