@@ -61,7 +61,7 @@
                     <div class="flex items-center space-x-3 border-l pl-4 border-gray-200 dark:border-gray-700">
                         <div class="text-right">
                             <span class="block text-sm font-bold" x-text="currentUser.username"></span>
-                            <span class="text-xs text-emerald-600 dark:text-emerald-400 capitalize" x-text="currentUser.role + ' (' + currentUser.clientId + ')'"></span>
+                            <span class="text-xs text-emerald-600 dark:text-emerald-400 capitalize" x-text="currentUser.role + ' (' + (currentUser.clientId || 'ADMIN') + ')'"></span>
                         </div>
                         <button @click="logout()" class="text-red-500 hover:text-red-700 p-2" title="Log Keluar">
                             <i class="fa-solid fa-right-from-bracket"></i>
@@ -410,6 +410,9 @@
                     <div>
                         <h1 class="text-2xl font-bold">Dashboard Pentadbir (Admin)</h1>
                         <p class="text-slate-300 text-sm mt-1">Urus akaun klien beserta Client ID unik.</p>
+                        <p class="text-xs text-emerald-400 mt-2 font-mono">
+                            <i class="fa-solid fa-clock-rotate-left mr-1"></i> Tarikh Kemaskini Terkini: <span x-text="lastUpdatedTime"></span>
+                        </p>
                     </div>
                     <div class="bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md text-right">
                         <span class="block text-xs text-slate-300">Jumlah Klien</span>
@@ -525,10 +528,12 @@
                 brainPrompt: 'Anda adalah pembantu peribadi digital rasmi LEEA System. Bantu pelanggan dengan mesra, profesional, dan berikan maklumat tepat berkaitan perkhidmatan kami.',
                 liveChats: [],
                 countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
+                lastUpdatedTime: '',
 
                 init() {
                     this.fetchClientsFromBot();
                     this.startCountdown();
+                    this.updateTimestamp();
                     
                     const hash = window.location.hash.replace('#', '');
                     const savedUser = localStorage.getItem('leea_current_user');
@@ -556,7 +561,14 @@
                         if (this.isLoggedIn && this.currentUser && this.currentUser.role === 'client') {
                             this.fetchLiveChats();
                         }
+                        this.updateTimestamp();
                     }, 5000);
+                },
+
+                updateTimestamp() {
+                    const now = new Date();
+                    const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+                    this.lastUpdatedTime = now.toLocaleString('en-GB', options);
                 },
 
                 startCountdown() {
@@ -583,7 +595,7 @@
                         this.clients = JSON.parse(savedClients);
                     } else {
                         this.clients = [
-                            { clientId: 'CLI-1001', username: 'sbltransport', password: 'securepass456', phone: '+60132434200', email: 'architechlabs.io@gmail.com', railwayUrl: 'https://web-production-00fc.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' },
+                            { clientId: 'CLI-1001', username: 'sbltransport', password: 'securepass456', phone: '+60132434200', email: 'architechlabs.io@gmail.com', railwayUrl: 'https://web-production-07b92.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' },
                             { clientId: 'CLI-1002', username: 'architechlaboratory', password: 'H@$$ayang8683', phone: '+601123687357', email: 'radzmil@gmail.com', railwayUrl: 'https://leeasystem-production.up.railway.app', status: 'Paid 🟢', expiryDate: '27/09/2026' }
                         ];
                         localStorage.setItem('leea_admin_clients', JSON.stringify(this.clients));
@@ -592,10 +604,11 @@
 
                 saveClientsToStorage() {
                     localStorage.setItem('leea_admin_clients', JSON.stringify(this.clients));
+                    this.updateTimestamp();
                 },
 
                 async backupClientToGoogleDrive(clientData) {
-                    const backupUrl = "https://script.google.com/macros/s/AKfycbwEoglQWQHuLI_SwP8nGWELMQ7wqD5JWJkKad0kRGcPMYBQ1B_O7fHiVNYR22ch8WbA/exec";
+                    const backupUrl = "https://script.google.com/macros/s/AKfycbwyfAcm9wvbpd5vYmtkgrNxuBzzAOGcixcb83V_KAc-NcFWqeafzlLu3x-kpzXTyM3H/exec";
                     try {
                         await fetch(backupUrl, {
                             method: 'POST',
@@ -611,14 +624,14 @@
                                 domain_url: clientData.railwayUrl
                             })
                         });
-                        console.log("Sandaran klien berjaya dihantar ke Google Drive pusat.");
+                        console.log("Sandaran klien berjaya dihantar ke Google Sheet pusat.");
                     } catch (error) {
                         console.error("Gagal menghantar sandaran klien:", error);
                     }
                 },
 
                 async backupChatToGoogleDrive(chatPhone, senderText, senderType) {
-                    const backupChatUrl = "https://script.google.com/macros/s/AKfycbwEoglQWQHuLI_SwP8nGWELMQ7wqD5JWJkKad0kRGcPMYBQ1B_O7fHiVNYR22ch8WbA/exec";
+                    const backupChatUrl = "https://script.google.com/macros/s/AKfycbwyfAcm9wvbpd5vYmtkgrNxuBzzAOGcixcb83V_KAc-NcFWqeafzlLu3x-kpzXTyM3H/exec";
                     const currentClient = this.currentUser ? this.currentUser.username : 'default';
 
                     try {
@@ -651,7 +664,7 @@
                 },
 
                 async fetchLiveChats() {
-                    const sheetsUrl = "https://script.google.com/macros/s/AKfycbwEoglQWQHuLI_SwP8nGWELMQ7wqD5JWJkKad0kRGcPMYBQ1B_O7fHiVNYR22ch8WbA/exec";
+                    const sheetsUrl = "https://script.google.com/macros/s/AKfycbwyfAcm9wvbpd5vYmtkgrNxuBzzAOGcixcb83V_KAc-NcFWqeafzlLu3x-kpzXTyM3H/exec";
                     
                     try {
                         const response = await fetch(sheetsUrl);
@@ -666,8 +679,8 @@
                             data.data.forEach(row => {
                                 const rowClient = row.client ? row.client.toLowerCase().trim() : '';
                                 
-                                // Jika nama klien dalam sheet sepadan, masukkan ke dalam senarai live chat portal
-                                if (rowClient !== currentClient) {
+                                // Jika nama klien sepadan atau tiada sekatan ketat
+                                if (rowClient !== currentClient && rowClient !== 'default') {
                                     return;
                                 }
 
@@ -702,6 +715,8 @@
                                 this.liveChats = formattedChats;
                                 if (currentActiveId) {
                                     this.activeChat = this.liveChats.find(c => c.id === currentActiveId) || this.activeChat;
+                                } else if (this.liveChats.length > 0) {
+                                    this.activeChat = this.liveChats[0];
                                 }
                             } else {
                                 this.loadFilteredFallbackChats();
@@ -721,32 +736,21 @@
                         this.liveChats = [
                             {
                                 id: 'chat-sbl-1',
-                                phone: '+60132434200',
-                                lastMessage: 'Nak tahu perincian pakej bas untuk sbltransport.',
-                                time: '2026-09-08 10:30',
+                                phone: '601123687357',
+                                lastMessage: 'Hai bos! Boleh saya bantu?',
+                                time: '2026-09-08 04:19',
                                 mode: 'ai',
                                 messages: [
-                                    { sender: 'customer', text: 'Hai, nak sewa bas.', time: '10:30' },
-                                    { sender: 'bot', text: 'Baik bos! Sila pilih destinasi.', time: '10:31' }
-                                ]
-                            }
-                        ];
-                    } else if (currentClient === 'architechlaboratory') {
-                        this.liveChats = [
-                            {
-                                id: 'chat-arch-1',
-                                phone: '+601123687357',
-                                lastMessage: 'Eh hai! Selamat datang ke Architech Laboratory!',
-                                time: '2026-09-08 10:57',
-                                mode: 'ai',
-                                messages: [
-                                    { sender: 'customer', text: 'hi', time: '10:57' },
-                                    { sender: 'bot', text: 'Hai! Selamat datang ke Architech Laboratory 😊', time: '10:57' }
+                                    { sender: 'customer', text: 'hi', time: '04:19' },
+                                    { sender: 'bot', text: 'Hai bos! Saya Zulfa dari SB Leisure Transport.', time: '04:19' }
                                 ]
                             }
                         ];
                     } else {
                         this.liveChats = [];
+                    }
+                    if (this.liveChats.length > 0 && !this.activeChat) {
+                        this.activeChat = this.liveChats[0];
                     }
                 },
 
@@ -794,7 +798,6 @@
                     this.activeChat.lastMessage = replyMsg;
                     this.replyText = '';
 
-                    // Auto-backup mesej hantaran agen ke Google Drive pusat
                     await this.backupChatToGoogleDrive(phoneNum, replyMsg, 'agent');
                 },
 
@@ -907,6 +910,7 @@
                         this.currentUser = { username: 'admin', role: 'admin' };
                         this.isLoggedIn = true;
                         localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
+                        this.updateTimestamp();
                     } else {
                         const found = this.clients.find(c => c.username === this.loginForm.username && c.password === this.loginForm.password);
                         if (found) {
