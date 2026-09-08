@@ -679,8 +679,8 @@
                                     chatMap[phone] = {
                                         id: 'chat-' + phone.replace(/[^0-9]/g, ''),
                                         phone: phone,
-                                        lastMessage: row.message || "",
-                                        time: row.timestamp ? row.timestamp.substring(0, 16).replace('T', ' ') : "",
+                                        lastMessage: "",
+                                        time: "",
                                         mode: 'ai',
                                         messages: []
                                     };
@@ -698,8 +698,13 @@
                             });
                             
                             this.liveChats = Object.values(chatMap);
-                            if (this.liveChats.length > 0 && !this.activeChat) {
-                                this.activeChat = this.liveChats[0];
+                            if (this.liveChats.length > 0) {
+                                if (!this.activeChat) {
+                                    this.activeChat = this.liveChats[0];
+                                } else {
+                                    const currentActivePhone = this.activeChat.phone;
+                                    this.activeChat = this.liveChats.find(c => c.phone === currentActivePhone) || this.liveChats[0];
+                                }
                             }
                         }
                     } catch (error) {
