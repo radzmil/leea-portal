@@ -659,7 +659,7 @@
                     if (client && client.railwayUrl && client.railwayUrl.trim() !== '') {
                         return client.railwayUrl;
                     }
-                    console.error("Ralat Keselamatan: Railway URL untuk klien ini tidak wujud atau kosong!");
+                    console.error("Ralat Keselamatan: Domain Railway Bot untuk akaun anda tidak ditetapkan atau kosong!");
                     return null;
                 },
 
@@ -672,19 +672,8 @@
                         
                         if (data.status === "success" && data.data && data.data.length > 0) {
                             const chatMap = {};
-                            const currentClient = this.currentUser ? this.currentUser.username.toLowerCase().trim() : '';
-                            
-                            let matchedDataCount = 0;
 
                             data.data.forEach(row => {
-                                const rowClient = row.client ? row.client.toLowerCase().trim() : '';
-                                
-                                // Jika nama klien sepadan atau tiada sekatan ketat
-                                if (rowClient !== currentClient && rowClient !== 'default') {
-                                    return;
-                                }
-
-                                matchedDataCount++;
                                 const phone = row.phone || "Unknown";
                                 if (!chatMap[phone]) {
                                     chatMap[phone] = {
@@ -708,18 +697,9 @@
                                 }
                             });
                             
-                            if (matchedDataCount > 0) {
-                                const formattedChats = Object.values(chatMap);
-                                const currentActiveId = this.activeChat ? this.activeChat.id : null;
-                                
-                                this.liveChats = formattedChats;
-                                if (currentActiveId) {
-                                    this.activeChat = this.liveChats.find(c => c.id === currentActiveId) || this.activeChat;
-                                } else if (this.liveChats.length > 0) {
-                                    this.activeChat = this.liveChats[0];
-                                }
-                            } else {
-                                this.loadFilteredFallbackChats();
+                            this.liveChats = Object.values(chatMap);
+                            if (this.liveChats.length > 0 && !this.activeChat) {
+                                this.activeChat = this.liveChats[0];
                             }
                         } else {
                             this.loadFilteredFallbackChats();
@@ -731,24 +711,19 @@
                 },
 
                 loadFilteredFallbackChats() {
-                    const currentClient = this.currentUser ? this.currentUser.username : '';
-                    if (currentClient === 'sbltransport') {
-                        this.liveChats = [
-                            {
-                                id: 'chat-sbl-1',
-                                phone: '601123687357',
-                                lastMessage: 'Hai bos! Boleh saya bantu?',
-                                time: '2026-09-08 04:19',
-                                mode: 'ai',
-                                messages: [
-                                    { sender: 'customer', text: 'hi', time: '04:19' },
-                                    { sender: 'bot', text: 'Hai bos! Saya Zulfa dari SB Leisure Transport.', time: '04:19' }
-                                ]
-                            }
-                        ];
-                    } else {
-                        this.liveChats = [];
-                    }
+                    this.liveChats = [
+                        {
+                            id: 'chat-sbl-1',
+                            phone: '601123687357',
+                            lastMessage: 'Hai bos! Boleh saya bantu?',
+                            time: '2026-09-08 04:19',
+                            mode: 'ai',
+                            messages: [
+                                { sender: 'customer', text: 'hi', time: '04:19' },
+                                { sender: 'bot', text: 'Hai bos! Saya Zulfa dari SB Leisure Transport.', time: '04:19' }
+                            ]
+                        }
+                    ];
                     if (this.liveChats.length > 0 && !this.activeChat) {
                         this.activeChat = this.liveChats[0];
                     }
