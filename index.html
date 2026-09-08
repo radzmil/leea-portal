@@ -661,12 +661,17 @@
                             const chatMap = {};
                             const currentClient = this.currentUser ? this.currentUser.username.toLowerCase() : '';
                             
+                            let matchedDataCount = 0;
+
                             data.data.forEach(row => {
-                                // Tapis hanya chat yang sepadan dengan akaun klien yang sedang aktif
-                                if (row.client && row.client.toLowerCase() !== currentClient) {
+                                // Tapis dengan ketat mengikut kolum client. Jika kolum client kosong (data lama), abaikan.
+                                const rowClient = row.client ? row.client.toLowerCase().trim() : '';
+                                
+                                if (rowClient !== currentClient) {
                                     return;
                                 }
 
+                                matchedDataCount++;
                                 const phone = row.phone || "Unknown";
                                 if (!chatMap[phone]) {
                                     chatMap[phone] = {
@@ -690,48 +695,23 @@
                                 }
                             });
                             
-                            const formattedChats = Object.values(chatMap);
-                            const currentActiveId = this.activeChat ? this.activeChat.id : null;
-                            
-                            this.liveChats = formattedChats;
-                            if (currentActiveId) {
-                                this.activeChat = this.liveChats.find(c => c.id === currentActiveId) || this.activeChat;
+                            if (matchedDataCount > 0) {
+                                const formattedChats = Object.values(chatMap);
+                                const currentActiveId = this.activeChat ? this.activeChat.id : null;
+                                
+                                this.liveChats = formattedChats;
+                                if (currentActiveId) {
+                                    this.activeChat = this.liveChats.find(c => c.id === currentActiveId) || this.activeChat;
+                                }
+                            } else {
+                                this.liveChats = [];
                             }
                         } else {
-                            this.loadFallbackChats();
+                            this.liveChats = [];
                         }
                     } catch (error) {
-                        console.error("Gagal menarik data dari Google Sheets, memuatkan sejarah sandaran:", error);
-                        this.loadFallbackChats();
-                    }
-                },
-
-                loadFallbackChats() {
-                    if (this.liveChats.length === 0) {
-                        this.liveChats = [
-                            {
-                                id: 'chat-001',
-                                phone: '+60132434200',
-                                lastMessage: 'Nak tahu perincian pakej Pro untuk bisnes saya.',
-                                time: '2026-09-07 10:30',
-                                mode: 'ai',
-                                messages: [
-                                    { sender: 'customer', text: 'Hai, nak tahu perincian pakej Pro untuk bisnes saya.', time: '10:30' },
-                                    { sender: 'bot', text: 'Hai bos! Pakej Pro (Setup RM450 | Bulanan RM130) memang paling popular dan ada fungsi Human Touch!', time: '10:31' }
-                                ]
-                            },
-                            {
-                                id: 'chat-002',
-                                phone: '+601123687357',
-                                lastMessage: 'Baik bos, saya faham tentang caj token Meta tu.',
-                                time: '2026-09-07 14:15',
-                                mode: 'human',
-                                messages: [
-                                    { sender: 'customer', text: 'Adakah caj Meta dikira selepas 1000 chat percuma?', time: '14:10' },
-                                    { sender: 'agent', text: 'Betul bos! Selepas habis 1000 chat free, caj automatik RM0.003 setiap chat akan bermula.', time: '14:15' }
-                                ]
-                            }
-                        ];
+                        console.error("Gagal menarik data dari Google Sheets:", error);
+                        this.liveChats = [];
                     }
                 },
 
