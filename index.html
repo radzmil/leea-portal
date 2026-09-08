@@ -174,7 +174,7 @@
                 </div>
 
                 <div x-show="clientTab === 'dashboard'" class="space-y-6">
-                    <!-- Kotak Profil Bot (Bot Profile Box) yang diminta -->
+                    <!-- Kotak Profil Bot (Bot Profile Box) -->
                     <div class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-4">
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-4 gap-4">
                             <div class="flex items-center space-x-3">
@@ -189,20 +189,20 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Kapasiti Bot dari Fail Railway / Konfigurasi Klien -->
+                            <!-- Kapasiti Bot & Nama Server Dikemaskini -->
                             <div class="flex items-center space-x-4">
                                 <div class="bg-gray-950 px-4 py-2.5 rounded-xl cyber-border text-right">
                                     <span class="block text-[10px] font-mono text-gray-400 uppercase">Kapasiti Memori Bot</span>
                                     <span class="font-bold text-xs font-mono text-emerald-400" x-text="botProfile.botCapacity"></span>
                                 </div>
                                 <div class="bg-gray-950 px-4 py-2.5 rounded-xl cyber-border text-right">
-                                    <span class="block text-[10px] font-mono text-gray-400 uppercase">Nisbah Server</span>
+                                    <span class="block text-[10px] font-mono text-gray-400 uppercase">Pelayan Node</span>
                                     <span class="font-bold text-xs font-mono text-blue-300" x-text="botProfile.serverSlot"></span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Borang Kemaskini Nama Bot (Boleh Diedit oleh Klien) -->
+                        <!-- Borang Kemaskini Nama Bot -->
                         <div class="pt-2">
                             <form @submit.prevent="updateBotProfile()" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                                 <div class="md:col-span-2">
@@ -465,12 +465,12 @@
                 liveChats: [],
                 lastUpdatedTime: '',
                 
-                // Data Profil Bot Khas
+                // Data Profil Bot Khas (Label Server ditukar ke Architech Server 01)
                 botProfile: {
                     botName: 'bot-sbltransport',
                     botVersion: 'V1',
                     botCapacity: '500 MB RAM',
-                    serverSlot: 'Server #01 (4 Bots)'
+                    serverSlot: 'Architech Server 01'
                 },
                 botProfileInput: {
                     botName: 'bot-sbltransport'
@@ -524,12 +524,11 @@
                     if (savedBotData) {
                         this.botProfile = JSON.parse(savedBotData);
                     } else {
-                        // Default value mengikut username klien + kapasiti server 500MB (Railway spec)
                         this.botProfile = {
                             botName: this.currentUser.username + '-bot',
                             botVersion: 'V1',
                             botCapacity: '500 MB RAM',
-                            serverSlot: 'Server #01 (4 Bots)'
+                            serverSlot: 'Architech Server 01'
                         };
                     }
                     this.botProfileInput.botName = this.botProfile.botName;
@@ -769,7 +768,7 @@
                     }
                 },
 
-                    selectActiveChat(chat) {
+                selectActiveChat(chat) {
                     this.activeChat = chat;
                 },
 
