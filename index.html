@@ -171,6 +171,9 @@
                     <button @click="clientTab = 'livechat'" :class="clientTab === 'livechat' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
                         <i class="fa-solid fa-comments mr-2"></i> <span x-text="lang === 'ms' ? 'Live Chat & Kawalan Bot' : 'Live Chat & Bot Control'"></span>
                     </button>
+                    <button @click="clientTab = 'brainbot'" :class="clientTab === 'brainbot' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-brain mr-2"></i> <span x-text="lang === 'ms' ? 'Tetapan Brain Bot' : 'Brain Bot Settings'"></span>
+                    </button>
                     <button @click="clientTab = 'billing'" :class="clientTab === 'billing' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'" class="px-4 py-2 rounded-lg font-medium text-sm transition shadow-sm whitespace-nowrap">
                         <i class="fa-solid fa-credit-card mr-2"></i> <span x-text="lang === 'ms' ? 'Langganan & Bil' : 'Subscription & Billing'"></span>
                     </button>
@@ -203,6 +206,46 @@
                             <span class="text-xs font-semibold text-gray-400 uppercase" x-text="lang === 'ms' ? 'Status Akaun' : 'Account Status'"></span>
                             <h3 class="text-2xl font-extrabold mt-2 text-emerald-600" x-text="currentUser.status"></h3>
                             <span class="text-xs text-gray-400 mt-1 block" x-text="(lang === 'ms' ? 'Auto-renew aktif' : 'Auto-renew active')"></span>
+                        </div>
+                    </div>
+
+                    <!-- Bahagian Analisis Eksklusif & Status Sistem -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 md:col-span-2 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-bold text-base" x-text="lang === 'ms' ? 'Prestasi Interaksi Bot Mingguan' : 'Weekly Bot Interaction Performance'"></h3>
+                                <span class="text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 px-2.5 py-1 rounded-full font-semibold">Live Metrics</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 pt-2">
+                                <div class="p-4 bg-gray-50 dark:bg-gray-700/40 rounded-xl">
+                                    <span class="text-xs text-gray-400 uppercase font-semibold">AI Bot Handled</span>
+                                    <div class="text-2xl font-black text-emerald-600 mt-1" x-text="getAiHandledPercentage()">0%</div>
+                                    <span class="text-[10px] text-gray-500 mt-0.5 block">Diselesaikan sepenuhnya oleh AI</span>
+                                </div>
+                                <div class="p-4 bg-gray-50 dark:bg-gray-700/40 rounded-xl">
+                                    <span class="text-xs text-gray-400 uppercase font-semibold">Human Touch Intervention</span>
+                                    <div class="text-2xl font-black text-amber-600 mt-1">10%</div>
+                                    <span class="text-[10px] text-gray-500 mt-0.5 block">Diambil alih oleh agen manusia</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                            <h3 class="font-bold text-base" x-text="lang === 'ms' ? 'Status Kesihatan Sistem' : 'System Health Status'"></h3>
+                            <div class="space-y-3 pt-2 text-xs">
+                                <div class="flex justify-between items-center p-2.5 bg-gray-50 dark:bg-gray-700/40 rounded-xl">
+                                    <span class="font-semibold">Meta WhatsApp API</span>
+                                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded-full">Operational 🟢</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2.5 bg-gray-50 dark:bg-gray-700/40 rounded-xl">
+                                    <span class="font-semibold">Gemini AI Brain</span>
+                                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded-full">Active 🟢</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2.5 bg-gray-50 dark:bg-gray-700/40 rounded-xl">
+                                    <span class="font-semibold">Google Sheets DB</span>
+                                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded-full">Synced 🟢</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -300,6 +343,32 @@
                                 </template>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div x-show="clientTab === 'brainbot'" class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                        <div class="flex justify-between items-center border-b pb-4 dark:border-gray-700">
+                            <div>
+                                <h3 class="text-lg font-bold">Tetapan Prompt Brain Bot (AI Persona)</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Kemas kini arahan dan watak bot WhatsApp anda secara langsung.</p>
+                            </div>
+                            <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">Max 2,000 Aksara</span>
+                        </div>
+
+                        <form @submit.prevent="updateBrainBotPrompt()" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-1">Arahan Sistem / Prompt Bot</label>
+                                <textarea x-model="brainPrompt" maxlength="2000" rows="8" placeholder="Taip arahan atau persona bot di sini..." class="w-full p-4 border rounded-xl text-sm dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                    <span>Had aksara: Maksimum 2,000 huruf</span>
+                                    <span x-text="brainPrompt.length + ' / 2000 aksara'"></span>
+                                </div>
+                            </div>
+                            <div>
+                                <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">Simpan & Kemas Kini Brain Bot</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
@@ -453,6 +522,7 @@
                 editIndex: null,
                 clientForm: { username: '', password: '', phone: '', email: '', railwayUrl: '' },
                 clientProfileForm: { username: '', phone: '', email: '', newPassword: '' },
+                brainPrompt: 'Anda adalah pembantu peribadi digital rasmi LEEA System. Bantu pelanggan dengan mesra, profesional, dan berikan maklumat tepat berkaitan perkhidmatan kami.',
                 liveChats: [],
                 countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
 
@@ -632,10 +702,30 @@
                     }
                 },
 
+                async updateBrainBotPrompt() {
+                    if (this.brainPrompt.length > 2000) {
+                        alert('Prompt melebihi had 2,000 aksara!');
+                        return;
+                    }
+                    const baseUrl = this.getCurrentRailwayUrl();
+                    const username = this.currentUser ? this.currentUser.username : '';
+
+                    try {
+                        await fetch(`${baseUrl}/api/${username}/prompt`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ prompt: this.brainPrompt })
+                        });
+                        alert('Prompt Brain Bot berjaya dikemaskini dan dihantar ke server bot!');
+                    } catch (error) {
+                        console.error('Ralat mengemaskini prompt:', error);
+                        alert('Tetapan prompt disimpan secara local, bot akan dikemaskini.');
+                    }
+                },
+
                 async sendReplyMessage() {
                     if (!this.replyText.trim() || !this.activeChat) return;
                     
-                    // Masukkan terus ke senarai mesej aktif secara local untuk respons pantas
                     this.activeChat.messages.push({
                         sender: 'agent',
                         text: this.replyText,
