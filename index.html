@@ -469,10 +469,10 @@
                     <template x-for="(msg, mIdx) in clientMessages" :key="mIdx">
                         <div class="p-4 bg-gray-950 rounded-xl cyber-border space-y-2 border-l-4 border-blue-500">
                             <div class="flex justify-between items-center">
-                                <span class="font-bold text-blue-400 text-xs" x-text="msg.senderTitle || 'Master Administrator'"></span>
-                                <span class="text-[10px] text-gray-500" x-text="msg.date"></span>
+                                <span class="font-bold text-blue-400 text-xs" x-text="msg.senderTitle || msg.sender || 'Master Administrator'"></span>
+                                <span class="text-[10px] text-gray-500" x-text="msg.date || msg.timestamp"></span>
                             </div>
-                            <p class="text-gray-200 text-xs leading-relaxed" x-text="msg.content"></p>
+                            <p class="text-gray-200 text-xs leading-relaxed" x-text="msg.content || msg.message"></p>
                         </div>
                     </template>
 
@@ -673,17 +673,30 @@
                     alert('Tetapan Brain Bot, nama identiti, dan persona berjaya disimpan!');
                 },
 
-                loadClientMessages() {
-                    const allInbox = localStorage.getItem('leea_admin_inbox') || '{}';
+                async loadClientMessages() {
+                    if (!this.currentUser) return;
+                    const scriptUrl = "https://script.google.com/macros/s/AKfycbwLe9yliZsciyUaCyGb6_53_YKPburoxP_uei-tnDJ_BbLSyvbFqKVb10lBl41ua2Se/exec?t=" + new Date().getTime();
                     try {
-                        const parsedInbox = JSON.parse(allInbox);
-                        if (this.currentUser && parsedInbox[this.currentUser.username]) {
-                            this.clientMessages = parsedInbox[this.currentUser.username];
-                        } else {
-                            this.clientMessages = [];
+                        const res = await fetch(scriptUrl);
+                        const data = await res.json();
+                        if (data && data.status === "success" && Array.isArray(data.data)) {
+                            const msgs = [];
+                            data.data.forEach(row => {
+                                if (row.type === 'inbox') {
+                                    const target = String(row.targetClient || 'ALL').trim();
+                                    if (target === 'ALL' || target.toLowerCase() === this.currentUser.username.toLowerCase()) {
+                                        msgs.unshift({
+                                            senderTitle: row.sender || 'Master Administrator',
+                                            date: row.timestamp || '',
+                                            content: row.message || ''
+                                        });
+                                    }
+                                }
+                            });
+                            this.clientMessages = msgs;
                         }
-                    } catch(e) {
-                        this.clientMessages = [];
+                    } catch(err) {
+                        console.error("Gagal tarik mesej inbox:", err);
                     }
                 },
 
@@ -732,7 +745,7 @@
                 },
 
                 async fetchLiveChats() {
-                    const url = "https://script.google.com/macros/s/AKfycbyv6mxISC-5OJ_Cli3RcPAxQaMJvUSQx5wlyBvg7N2nSh4BBVle7UXimJp7jy94mEB_/exec?t=" + new Date().getTime();
+                    const url = "https://script.google.com/macros/s/AKfycbwLe9yliZsciyUaCyGb6_53_YKPburoxP_uei-tnDJ_BbLSyvbFqKVb10lBl41ua2Se/exec?t=" + new Date().getTime();
                     try {
                         const res = await fetch(url);
                         const data = await res.json();
@@ -741,6 +754,8 @@
                             let lastPhone = "601123687357";
 
                             data.data.forEach(row => {
+                                if (row.type && row.type !== 'chat') return;
+
                                 let phone = row.phone ? String(row.phone).trim() : lastPhone;
                                 if (!phone || phone === "Unknown") phone = lastPhone;
                                 else lastPhone = phone;
@@ -751,7 +766,7 @@
                                 }
                                 if (row.message) {
                                     chatMap[cleanPhone].messages.push({
-                                        sender: row.sender || 'customer',
+                                        sender: row.role || 'customer',
                                         text: row.message,
                                         time: row.timestamp ? String(row.timestamp).substring(11, 16) : ''
                                     });
