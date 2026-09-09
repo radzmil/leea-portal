@@ -230,7 +230,7 @@
                     </div>
                 </div>
 
-                <!-- Tab Live Chat (Real-time WhatsApp Chat) -->
+                <!-- Tab Live Chat (Real-time WhatsApp Chat dengan Zon Waktu Malaysia) -->
                 <div x-show="clientTab === 'livechat'" class="bg-gray-900 rounded-2xl cyber-border overflow-hidden">
                     <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950 font-mono text-xs">
                         <span class="font-bold text-blue-300">Pusat Kawalan Live Chat WhatsApp</span>
@@ -673,7 +673,6 @@
                     alert('Tetapan Brain Bot, nama identiti, dan persona berjaya disimpan!');
                 },
 
-                // Pautan URL Google Apps Script untuk Message Inbox (Notifikasi Admin)
                 async loadClientMessages() {
                     if (!this.currentUser) return;
                     const inboxScriptUrl = "https://script.google.com/macros/s/AKfycbys_to1rnHpv_oN1eOA3C82ZTLJP8T84J0c-mt47_AhnqLPUX68yRpuIsMiSkM8K7bxvw/exec?t=" + new Date().getTime();
@@ -686,9 +685,24 @@
                                 if (row.type === 'inbox' || row.role === 'admin') {
                                     const target = String(row.targetClient || 'ALL').trim();
                                     if (target === 'ALL' || target.toLowerCase() === this.currentUser.username.toLowerCase()) {
+                                        let formattedInboxTime = '';
+                                        if (row.timestamp) {
+                                            try {
+                                                const d = new Date(row.timestamp);
+                                                if (!isNaN(d.getTime())) {
+                                                    formattedInboxTime = d.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', hour12: false });
+                                                } else {
+                                                    const parts = String(row.timestamp).split(' ');
+                                                    if (parts.length > 1) formattedInboxTime = parts[1].substring(0, 5);
+                                                    else formattedInboxTime = String(row.timestamp).substring(11, 16);
+                                                }
+                                            } catch (e) {
+                                                formattedInboxTime = String(row.timestamp).substring(11, 16);
+                                            }
+                                        }
                                         msgs.unshift({
                                             senderTitle: row.sender || 'Master Administrator',
-                                            date: row.timestamp || '',
+                                            date: (row.timestamp ? row.timestamp.substring(0, 10) + ' ' : '') + formattedInboxTime,
                                             content: row.message || ''
                                         });
                                     }
@@ -701,7 +715,6 @@
                     }
                 },
 
-                // Pautan URL Google Apps Script untuk Realtime WhatsApp Chat
                 async fetchLiveChats() {
                     const url = "https://script.google.com/macros/s/AKfycbys_to1rnHpv_oN1eOA3C82ZTLJP8T84J0c-mt47_AhnqLPUX68yRpuIsMiSkM8K7bxvw/exec?t=" + new Date().getTime();
                     try {
@@ -722,14 +735,34 @@
                                 if (!chatMap[cleanPhone]) {
                                     chatMap[cleanPhone] = { id: 'chat-' + cleanPhone, phone: cleanPhone, lastMessage: '', time: '', messages: [] };
                                 }
+                                
                                 if (row.message) {
+                                    let formattedTime = '';
+                                    if (row.timestamp) {
+                                        try {
+                                            const d = new Date(row.timestamp);
+                                            if (!isNaN(d.getTime())) {
+                                                formattedTime = d.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', hour12: false });
+                                            } else {
+                                                const parts = String(row.timestamp).split(' ');
+                                                if (parts.length > 1) {
+                                                    formattedTime = parts[1].substring(0, 5);
+                                                } else {
+                                                    formattedTime = String(row.timestamp).substring(11, 16);
+                                                }
+                                            }
+                                        } catch (e) {
+                                            formattedTime = String(row.timestamp).substring(11, 16);
+                                        }
+                                    }
+
                                     chatMap[cleanPhone].messages.push({
                                         sender: row.role || 'customer',
                                         text: row.message,
-                                        time: row.timestamp ? String(row.timestamp).substring(11, 16) : ''
+                                        time: formattedTime
                                     });
                                     chatMap[cleanPhone].lastMessage = row.message;
-                                    chatMap[cleanPhone].time = row.timestamp ? String(row.timestamp).substring(11, 16) : '';
+                                    chatMap[cleanPhone].time = formattedTime;
                                 }
                             });
 
