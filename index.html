@@ -230,7 +230,7 @@
                     </div>
                 </div>
 
-                <!-- Tab Live Chat -->
+                <!-- Tab Live Chat (Real-time WhatsApp Chat) -->
                 <div x-show="clientTab === 'livechat'" class="bg-gray-900 rounded-2xl cyber-border overflow-hidden">
                     <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950 font-mono text-xs">
                         <span class="font-bold text-blue-300">Pusat Kawalan Live Chat WhatsApp</span>
@@ -452,7 +452,7 @@
             </div>
         </template>
 
-        <!-- POPUP MODAL MESSAGE INBOX -->
+        <!-- POPUP MODAL MESSAGE INBOX (NOTIFIKASI ADMIN) -->
         <div x-show="showInboxModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 font-mono" x-cloak>
             <div class="bg-gray-900 border border-blue-500/40 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden glow-effect">
                 <div class="p-4 bg-gray-950 border-b border-gray-800 flex justify-between items-center">
@@ -469,10 +469,10 @@
                     <template x-for="(msg, mIdx) in clientMessages" :key="mIdx">
                         <div class="p-4 bg-gray-950 rounded-xl cyber-border space-y-2 border-l-4 border-blue-500">
                             <div class="flex justify-between items-center">
-                                <span class="font-bold text-blue-400 text-xs" x-text="msg.senderTitle || msg.sender || 'Master Administrator'"></span>
-                                <span class="text-[10px] text-gray-500" x-text="msg.date || msg.timestamp"></span>
+                                <span class="font-bold text-blue-400 text-xs" x-text="msg.senderTitle || 'Master Administrator'"></span>
+                                <span class="text-[10px] text-gray-500" x-text="msg.date"></span>
                             </div>
-                            <p class="text-gray-200 text-xs leading-relaxed" x-text="msg.content || msg.message"></p>
+                            <p class="text-gray-200 text-xs leading-relaxed" x-text="msg.content"></p>
                         </div>
                     </template>
 
@@ -529,6 +529,8 @@
                 liveChats: [],
                 activeChat: null,
                 replyText: '',
+                clientMessages: [],
+                showInboxModal: false,
                 brainPrompt: 'Anda adalah pembantu khidmat pelanggan profesional.',
                 botSettings: { tone: 'professional' },
                 clientBot: {
@@ -536,8 +538,6 @@
                     planTier: 'v1 pro',
                     memoryUsageMb: 120
                 },
-                clientMessages: [],
-                showInboxModal: false,
                 clientProfile: {
                     companyName: '',
                     logoUrl: '',
@@ -673,21 +673,25 @@
                     alert('Tetapan Brain Bot, nama identiti, dan persona berjaya disimpan!');
                 },
 
+                // Pautan URL Google Apps Script untuk Message Inbox (Notifikasi Admin)
                 async loadClientMessages() {
                     if (!this.currentUser) return;
-                    const scriptUrl = "https://script.google.com/macros/s/AKfycbys_to1rnHpv_oN1eOA3C82ZTLJP8T84J0c-mt47_AhnqLPUX68yRpuIsMiSkM8K7bxvw/exec?t=" + new Date().getTime();
+                    const inboxScriptUrl = "https://script.google.com/macros/s/AKfycbys_to1rnHpv_oN1eOA3C82ZTLJP8T84J0c-mt47_AhnqLPUX68yRpuIsMiSkM8K7bxvw/exec?t=" + new Date().getTime();
                     try {
-                        const res = await fetch(scriptUrl);
+                        const res = await fetch(inboxScriptUrl);
                         const data = await res.json();
                         if (data && data.status === "success" && Array.isArray(data.data)) {
                             const msgs = [];
                             data.data.forEach(row => {
-                                if (row.sender === 'inbox' || row.role === 'admin') {
-                                    msgs.unshift({
-                                        senderTitle: row.sender || 'Master Administrator',
-                                        date: row.timestamp || '',
-                                        content: row.message || ''
-                                    });
+                                if (row.type === 'inbox' || row.role === 'admin') {
+                                    const target = String(row.targetClient || 'ALL').trim();
+                                    if (target === 'ALL' || target.toLowerCase() === this.currentUser.username.toLowerCase()) {
+                                        msgs.unshift({
+                                            senderTitle: row.sender || 'Master Administrator',
+                                            date: row.timestamp || '',
+                                            content: row.message || ''
+                                        });
+                                    }
                                 }
                             });
                             this.clientMessages = msgs;
@@ -695,6 +699,55 @@
                     } catch(err) {
                         console.error("Gagal tarik mesej inbox:", err);
                     }
+                },
+
+                // Pautan URL Google Apps Script untuk Realtime WhatsApp Chat
+                async fetchLiveChats() {
+                    const url = "https://script.google.com/macros/s/AKfycbys_to1rnHpv_oN1eOA3C82ZTLJP8T84J0c-mt47_AhnqLPUX68yRpuIsMiSkM8K7bxvw/exec?t=" + new Date().getTime();
+                    try {
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        if (data && data.status === "success" && Array.isArray(data.data)) {
+                            const chatMap = {};
+                            let lastPhone = "601123687357";
+
+                            data.data.forEach(row => {
+                                if (row.type && row.type !== 'chat') return;
+
+                                let phone = row.phone ? String(row.phone).trim() : lastPhone;
+                                if (!phone || phone === "Unknown") phone = lastPhone;
+                                else lastPhone = phone;
+
+                                const cleanPhone = phone.replace(/[^0-9]/g, '');
+                                if (!chatMap[cleanPhone]) {
+                                    chatMap[cleanPhone] = { id: 'chat-' + cleanPhone, phone: cleanPhone, lastMessage: '', time: '', messages: [] };
+                                }
+                                if (row.message) {
+                                    chatMap[cleanPhone].messages.push({
+                                        sender: row.role || 'customer',
+                                        text: row.message,
+                                        time: row.timestamp ? String(row.timestamp).substring(11, 16) : ''
+                                    });
+                                    chatMap[cleanPhone].lastMessage = row.message;
+                                    chatMap[cleanPhone].time = row.timestamp ? String(row.timestamp).substring(11, 16) : '';
+                                }
+                            });
+
+                            this.liveChats = Object.values(chatMap);
+                            if (this.liveChats.length > 0 && !this.activeChat) {
+                                this.activeChat = this.liveChats[0];
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Gagal tarik data chat:", err);
+                    }
+                },
+
+                sendReply() {
+                    if (!this.replyText.trim() || !this.activeChat) return;
+                    this.activeChat.messages.push({ sender: 'agent', text: this.replyText, time: 'Now' });
+                    this.activeChat.lastMessage = this.replyText;
+                    this.replyText = '';
                 },
 
                 login() {
@@ -739,54 +792,6 @@
                     this.isLoggedIn = false;
                     this.currentUser = null;
                     localStorage.removeItem('leea_current_user');
-                },
-
-                async fetchLiveChats() {
-                    const url = "https://script.google.com/macros/s/AKfycbys_to1rnHpv_oN1eOA3C82ZTLJP8T84J0c-mt47_AhnqLPUX68yRpuIsMiSkM8K7bxvw/exec?t=" + new Date().getTime();
-                    try {
-                        const res = await fetch(url);
-                        const data = await res.json();
-                        if (data && data.status === "success" && Array.isArray(data.data)) {
-                            const chatMap = {};
-                            let lastPhone = "601123687357";
-
-                            data.data.forEach(row => {
-                                let phone = row.phone ? String(row.phone).trim() : lastPhone;
-                                if (!phone || phone === "Unknown" || phone === "-") phone = lastPhone;
-                                else lastPhone = phone;
-
-                                const cleanPhone = phone.replace(/[^0-9]/g, '');
-                                if (!chatMap[cleanPhone]) {
-                                    chatMap[cleanPhone] = { id: 'chat-' + cleanPhone, phone: cleanPhone, lastMessage: '', time: '', messages: [] };
-                                }
-                                
-                                const msgText = row.message || '';
-                                if (msgText) {
-                                    chatMap[cleanPhone].messages.push({
-                                        sender: row.role || 'customer',
-                                        text: msgText,
-                                        time: row.timestamp ? String(row.timestamp).substring(11, 16) : ''
-                                    });
-                                    chatMap[cleanPhone].lastMessage = msgText;
-                                    chatMap[cleanPhone].time = row.timestamp ? String(row.timestamp).substring(11, 16) : '';
-                                }
-                            });
-
-                            this.liveChats = Object.values(chatMap);
-                            if (this.liveChats.length > 0 && !this.activeChat) {
-                                this.activeChat = this.liveChats[0];
-                            }
-                        }
-                    } catch (err) {
-                        console.error("Gagal tarik data chat:", err);
-                    }
-                },
-
-                sendReply() {
-                    if (!this.replyText.trim() || !this.activeChat) return;
-                    this.activeChat.messages.push({ sender: 'agent', text: this.replyText, time: 'Now' });
-                    this.activeChat.lastMessage = this.replyText;
-                    this.replyText = '';
                 }
             }
         }
