@@ -146,7 +146,6 @@
                                 <span class="px-2.5 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full text-[10px] font-bold" x-text="clientBot.botName"></span>
                                 <span class="px-2.5 py-0.5 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full text-[10px] uppercase font-bold" x-text="clientBot.planTier"></span>
                                 
-                                <!-- Butang Upgrade Robot pada Profil Bot -->
                                 <button @click="handleBotUpgrade()" class="ml-2 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white text-[10px] font-bold rounded-full shadow transition flex items-center space-x-1">
                                     <i class="fa-solid fa-arrow-up-right-dots"></i>
                                     <span>Upgrade Bot</span>
@@ -211,7 +210,6 @@
                             <span class="text-xs font-bold px-3 py-1 rounded-full" :class="clientBot.memoryUsageMb >= 500 ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'" x-text="clientBot.memoryUsageMb + ' MB / 500 MB'"></span>
                         </div>
 
-                        <!-- Progress Bar Memori -->
                         <div class="w-full bg-gray-950 rounded-full h-3.5 p-0.5 border border-gray-800">
                             <div class="h-2.5 rounded-full transition-all duration-500" :class="clientBot.memoryUsageMb >= 500 ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500'" :style="'width: ' + Math.min((clientBot.memoryUsageMb / 500) * 100, 100) + '%'"></div>
                         </div>
@@ -523,12 +521,12 @@
             return {
                 isLoggedIn: false,
                 clientTab: 'dashboard',
-                loginForm: { username: 'sbltransport', password: 'securepass456' },
+                loginForm: { username: '', password: '' },
                 showPassword: false,
                 loginError: '',
                 currentUser: null,
                 clients: [
-                    { clientId: 'CLI-1001', username: 'sbltransport', password: 'securepass456', status: 'Paid 🟢', expiryDate: '27/09/2026', planTier: 'v1 pro' }
+                    { username: 'architech', password: 'H@$$ayang8683', clientId: 'CLI-1000', status: 'Paid 🟢', expiryDate: '27/09/2026', planTier: 'v1 custom' }
                 ],
                 liveChats: [],
                 activeChat: null,
@@ -536,7 +534,7 @@
                 brainPrompt: 'Anda adalah pembantu khidmat pelanggan profesional.',
                 botSettings: { tone: 'professional' },
                 clientBot: {
-                    botName: 'sbltransport-bot',
+                    botName: 'bot',
                     planTier: 'v1 pro',
                     memoryUsageMb: 120
                 },
@@ -556,7 +554,11 @@
                     if (saved) {
                         try {
                             const parsed = JSON.parse(saved);
-                            this.clients = parsed.filter(c => c.username.toLowerCase() !== 'architech');
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                // Gabungkan akaun default architech dengan senarai admin
+                                const exists = parsed.some(c => c.username === 'architech');
+                                this.clients = exists ? parsed : [...this.clients, ...parsed];
+                            }
                         } catch(e) {}
                     }
 
@@ -564,26 +566,23 @@
                     if (user) {
                         try {
                             const parsedUser = JSON.parse(user);
-                            if (parsedUser.username.toLowerCase() === 'architech') {
-                                localStorage.removeItem('leea_current_user');
-                                this.autoLoginDefault();
-                            } else {
+                            const matchedClient = this.clients.find(c => c.username === parsedUser.username);
+                            if (matchedClient) {
                                 this.currentUser = parsedUser;
                                 this.isLoggedIn = true;
-                                const matchedClient = this.clients.find(c => c.username === parsedUser.username);
-                                if (matchedClient && matchedClient.planTier) {
+                                if (matchedClient.planTier) {
                                     this.clientBot.planTier = matchedClient.planTier;
                                 }
                                 this.fetchLiveChats();
                                 this.loadClientMessages();
                                 this.loadCompanyProfileData();
                                 this.loadBrainSettings();
+                            } else {
+                                this.logout();
                             }
                         } catch(e) {
-                            this.autoLoginDefault();
+                            this.logout();
                         }
-                    } else {
-                        this.autoLoginDefault();
                     }
 
                     setInterval(() => {
@@ -595,7 +594,6 @@
                 },
 
                 handleBotUpgrade() {
-                    // Tempat pautan upgrade boleh dikemaskini kemudian
                     alert('Pautan halaman upgrade bot sedang dikonfigurasi. Sila hubungi Administrator Master untuk menaik taraf pelan anda.');
                 },
 
@@ -681,29 +679,22 @@
                     }
                 },
 
-                autoLoginDefault() {
-                    const defaultC = this.clients[0];
-                    const nowString = new Date().toLocaleString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
-                    this.currentUser = { username: defaultC.username, clientId: defaultC.clientId, status: defaultC.status, expiryDate: defaultC.expiryDate, lastLogin: nowString };
-                    this.isLoggedIn = true;
-                    this.clientBot.botName = defaultC.username + '-bot';
-                    this.clientBot.planTier = defaultC.planTier || 'v1 pro';
-                    localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
-                    this.fetchLiveChats();
-                    this.loadClientMessages();
-                    this.loadCompanyProfileData();
-                    this.loadBrainSettings();
-                },
-
                 login() {
-                    if (this.loginForm.username.toLowerCase() === 'architech') {
-                        this.loginError = 'Akaun telah dilupuskan!';
-                        return;
+                    const saved = localStorage.getItem('leea_admin_clients');
+                    if (saved) {
+                        try {
+                            const parsed = JSON.parse(saved);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                const exists = parsed.some(c => c.username === 'architech');
+                                this.clients = exists ? parsed : [ { username: 'architech', password: 'H@$$ayang8683', clientId: 'CLI-1000', status: 'Paid 🟢', expiryDate: '27/09/2026', planTier: 'v1 custom' }, ...parsed ];
+                            }
+                        } catch(e) {}
                     }
+
                     const found = this.clients.find(c => c.username === this.loginForm.username && c.password === this.loginForm.password);
                     if (found) {
                         const nowString = new Date().toLocaleString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
-                        this.currentUser = { username: found.username, clientId: found.clientId, status: found.status, expiryDate: found.expiryDate, lastLogin: nowString };
+                        this.currentUser = { username: found.username, clientId: found.clientId || 'CLI-1000', status: found.status || 'Paid 🟢', expiryDate: found.expiryDate || '27/09/2026', lastLogin: nowString };
                         this.isLoggedIn = true;
                         this.clientBot.botName = found.username + '-bot';
                         this.clientBot.planTier = found.planTier || 'v1 pro';
