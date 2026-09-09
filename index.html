@@ -47,6 +47,14 @@
         .cyber-border {
             border: 1px solid rgba(59, 130, 246, 0.2);
         }
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); opacity: 0.9; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); opacity: 0.9; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .blinking-red-dot {
+            animation: pulse-red 1.5s infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans antialiased min-h-screen flex flex-col">
@@ -61,10 +69,20 @@
             </div>
 
             <template x-if="isLoggedIn">
-                <div class="flex items-center space-x-3 border-l pl-4 border-gray-800 font-mono text-xs">
-                    <div class="text-right">
-                        <span class="block font-bold text-blue-300" x-text="currentUser.username"></span>
-                        <span class="text-[10px] text-indigo-400 uppercase" x-text="'CLIENT (' + currentUser.clientId + ')'"></span>
+                <div class="flex items-center space-x-4 border-l pl-4 border-gray-800 font-mono text-xs">
+                    <button @click="showInboxModal = true" class="relative p-2 rounded-xl bg-gray-800/60 hover:bg-gray-800 text-blue-300 transition" title="Message Inbox">
+                        <i class="fa-solid fa-bell text-sm"></i>
+                        <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full blinking-red-dot" x-show="clientMessages.length > 0"></span>
+                    </button>
+
+                    <div class="flex items-center space-x-2">
+                        <template x-if="clientProfile.logoUrl">
+                            <img :src="clientProfile.logoUrl" alt="Logo" class="w-7 h-7 rounded-lg object-cover border border-blue-500/40">
+                        </template>
+                        <div class="text-right">
+                            <span class="block font-bold text-blue-300" x-text="currentUser.username"></span>
+                            <span class="text-[10px] text-indigo-400 uppercase" x-text="'CLIENT (' + currentUser.clientId + ')'"></span>
+                        </div>
                     </div>
                     <button @click="logout()" class="text-red-400 hover:text-red-300 p-2 transition" title="Log Keluar">
                         <i class="fa-solid fa-power-off"></i>
@@ -74,7 +92,7 @@
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col justify-center">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col justify-center space-y-6">
 
         <!-- Skrin Login Klien -->
         <template x-if="!isLoggedIn">
@@ -94,7 +112,12 @@
                         </div>
                         <div>
                             <label class="block uppercase text-blue-400 mb-1">Password</label>
-                            <input type="password" x-model="loginForm.password" required class="w-full px-4 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                            <div class="relative">
+                                <input :type="showPassword ? 'text' : 'password'" x-model="loginForm.password" required class="w-full px-4 py-2.5 pr-10 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                                <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-300 focus:outline-none">
+                                    <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="text-red-400" x-text="loginError"></div>
                         <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg glow-effect">AKSES PORTAL</button>
@@ -106,21 +129,107 @@
         <!-- Papan Pemuka Klien -->
         <template x-if="isLoggedIn">
             <div class="space-y-6">
-                <div class="bg-gradient-to-r from-blue-900/50 via-indigo-900/40 to-gray-900 rounded-2xl p-6 text-white cyber-border glow-effect flex justify-between items-center font-mono">
-                    <div>
-                        <h1 class="text-2xl font-black text-white" x-text="'Selamat Datang, ' + currentUser.username"></h1>
-                        <p class="text-indigo-300 text-xs mt-1" x-text="'ID Klien: ' + currentUser.clientId + ' | Tarikh Luput: ' + currentUser.expiryDate"></p>
+                <!-- Bar Utama Selamat Datang & Profil Bot Berserta Butang Upgrade -->
+                <div class="bg-gradient-to-r from-blue-900/50 via-indigo-900/40 to-gray-900 rounded-2xl p-6 text-white cyber-border glow-effect flex flex-col md:flex-row justify-between items-start md:items-center font-mono gap-4">
+                    <div class="flex items-center space-x-4">
+                        <template x-if="clientProfile.logoUrl">
+                            <img :src="clientProfile.logoUrl" alt="Logo Syarikat" class="w-14 h-14 rounded-2xl object-cover border-2 border-blue-500/40 glow-effect">
+                        </template>
+                        <template x-if="!clientProfile.logoUrl">
+                            <div class="w-14 h-14 rounded-2xl bg-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center text-blue-400">
+                                <i class="fa-solid fa-robot text-2xl"></i>
+                            </div>
+                        </template>
+                        <div>
+                            <div class="flex items-center space-x-2 flex-wrap gap-1">
+                                <h1 class="text-2xl font-black text-white" x-text="'Selamat Datang, ' + currentUser.username"></h1>
+                                <span class="px-2.5 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full text-[10px] font-bold" x-text="clientBot.botName"></span>
+                                <span class="px-2.5 py-0.5 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full text-[10px] uppercase font-bold" x-text="clientBot.planTier"></span>
+                                
+                                <!-- Butang Upgrade Robot pada Profil Bot -->
+                                <button @click="handleBotUpgrade()" class="ml-2 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white text-[10px] font-bold rounded-full shadow transition flex items-center space-x-1">
+                                    <i class="fa-solid fa-arrow-up-right-dots"></i>
+                                    <span>Upgrade Bot</span>
+                                </button>
+                            </div>
+                            <p class="text-indigo-300 text-xs mt-1" x-text="'ID Klien: ' + currentUser.clientId + ' | Tarikh Luput: ' + currentUser.expiryDate"></p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-950/80 px-4 py-2.5 rounded-xl cyber-border text-right text-xs">
+                        <span class="block text-[10px] text-gray-400 uppercase">Log Masuk Terakhir (Last Login):</span>
+                        <span class="text-emerald-400 font-bold" x-text="currentUser.lastLogin || 'Pertama Kali Akses'"></span>
                     </div>
                 </div>
 
-                <!-- Tab Navigasi -->
-                <div class="flex space-x-2 border-b border-gray-800 pb-2">
-                    <button @click="clientTab = 'livechat'" :class="clientTab === 'livechat' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'" class="px-4 py-2 rounded-xl font-mono text-xs transition">
+                <!-- Tab Navigasi Klien -->
+                <div class="flex space-x-2 border-b border-gray-800 pb-2 overflow-x-auto font-mono text-xs">
+                    <button @click="clientTab = 'dashboard'" :class="clientTab === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'" class="px-4 py-2 rounded-xl transition whitespace-nowrap">
+                        <i class="fa-solid fa-chart-line mr-2"></i> Analytics & Neural
+                    </button>
+                    <button @click="clientTab = 'livechat'" :class="clientTab === 'livechat' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'" class="px-4 py-2 rounded-xl transition whitespace-nowrap">
                         <i class="fa-solid fa-comments mr-2"></i> Live Chat & Bot Control
                     </button>
-                    <button @click="clientTab = 'brainbot'" :class="clientTab === 'brainbot' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'" class="px-4 py-2 rounded-xl font-mono text-xs transition">
+                    <button @click="clientTab = 'brainbot'" :class="clientTab === 'brainbot' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'" class="px-4 py-2 rounded-xl transition whitespace-nowrap">
                         <i class="fa-solid fa-brain mr-2"></i> Tetapan Brain Bot
                     </button>
+                    <button @click="clientTab = 'billing'" :class="clientTab === 'billing' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'" class="px-4 py-2 rounded-xl transition whitespace-nowrap">
+                        <i class="fa-solid fa-credit-card mr-2"></i> Langganan & Bil
+                    </button>
+                    <button @click="clientTab = 'profile'" :class="clientTab === 'profile' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'" class="px-4 py-2 rounded-xl transition whitespace-nowrap">
+                        <i class="fa-solid fa-user-gear mr-2"></i> Profil & Tetapan
+                    </button>
+                </div>
+
+                <!-- Tab Dashboard / Analytics & Limit Memori -->
+                <div x-show="clientTab === 'dashboard'" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 font-mono">
+                        <div class="bg-gray-900 p-6 rounded-2xl cyber-border">
+                            <span class="text-xs text-gray-400 uppercase">Jumlah WhatsApp Chat</span>
+                            <h3 class="text-3xl font-black mt-2 text-blue-400" x-text="liveChats.length">0</h3>
+                        </div>
+                        <div class="bg-gray-900 p-6 rounded-2xl cyber-border">
+                            <span class="text-xs text-gray-400 uppercase">Status Akaun</span>
+                            <h3 class="text-xl font-black mt-2 text-emerald-400" x-text="currentUser.status"></h3>
+                        </div>
+                        <div class="bg-gray-900 p-6 rounded-2xl cyber-border">
+                            <span class="text-xs text-gray-400 uppercase">Pelayan Node</span>
+                            <h3 class="text-xl font-black mt-2 text-blue-300">Active 🟢</h3>
+                        </div>
+                        <div class="bg-gray-900 p-6 rounded-2xl cyber-border">
+                            <span class="text-xs text-gray-400 uppercase">Tarikh Luput</span>
+                            <h3 class="text-xl font-black mt-2 text-indigo-400" x-text="currentUser.expiryDate"></h3>
+                        </div>
+                    </div>
+
+                    <!-- Kotak Saiz Memori Bot Neural (500MB Limit & Upgrade V2) -->
+                    <div class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-4 font-mono">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-database text-blue-400"></i>
+                                <h3 class="font-bold text-sm text-blue-300 uppercase">Kapasiti Memori Neural Bot</h3>
+                            </div>
+                            <span class="text-xs font-bold px-3 py-1 rounded-full" :class="clientBot.memoryUsageMb >= 500 ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'" x-text="clientBot.memoryUsageMb + ' MB / 500 MB'"></span>
+                        </div>
+
+                        <!-- Progress Bar Memori -->
+                        <div class="w-full bg-gray-950 rounded-full h-3.5 p-0.5 border border-gray-800">
+                            <div class="h-2.5 rounded-full transition-all duration-500" :class="clientBot.memoryUsageMb >= 500 ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500'" :style="'width: ' + Math.min((clientBot.memoryUsageMb / 500) * 100, 100) + '%'"></div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pt-2">
+                            <p class="text-[11px] text-gray-400 leading-relaxed">
+                                <template x-if="clientBot.memoryUsageMb >= 500">
+                                    <span class="text-red-400 font-bold">⚠️ Amaran: Had memori 500MB telah dicapai! Sistem disekat daripada memasukkan data input baru. Sila naik taraf ke Versi V2.</span>
+                                </template>
+                                <template x-if="clientBot.memoryUsageMb < 500">
+                                    <span>Memori aktif untuk latihan data skrip produk, sejarah perbualan, dan fail latihan bot.</span>
+                                </template>
+                            </p>
+                            <button @click="handleBotUpgrade()" class="px-5 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow transition whitespace-nowrap">
+                                <i class="fa-solid fa-rocket mr-1"></i> Upgrade Bot ke V2
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Tab Live Chat -->
@@ -181,13 +290,228 @@
                 </div>
 
                 <!-- Tab Tetapan Brain Bot -->
-                <div x-show="clientTab === 'brainbot'" class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-4 font-mono text-xs">
-                    <h3 class="font-bold text-sm text-blue-300">Tetapan Prompt Brain Bot (AI Persona)</h3>
-                    <textarea x-model="brainPrompt" rows="6" class="w-full p-3 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none"></textarea>
-                    <button @click="alert('Prompt disimpan!')" class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-xl">Simpan Prompt</button>
+                <div x-show="clientTab === 'brainbot'" class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-6 font-mono text-xs">
+                    <div class="border-b border-gray-800 pb-3">
+                        <h3 class="font-bold text-sm text-blue-300"><i class="fa-solid fa-brain mr-2"></i> Konfigurasi Neural Brain Bot (AI Persona)</h3>
+                        <p class="text-[10px] text-gray-400 mt-1">Tetapkan watak, nama bot, nada suara, dan skrip pengetahuan asas untuk pembantu maya WhatsApp anda.</p>
+                    </div>
+
+                    <!-- Notis Amaran Keselamatan Korporat -->
+                    <div class="p-4 bg-amber-950/40 border border-amber-500/30 rounded-xl space-y-2 text-amber-200/90 text-xs leading-relaxed">
+                        <div class="flex items-center space-x-2 font-bold text-amber-400 uppercase">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>Notis Keselamatan Sistem (Penting)</span>
+                        </div>
+                        <p>
+                            Pelanggan hanya dibenarkan untuk mengubah tetapan asas yang mudah sahaja, seperti mengemas kini harga produk, menambah senarai produk baharu, atau mengubah skrip persona asas bot. 
+                            <strong>DILARANG KERAS</strong> mengubah sebarang pautan pembayaran (payment link), menukar nombor WhatsApp bot, atau mengusik konfigurasi token sistem yang memerlukan pengesahan administrator induk. 
+                            Sebarang pelanggaran atau perubahan tidak sah pada tetapan kritikal ini boleh menyebabkan konflik pelayan, mengakibatkan <strong>server mengalami <em>crash</em></strong>, dan bot WhatsApp anda akan <strong>lumpuh serta tidak aktif sepenuhnya</strong>.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-2 space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block uppercase text-blue-400 mb-1">Nama Identiti Bot</label>
+                                    <input type="text" x-model="clientBot.botName" placeholder="contoh: sbltransport-bot" class="w-full p-2.5 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                                    <span class="text-[10px] text-gray-500 mt-1 block">Format lalai: [nama-klien]-bot</span>
+                                </div>
+                                <div>
+                                    <label class="block uppercase text-blue-400 mb-1">Nada Suara (Tone)</label>
+                                    <select x-model="botSettings.tone" class="w-full p-2.5 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                                        <option value="professional">Profesional & Korporat</option>
+                                        <option value="friendly">Mesra & Santai (Mesra Pelanggan)</option>
+                                        <option value="direct">Padat & Terus Pada Poin</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block uppercase text-blue-400 mb-1">System Instructions / AI Persona Prompt</label>
+                                <textarea x-model="brainPrompt" rows="6" placeholder="Contoh: Anda adalah perunding khidmat pelanggan profesional..." class="w-full p-3 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none leading-relaxed"></textarea>
+                            </div>
+
+                            <div class="pt-2">
+                                <button @click="saveBrainSettings()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow glow-effect transition">Simpan Tetapan Brain Bot</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-950 p-5 rounded-xl cyber-border space-y-4">
+                            <h4 class="font-bold text-blue-300 uppercase tracking-wider text-xs border-b border-gray-800 pb-2">Status Node AI</h4>
+                            <div class="space-y-2 text-[11px] text-gray-300">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Model Enjin:</span>
+                                    <span class="font-bold text-emerald-400">Gemini 3.5 Flash-Lite</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Status Pelayan:</span>
+                                    <span class="font-bold text-emerald-400">Connected 🟢</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Pelan Semasa:</span>
+                                    <span class="font-bold text-indigo-400 uppercase" x-text="clientBot.planTier"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Had Memori:</span>
+                                    <span class="font-bold text-blue-400" x-text="clientBot.memoryUsageMb + ' MB / 500 MB'"></span>
+                                </div>
+                            </div>
+
+                            <div class="bg-blue-950/40 p-3 rounded-lg border border-blue-500/20 space-y-1">
+                                <span class="block font-bold text-blue-300 text-[10px] uppercase">💡 Tips Pro Prompt:</span>
+                                <p class="text-[10px] text-gray-400 leading-normal">Kemas kini maklumat asas produk dengan cermat tanpa mengubah struktur sistem utama.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Langganan & Bil -->
+                <div x-show="clientTab === 'billing'" class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-6 font-mono text-xs">
+                    <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                        <h3 class="font-bold text-sm text-blue-300"><i class="fa-solid fa-credit-card mr-2"></i> Maklumat Pelan Langganan Semasa</h3>
+                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full font-bold">STATUS: AKTIF 🟢</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                        <div class="p-5 bg-gray-950 rounded-xl cyber-border space-y-3">
+                            <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-blue-500/20 text-blue-300" x-text="'Pelan: ' + clientBot.planTier.toUpperCase()"></span>
+                            <h4 class="text-base font-bold text-white">LEEA WhatsApp Automation Standard</h4>
+                            <p class="text-gray-400">Kadar Semasa: <strong class="text-blue-300">RM130</strong> per bulan (Auto-Billing Enabled)</p>
+                            <div class="pt-2 border-t border-gray-800/80 flex justify-between items-center text-xs">
+                                <span class="text-gray-400">Tarikh Luput Langganan:</span>
+                                <span class="font-bold text-indigo-400 text-sm" x-text="currentUser.expiryDate"></span>
+                            </div>
+                        </div>
+
+                        <div class="p-5 bg-gradient-to-br from-blue-950/60 to-gray-950 rounded-xl cyber-border space-y-4 text-center">
+                            <div class="space-y-1">
+                                <h5 class="font-bold text-blue-200 text-sm">Sambung Langganan (Renew)</h5>
+                                <p class="text-gray-400 text-[11px]">Lakukan pembayaran bulanan melalui platform selamat ToyyibPay untuk memastikan bot anda terus beroperasi tanpa gangguan.</p>
+                            </div>
+                            <div>
+                                <a href="https://toyyibpay.com/Architech-Laboratory" target="_blank" class="inline-flex items-center justify-center space-x-2 w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg glow-effect transition transform hover:-translate-y-0.5">
+                                    <i class="fa-solid fa-lock text-xs"></i>
+                                    <span>Renew Langganan Sekarang (RM130)</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Profil & Tetapan Syarikat -->
+                <div x-show="clientTab === 'profile'" class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-6 font-mono text-xs">
+                    <div class="border-b border-gray-800 pb-3">
+                        <h3 class="font-bold text-sm text-blue-300"><i class="fa-solid fa-building mr-2"></i> Profil & Tetapan Syarikat Klien</h3>
+                        <p class="text-[10px] text-gray-400 mt-1">Muat naik logo syarikat, kemaskini alamat rasmi, pautan media sosial, dan biografi perniagaan anda.</p>
+                    </div>
+
+                    <form @submit.prevent="saveClientCompanyProfile()" class="space-y-4 max-w-2xl">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                            <div>
+                                <label class="block uppercase text-blue-400 mb-1">Nama Syarikat / Username</label>
+                                <input type="text" x-model="clientProfile.companyName" required class="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block uppercase text-blue-400 mb-1">Muat Naik Fail Logo Syarikat</label>
+                                <input type="file" @change="handleLogoUpload($event)" accept="image/*" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer bg-gray-950 border border-gray-800 rounded-xl">
+                            </div>
+                        </div>
+
+                        <template x-if="clientProfile.logoUrl">
+                            <div class="flex items-center space-x-3 pt-2">
+                                <span class="text-gray-400 text-[11px]">Pratonton Logo:</span>
+                                <img :src="clientProfile.logoUrl" alt="Logo Preview" class="w-12 h-12 rounded-xl object-cover border border-blue-500/40">
+                            </div>
+                        </template>
+
+                        <div>
+                            <label class="block uppercase text-blue-400 mb-1">Alamat Penuh Syarikat</label>
+                            <textarea x-model="clientProfile.address" rows="3" placeholder="Masukkan alamat rasmi perniagaan anda..." class="w-full p-3 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block uppercase text-blue-400 mb-1"><i class="fa-brands fa-facebook text-blue-500 mr-1"></i> Pautan Facebook</label>
+                                <input type="url" x-model="clientProfile.facebookUrl" placeholder="https://facebook.com/namasyarikat" class="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block uppercase text-blue-400 mb-1"><i class="fa-brands fa-instagram text-pink-500 mr-1"></i> Pautan Instagram</label>
+                                <input type="url" x-model="clientProfile.instagramUrl" placeholder="https://instagram.com/namasyarikat" class="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block uppercase text-blue-400 mb-1">Biografi / Penerangan Syarikat (Bio)</label>
+                            <textarea x-model="clientProfile.bio" rows="4" placeholder="Tuliskan penerangan ringkas mengenai perkhidmatan atau perniagaan syarikat anda..." class="w-full p-3 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none"></textarea>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow glow-effect">Simpan Profil Syarikat</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </template>
+
+        <!-- POPUP MODAL MESSAGE INBOX -->
+        <div x-show="showInboxModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 font-mono" x-cloak>
+            <div class="bg-gray-900 border border-blue-500/40 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden glow-effect">
+                <div class="p-4 bg-gray-950 border-b border-gray-800 flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-bell text-blue-400"></i>
+                        <h3 class="font-bold text-sm text-blue-300 uppercase tracking-wider">Message Inbox (Notifikasi Pentadbir)</h3>
+                    </div>
+                    <button @click="showInboxModal = false" class="text-gray-400 hover:text-red-400 p-2 transition text-base focus:outline-none">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 max-h-[400px] overflow-y-auto space-y-4">
+                    <template x-for="(msg, mIdx) in clientMessages" :key="mIdx">
+                        <div class="p-4 bg-gray-950 rounded-xl cyber-border space-y-2 border-l-4 border-blue-500">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-blue-400 text-xs" x-text="msg.senderTitle || 'Master Administrator'"></span>
+                                <span class="text-[10px] text-gray-500" x-text="msg.date"></span>
+                            </div>
+                            <p class="text-gray-200 text-xs leading-relaxed" x-text="msg.content"></p>
+                        </div>
+                    </template>
+
+                    <template x-if="clientMessages.length === 0">
+                        <div class="p-8 text-center text-gray-500 text-xs">
+                            <i class="fa-regular fa-envelope-open text-2xl mb-2 text-gray-600 block"></i>
+                            Tiada mesej baru daripada pentadbir sistem buat masa ini.
+                        </div>
+                    </template>
+                </div>
+
+                <div class="p-3 bg-gray-950 border-t border-gray-800 text-right">
+                    <button @click="showInboxModal = false" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition">Tutup (Close)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KOTAK LIVE SUPPORT WHATSAPP -->
+        <div class="bg-gray-900/90 rounded-2xl p-4 md:p-5 cyber-border glow-effect flex flex-col sm:flex-row justify-between items-center gap-4 font-mono">
+            <div class="flex items-center space-x-3">
+                <div class="relative flex items-center justify-center w-4 h-4">
+                    <span class="absolute w-3 h-3 bg-red-500 rounded-full blinking-red-dot"></span>
+                    <span class="w-2 h-2 bg-red-600 rounded-full"></span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-blue-300 uppercase tracking-wider block">LEEA Live Support 24/7</span>
+                    <span class="text-[10px] text-gray-400">Bantuan teknikal & sokongan sistem pantas melalui WhatsApp</span>
+                </div>
+            </div>
+            <div>
+                <a href="https://wa.me/60183172114?text=Hi%20LEEA%20Support,%20saya%20perlukan%20bantuan%20teknikal%20sistem." target="_blank" class="inline-flex items-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow transition transform hover:-translate-y-0.5">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                    <span>WhatsApp 60183172114 (LEEA)</span>
+                </a>
+            </div>
+        </div>
+
     </main>
 
     <footer class="mt-auto py-6 border-t border-gray-900 text-center text-xs font-mono text-gray-500">
@@ -198,49 +522,196 @@
         function appData() {
             return {
                 isLoggedIn: false,
-                clientTab: 'livechat',
+                clientTab: 'dashboard',
                 loginForm: { username: 'sbltransport', password: 'securepass456' },
+                showPassword: false,
                 loginError: '',
                 currentUser: null,
                 clients: [
-                    { clientId: 'CLI-1001', username: 'sbltransport', password: 'securepass456', status: 'Paid 🟢', expiryDate: '27/09/2026' }
+                    { clientId: 'CLI-1001', username: 'sbltransport', password: 'securepass456', status: 'Paid 🟢', expiryDate: '27/09/2026', planTier: 'v1 pro' }
                 ],
                 liveChats: [],
                 activeChat: null,
                 replyText: '',
-                brainPrompt: 'Anda adalah pembantu khidmat pelanggan.',
+                brainPrompt: 'Anda adalah pembantu khidmat pelanggan profesional.',
+                botSettings: { tone: 'professional' },
+                clientBot: {
+                    botName: 'sbltransport-bot',
+                    planTier: 'v1 pro',
+                    memoryUsageMb: 120
+                },
+                clientMessages: [],
+                showInboxModal: false,
+                clientProfile: {
+                    companyName: '',
+                    logoUrl: '',
+                    address: '',
+                    facebookUrl: '',
+                    instagramUrl: '',
+                    bio: ''
+                },
 
                 init() {
                     const saved = localStorage.getItem('leea_admin_clients');
-                    if (saved) this.clients = JSON.parse(saved);
+                    if (saved) {
+                        try {
+                            const parsed = JSON.parse(saved);
+                            this.clients = parsed.filter(c => c.username.toLowerCase() !== 'architech');
+                        } catch(e) {}
+                    }
 
                     const user = localStorage.getItem('leea_current_user');
                     if (user) {
-                        this.currentUser = JSON.parse(user);
-                        this.isLoggedIn = true;
-                        this.fetchLiveChats();
+                        try {
+                            const parsedUser = JSON.parse(user);
+                            if (parsedUser.username.toLowerCase() === 'architech') {
+                                localStorage.removeItem('leea_current_user');
+                                this.autoLoginDefault();
+                            } else {
+                                this.currentUser = parsedUser;
+                                this.isLoggedIn = true;
+                                const matchedClient = this.clients.find(c => c.username === parsedUser.username);
+                                if (matchedClient && matchedClient.planTier) {
+                                    this.clientBot.planTier = matchedClient.planTier;
+                                }
+                                this.fetchLiveChats();
+                                this.loadClientMessages();
+                                this.loadCompanyProfileData();
+                                this.loadBrainSettings();
+                            }
+                        } catch(e) {
+                            this.autoLoginDefault();
+                        }
                     } else {
-                        // Auto log masuk lalai untuk mudahkan paparan
-                        const defaultC = this.clients[0];
-                        this.currentUser = { username: defaultC.username, clientId: defaultC.clientId, status: defaultC.status, expiryDate: defaultC.expiryDate };
-                        this.isLoggedIn = true;
-                        this.fetchLiveChats();
+                        this.autoLoginDefault();
                     }
 
                     setInterval(() => {
                         if (this.isLoggedIn) {
                             this.fetchLiveChats();
+                            this.loadClientMessages();
                         }
                     }, 4000);
                 },
 
+                handleBotUpgrade() {
+                    // Tempat pautan upgrade boleh dikemaskini kemudian
+                    alert('Pautan halaman upgrade bot sedang dikonfigurasi. Sila hubungi Administrator Master untuk menaik taraf pelan anda.');
+                },
+
+                handleLogoUpload(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.clientProfile.logoUrl = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+
+                loadCompanyProfileData() {
+                    if (!this.currentUser) return;
+                    const savedProfile = localStorage.getItem('leea_client_profile_' + this.currentUser.username);
+                    if (savedProfile) {
+                        try {
+                            this.clientProfile = JSON.parse(savedProfile);
+                        } catch(e) {}
+                    } else {
+                        this.clientProfile = {
+                            companyName: this.currentUser.username,
+                            logoUrl: '',
+                            address: '',
+                            facebookUrl: '',
+                            instagramUrl: '',
+                            bio: 'Sistem automasi pintar perniagaan berteraskan AI.'
+                        };
+                    }
+                },
+
+                saveClientCompanyProfile() {
+                    if (!this.currentUser) return;
+                    localStorage.setItem('leea_client_profile_' + this.currentUser.username, JSON.stringify(this.clientProfile));
+                    if (this.clientProfile.companyName) {
+                        this.currentUser.username = this.clientProfile.companyName;
+                        localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
+                    }
+                    alert('Profil syarikat dan logo berjaya disimpan!');
+                },
+
+                loadBrainSettings() {
+                    if (!this.currentUser) return;
+                    const savedBrain = localStorage.getItem('leea_brain_settings_' + this.currentUser.username);
+                    if (savedBrain) {
+                        try {
+                            const parsed = JSON.parse(savedBrain);
+                            this.brainPrompt = parsed.prompt || this.brainPrompt;
+                            this.botSettings = parsed.settings || this.botSettings;
+                            if (parsed.botName) this.clientBot.botName = parsed.botName;
+                        } catch(e) {}
+                    } else {
+                        this.clientBot.botName = this.currentUser.username + '-bot';
+                    }
+                },
+
+                saveBrainSettings() {
+                    if (!this.currentUser) return;
+                    const dataToSave = {
+                        prompt: this.brainPrompt,
+                        settings: this.botSettings,
+                        botName: this.clientBot.botName
+                    };
+                    localStorage.setItem('leea_brain_settings_' + this.currentUser.username, JSON.stringify(dataToSave));
+                    alert('Tetapan Brain Bot, nama identiti, dan persona berjaya disimpan!');
+                },
+
+                loadClientMessages() {
+                    const allInbox = localStorage.getItem('leea_admin_inbox') || '{}';
+                    try {
+                        const parsedInbox = JSON.parse(allInbox);
+                        if (this.currentUser && parsedInbox[this.currentUser.username]) {
+                            this.clientMessages = parsedInbox[this.currentUser.username];
+                        } else {
+                            this.clientMessages = [
+                                { senderTitle: 'Master Administrator', date: '09/09/2026 09:00 AM', content: 'Selamat datang ke portal rasmi LEEA System. Pastikan nod AI anda sentiasa aktif dan berhubung dengan pelayan Railway.' }
+                            ];
+                        }
+                    } catch(e) {
+                        this.clientMessages = [];
+                    }
+                },
+
+                autoLoginDefault() {
+                    const defaultC = this.clients[0];
+                    const nowString = new Date().toLocaleString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
+                    this.currentUser = { username: defaultC.username, clientId: defaultC.clientId, status: defaultC.status, expiryDate: defaultC.expiryDate, lastLogin: nowString };
+                    this.isLoggedIn = true;
+                    this.clientBot.botName = defaultC.username + '-bot';
+                    this.clientBot.planTier = defaultC.planTier || 'v1 pro';
+                    localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
+                    this.fetchLiveChats();
+                    this.loadClientMessages();
+                    this.loadCompanyProfileData();
+                    this.loadBrainSettings();
+                },
+
                 login() {
+                    if (this.loginForm.username.toLowerCase() === 'architech') {
+                        this.loginError = 'Akaun telah dilupuskan!';
+                        return;
+                    }
                     const found = this.clients.find(c => c.username === this.loginForm.username && c.password === this.loginForm.password);
                     if (found) {
-                        this.currentUser = { username: found.username, clientId: found.clientId, status: found.status, expiryDate: found.expiryDate };
+                        const nowString = new Date().toLocaleString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
+                        this.currentUser = { username: found.username, clientId: found.clientId, status: found.status, expiryDate: found.expiryDate, lastLogin: nowString };
                         this.isLoggedIn = true;
+                        this.clientBot.botName = found.username + '-bot';
+                        this.clientBot.planTier = found.planTier || 'v1 pro';
                         localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
                         this.fetchLiveChats();
+                        this.loadClientMessages();
+                        this.loadCompanyProfileData();
+                        this.loadBrainSettings();
                     } else {
                         this.loginError = 'ID atau Katalaluan Salah!';
                     }
