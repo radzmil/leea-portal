@@ -69,13 +69,22 @@
             </div>
 
             <template x-if="isLoggedIn">
-                <div class="flex items-center space-x-4 border-l pl-4 border-gray-800 font-mono text-xs">
+                <div class="flex items-center space-x-4 font-mono text-xs">
+                    <!-- KOTAK DOMPET E-WALLET (DI ATAS SEBELAH NOTIFIKASI) -->
+                    <div @click="clientTab = 'affiliate'" class="flex items-center space-x-2 px-3 py-1.5 bg-gray-950 border border-emerald-500/40 rounded-xl cursor-pointer hover:bg-emerald-950/20 transition shadow" title="Klik untuk lihat E-Wallet Affiliate">
+                        <i class="fa-solid fa-wallet text-emerald-400"></i>
+                        <div>
+                            <span class="text-[9px] text-gray-400 block uppercase leading-none">E-Wallet</span>
+                            <span class="font-bold text-emerald-400 text-xs" x-text="'RM ' + affiliateData.walletBalance.toFixed(2)"></span>
+                        </div>
+                    </div>
+
                     <button @click="showInboxModal = true" class="relative p-2 rounded-xl bg-gray-800/60 hover:bg-gray-800 text-blue-300 transition" title="Message Inbox">
                         <i class="fa-solid fa-bell text-sm"></i>
                         <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full blinking-red-dot" x-show="clientMessages.length > 0"></span>
                     </button>
 
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2 border-l pl-4 border-gray-800">
                         <template x-if="clientProfile.logoUrl">
                             <img :src="clientProfile.logoUrl" alt="Logo" class="w-7 h-7 rounded-lg object-cover border border-blue-500/40">
                         </template>
@@ -171,6 +180,9 @@
                     <button @click="clientTab = 'brainbot'" :class="clientTab === 'brainbot' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'" class="px-4 py-2 rounded-xl transition whitespace-nowrap">
                         <i class="fa-solid fa-brain mr-2"></i> Tetapan Brain Bot
                     </button>
+                    <button @click="clientTab = 'affiliate'" :class="clientTab === 'affiliate' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'" class="px-4 py-2 rounded-xl transition whitespace-nowrap">
+                        <i class="fa-solid fa-handshake-angle mr-2"></i> Affiliate & E-Wallet
+                    </button>
                     <button @click="clientTab = 'billing'" :class="clientTab === 'billing' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'" class="px-4 py-2 rounded-xl transition whitespace-nowrap">
                         <i class="fa-solid fa-credit-card mr-2"></i> Langganan & Bil
                     </button>
@@ -230,7 +242,7 @@
                     </div>
                 </div>
 
-                <!-- Tab Live Chat (Real-time WhatsApp Chat dengan Zon Waktu Malaysia) -->
+                <!-- Tab Live Chat (Real-time WhatsApp Chat) -->
                 <div x-show="clientTab === 'livechat'" class="bg-gray-900 rounded-2xl cyber-border overflow-hidden">
                     <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950 font-mono text-xs">
                         <span class="font-bold text-blue-300">Pusat Kawalan Live Chat WhatsApp</span>
@@ -362,6 +374,110 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- TAB: AFFILIATE PROGRAM & E-WALLET KOMISEN (3% DENGAN SOKONGAN DUITNOW & BANK DIGITAL) -->
+                <div x-show="clientTab === 'affiliate'" class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-6 font-mono text-xs">
+                    <div class="border-b border-gray-800 pb-3 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-sm text-blue-300"><i class="fa-solid fa-handshake-angle mr-2"></i> Program Affiliate & E-Wallet Komisen</h3>
+                            <p class="text-[10px] text-gray-400 mt-1">Jana pendapatan pasif 3% setiap bulan selagi sub-affiliate anda mengekalkan langganan aktif!</p>
+                        </div>
+                        <span class="px-3 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full font-bold" x-text="affiliateData.isAgent ? 'STATUS: AGEN AFFILIATE AKTIF 🟢' : 'STATUS: BELUM MENDAFTAR'"></span>
+                    </div>
+
+                    <!-- Jika Belum Setuju Terma & Daftar Agen -->
+                    <template x-if="!affiliateData.isAgent">
+                        <div class="space-y-6 bg-gray-950 p-6 rounded-2xl cyber-border">
+                            <div class="space-y-2">
+                                <h4 class="font-bold text-sm text-white uppercase tracking-wider">Perjanjian & Terma Syarat Rasmi Agensi Affiliate LEEA System</h4>
+                                <div class="p-4 bg-gray-900 border border-gray-800 rounded-xl text-gray-300 text-[11px] leading-relaxed max-h-48 overflow-y-auto space-y-2">
+                                    <p><strong>1. Pelantikan Rasmi:</strong> Dengan menyertai program ini, anda dilantik secara sah sebagai Agen Affiliate bebas untuk memasarkan perkhidmatan LEEA AI System di bawah kelolaan Architech Labs.</p>
+                                    <p><strong>2. Struktur Komisen Bulanan 3%:</strong> Agen layak menerima komisen berkala sebanyak 3% daripada nilai pakej langganan bulanan sah yang dibayar oleh sub-affiliate (pengguna yang mendaftar melalui pautan rujukan unik anda).</p>
+                                    <p><strong>3. Syarat Kelayakan & Pembayaran Aktif:</strong> Komisen 3% ini dibayar secara berterusan <em>selagi dan hanya jika sub-affiliate anda mengekalkan status langganan aktif</em> pada setiap bulan. Sekiranya sub-affiliate gagal memperbaharui langganan atau menamatkan perkhidmatan, hak bayaran komisen bagi sub-affiliate tersebut akan dihentikan serta-merta pada bulan berkenaan.</p>
+                                    <p><strong>4. Pengurusan E-Wallet & Bank:</strong> Segala terkumpul komisen akan dipaparkan di dalam E-Wallet portal anda. Klien wajib mengisi maklumat akaun bank atau nombor akaun DuitNow yang sah untuk tujuan pengeluaran pampasan komisen oleh pihak pentadbir.</p>
+                                    <p><strong>5. Integriti & Etika Pemasaran:</strong> Dilarang keras menggunakan taktik pemasaran palsu atau aktiviti spam yang melanggar undang-undang siber. Pelanggaran terma akan menyebabkan akaun digantung dan baki komisen dilucuthakkan.</p>
+                                </div>
+                            </div>
+
+                            <form @submit.prevent="registerAffiliateAgent()" class="space-y-4">
+                                <div class="flex items-center space-x-2">
+                                    <input type="checkbox" x-model="affiliateForm.agreed" id="agreeTerm" required class="w-4 h-4 rounded bg-gray-950 border border-gray-800 text-blue-600 focus:ring-0">
+                                    <label for="agreeTerm" class="text-gray-300 text-xs cursor-pointer">Saya telah membaca, memahami sepenuhnya, dan bersetuju dengan Terma & Syarat Program Affiliate LEEA System.</label>
+                                </div>
+                                <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow glow-effect transition">Daftar Sebagai Agen Affiliate Sekarang</button>
+                            </form>
+                        </div>
+                    </template>
+
+                    <!-- Jika Sudah Jadi Agen -->
+                    <template x-if="affiliateData.isAgent">
+                        <div class="space-y-6">
+                            <!-- Kad Ringkasan E-Wallet & Statistik -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="bg-gray-950 p-6 rounded-2xl cyber-border space-y-2">
+                                    <span class="text-[10px] text-gray-400 uppercase">Baki E-Wallet (Komisen 3%)</span>
+                                    <h3 class="text-3xl font-black text-emerald-400" x-text="'RM ' + affiliateData.walletBalance.toFixed(2)"></h3>
+                                    <button @click="requestWithdrawal()" class="mt-2 w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition shadow">Tuntut Pengeluaran (Payout)</button>
+                                </div>
+                                <div class="bg-gray-950 p-6 rounded-2xl cyber-border space-y-2">
+                                    <span class="text-[10px] text-gray-400 uppercase">Jumlah Sub-Affiliate Aktif</span>
+                                    <h3 class="text-3xl font-black text-blue-400" x-text="affiliateData.totalReferrals">0</h3>
+                                    <span class="text-[10px] text-gray-500 block">Langganan aktif bulan semasa</span>
+                                </div>
+                                <div class="bg-gray-950 p-6 rounded-2xl cyber-border space-y-2">
+                                    <span class="text-[10px] text-gray-400 uppercase">Jumlah Komisen Terkumpul</span>
+                                    <h3 class="text-3xl font-black text-indigo-400" x-text="'RM ' + affiliateData.totalEarned.toFixed(2)"></h3>
+                                    <span class="text-[10px] text-gray-500 block">Pendapatan pasif bulanan</span>
+                                </div>
+                            </div>
+
+                            <!-- Pautan Rujukan Unik (Affiliate Link) -->
+                            <div class="bg-gray-950 p-6 rounded-2xl cyber-border space-y-3">
+                                <label class="block uppercase text-blue-400 font-bold">Pautan Rujukan Affiliate Unik Anda</label>
+                                <div class="flex space-x-2">
+                                    <input type="text" readonly :value="'https://leea-portal.vercel.app/?ref=' + currentUser.username" class="w-full px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-xl text-blue-300 select-all">
+                                    <button @click="copyAffiliateLink()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition whitespace-nowrap shadow"><i class="fa-solid fa-copy mr-1"></i> Salin Pautan</button>
+                                </div>
+                                <span class="text-[10px] text-gray-400 block">Kongsikan pautan ini. Anda akan menerima komisen 3% selagi sub-affiliate menyambung langganan mereka setiap bulan.</span>
+                            </div>
+
+                            <!-- Borang Tetapan Akaun Bank / E-Wallet / DuitNow untuk Payout -->
+                            <div class="bg-gray-950 p-6 rounded-2xl cyber-border space-y-4">
+                                <h4 class="font-bold text-sm text-blue-300 uppercase">Maklumat Akaun Bank / DuitNow / E-Wallet Penerimaan Komisen</h4>
+                                <form @submit.prevent="saveBankAccount()" class="space-y-4 max-w-xl">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block uppercase text-gray-400 mb-1">Pilih Bank / E-Wallet / DuitNow</label>
+                                            <select x-model="affiliateBank.bankName" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                                                <option value="">Pilih Platform / Bank</option>
+                                                <option value="Touch 'n Go eWallet (DuitNow)">Touch 'n Go eWallet (DuitNow)</option>
+                                                <option value="GXBank">GXBank (Digital Bank)</option>
+                                                <option value="Boost eWallet">Boost eWallet</option>
+                                                <option value="MAE by Maybank">MAE by Maybank</option>
+                                                <option value="Maybank">Maybank (Malayan Banking Berhad)</option>
+                                                <option value="CIMB Bank">CIMB Bank Berhad</option>
+                                                <option value="Public Bank">Public Bank Berhad</option>
+                                                <option value="RHB Bank">RHB Bank Berhad</option>
+                                                <option value="Hong Leong Bank">Hong Leong Bank Berhad</option>
+                                                <option value="AmBank">AmBank (M) Berhad</option>
+                                                <option value="Bank Islam">Bank Islam Malaysia Berhad</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block uppercase text-gray-400 mb-1">Nombor Akaun / Nombor Telefon DuitNow</label>
+                                            <input type="text" x-model="affiliateBank.accountNo" placeholder="Contoh: 0123456789 atau No Akaun" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block uppercase text-gray-400 mb-1">Nama Pemilik Akaun / E-Wallet</label>
+                                        <input type="text" x-model="affiliateBank.accountHolder" placeholder="Nama Penuh Pemilik Berdaftar" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                                    </div>
+                                    <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition">Simpan Maklumat Pembayaran</button>
+                                </form>
+                            </div>
+                        </div>
+                    </template>
                 </div>
 
                 <!-- Tab Langganan & Bil -->
@@ -546,6 +662,20 @@
                     instagramUrl: '',
                     bio: ''
                 },
+                affiliateData: {
+                    isAgent: false,
+                    walletBalance: 0.00,
+                    totalReferrals: 0,
+                    totalEarned: 0.00
+                },
+                affiliateForm: {
+                    agreed: false
+                },
+                affiliateBank: {
+                    bankName: '',
+                    accountNo: '',
+                    accountHolder: ''
+                },
 
                 init() {
                     const saved = localStorage.getItem('leea_admin_clients');
@@ -581,6 +711,7 @@
                                     this.loadClientMessages();
                                     this.loadCompanyProfileData();
                                     this.loadBrainSettings();
+                                    this.loadAffiliateData();
                                 } else {
                                     this.logout();
                                 }
@@ -671,6 +802,66 @@
                     };
                     localStorage.setItem('leea_brain_settings_' + this.currentUser.username, JSON.stringify(dataToSave));
                     alert('Tetapan Brain Bot, nama identiti, dan persona berjaya disimpan!');
+                },
+
+                loadAffiliateData() {
+                    if (!this.currentUser) return;
+                    const savedAff = localStorage.getItem('leea_affiliate_' + this.currentUser.username);
+                    if (savedAff) {
+                        try {
+                            const parsed = JSON.parse(savedAff);
+                            this.affiliateData = parsed.data || this.affiliateData;
+                            this.affiliateBank = parsed.bank || this.affiliateBank;
+                        } catch(e) {}
+                    }
+                },
+
+                registerAffiliateAgent() {
+                    if (!this.affiliateForm.agreed) {
+                        alert('Sila bersetuju dengan terma & syarat terlebih dahulu.');
+                        return;
+                    }
+                    this.affiliateData.isAgent = true;
+                    this.saveAffiliateDataToStorage();
+                    alert('Tahniah! Anda kini rasmi berdaftar sebagai Agen Affiliate LEEA System.');
+                },
+
+                saveBankAccount() {
+                    if (!this.affiliateBank.bankName || !this.affiliateBank.accountNo || !this.affiliateBank.accountHolder) {
+                        alert('Sila lengkapkan maklumat akaun.');
+                        return;
+                    }
+                    this.saveAffiliateDataToStorage();
+                    alert('Maklumat akaun bank / DuitNow berjaya disimpan untuk urusan pembayaran komisen.');
+                },
+
+                saveAffiliateDataToStorage() {
+                    if (!this.currentUser) return;
+                    const payload = {
+                        data: this.affiliateData,
+                        bank: this.affiliateBank
+                    };
+                    localStorage.setItem('leea_affiliate_' + this.currentUser.username, JSON.stringify(payload));
+                },
+
+                copyAffiliateLink() {
+                    const link = 'https://leea-portal.vercel.app/?ref=' + this.currentUser.username;
+                    navigator.clipboard.writeText(link);
+                    alert('Pautan rujukan affiliate berjaya disalin ke papan keratan!');
+                },
+
+                requestWithdrawal() {
+                    if (this.affiliateData.walletBalance < 50) {
+                        alert('Minimum pengeluaran E-Wallet adalah RM50.00.');
+                        return;
+                    }
+                    if (!this.affiliateBank.accountNo) {
+                        alert('Sila tetapkan maklumat akaun terlebih dahulu.');
+                        return;
+                    }
+                    alert('Permohonan pengeluaran komisen telah dihantar kepada pentadbir. Bayaran akan dikreditkan dalam masa 3 hari bekerja.');
+                    this.affiliateData.walletBalance = 0;
+                    this.saveAffiliateDataToStorage();
                 },
 
                 async loadClientMessages() {
@@ -816,6 +1007,7 @@
                         this.loadClientMessages();
                         this.loadCompanyProfileData();
                         this.loadBrainSettings();
+                        this.loadAffiliateData();
                     } else {
                         this.loginError = 'ID atau Katalaluan Salah!';
                     }
