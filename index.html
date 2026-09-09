@@ -525,9 +525,7 @@
                 showPassword: false,
                 loginError: '',
                 currentUser: null,
-                clients: [
-                    { username: 'architech', password: 'H@$$ayang8683', clientId: 'CLI-1000', status: 'Paid 🟢', expiryDate: '27/09/2026', planTier: 'v1 custom' }
-                ],
+                clients: [],
                 liveChats: [],
                 activeChat: null,
                 replyText: '',
@@ -555,10 +553,12 @@
                         try {
                             const parsed = JSON.parse(saved);
                             if (Array.isArray(parsed)) {
-                                // Tapis keluar secara kekal akaun architechlaboratory jika ada
-                                const filtered = parsed.filter(c => c.username.toLowerCase() !== 'architechlaboratory');
-                                const exists = filtered.some(c => c.username === 'architech');
-                                this.clients = exists ? filtered : [...this.clients, ...filtered];
+                                // Tapis keluar secara kekal sebarang akaun yang mengandungi kata kunci terlarang
+                                this.clients = parsed.filter(c => {
+                                    const u = (c.username || '').toLowerCase();
+                                    const comp = (c.companyName || '').toLowerCase();
+                                    return !u.includes('architech') && !comp.includes('architech');
+                                });
                             }
                         } catch(e) {}
                     }
@@ -567,8 +567,8 @@
                     if (user) {
                         try {
                             const parsedUser = JSON.parse(user);
-                            // Sekat serta-merta jika nama adalah architechlaboratory
-                            if (parsedUser.username.toLowerCase() === 'architechlaboratory') {
+                            const uname = (parsedUser.username || '').toLowerCase();
+                            if (uname.includes('architech')) {
                                 this.logout();
                             } else {
                                 const matchedClient = this.clients.find(c => c.username === parsedUser.username);
@@ -635,6 +635,11 @@
 
                 saveClientCompanyProfile() {
                     if (!this.currentUser) return;
+                    const updatedName = (this.clientProfile.companyName || '').toLowerCase();
+                    if (updatedName.includes('architech')) {
+                        alert('Keselamatan Sistem: Penggunaan nama atau keyword "architech" / "architech laboratory" adalah dilarang sama sekali.');
+                        return;
+                    }
                     localStorage.setItem('leea_client_profile_' + this.currentUser.username, JSON.stringify(this.clientProfile));
                     if (this.clientProfile.companyName) {
                         this.currentUser.username = this.clientProfile.companyName;
@@ -687,8 +692,8 @@
 
                 login() {
                     const usernameInput = this.loginForm.username.toLowerCase();
-                    if (usernameInput === 'architechlaboratory') {
-                        this.loginError = 'Akaun ini telah dilupuskan!';
+                    if (usernameInput.includes('architech')) {
+                        this.loginError = 'Akaun ini telah dilupuskan dan tidak dibenarkan!';
                         return;
                     }
 
@@ -697,9 +702,11 @@
                         try {
                             const parsed = JSON.parse(saved);
                             if (Array.isArray(parsed)) {
-                                const filtered = parsed.filter(c => c.username.toLowerCase() !== 'architechlaboratory');
-                                const exists = filtered.some(c => c.username === 'architech');
-                                this.clients = exists ? filtered : [ { username: 'architech', password: 'H@$$ayang8683', clientId: 'CLI-1000', status: 'Paid 🟢', expiryDate: '27/09/2026', planTier: 'v1 custom' }, ...filtered ];
+                                this.clients = parsed.filter(c => {
+                                    const u = (c.username || '').toLowerCase();
+                                    const comp = (c.companyName || '').toLowerCase();
+                                    return !u.includes('architech') && !comp.includes('architech');
+                                });
                             }
                         } catch(e) {}
                     }
@@ -707,7 +714,7 @@
                     const found = this.clients.find(c => c.username === this.loginForm.username && c.password === this.loginForm.password);
                     if (found) {
                         const nowString = new Date().toLocaleString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
-                        this.currentUser = { username: found.username, clientId: found.clientId || 'CLI-1000', status: found.status || 'Paid 🟢', expiryDate: found.expiryDate || '27/09/2026', lastLogin: nowString };
+                        this.currentUser = { username: found.username, clientId: found.clientId || 'CLI-1001', status: found.status || 'Paid 🟢', expiryDate: found.expiryDate || '27/09/2026', lastLogin: nowString };
                         this.isLoggedIn = true;
                         this.clientBot.botName = found.username + '-bot';
                         this.clientBot.planTier = found.planTier || 'v1 pro';
