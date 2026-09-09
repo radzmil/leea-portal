@@ -680,9 +680,7 @@
                         if (this.currentUser && parsedInbox[this.currentUser.username]) {
                             this.clientMessages = parsedInbox[this.currentUser.username];
                         } else {
-                            this.clientMessages = [
-                                { senderTitle: 'Master Administrator', date: '09/09/2026 09:00 AM', content: 'Selamat datang ke portal rasmi LEEA System. Pastikan nod AI anda sentiasa aktif dan berhubung dengan pelayan Railway.' }
-                            ];
+                            this.clientMessages = [];
                         }
                     } catch(e) {
                         this.clientMessages = [];
