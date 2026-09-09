@@ -554,10 +554,11 @@
                     if (saved) {
                         try {
                             const parsed = JSON.parse(saved);
-                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                // Gabungkan akaun default architech dengan senarai admin
-                                const exists = parsed.some(c => c.username === 'architech');
-                                this.clients = exists ? parsed : [...this.clients, ...parsed];
+                            if (Array.isArray(parsed)) {
+                                // Tapis keluar secara kekal akaun architechlaboratory jika ada
+                                const filtered = parsed.filter(c => c.username.toLowerCase() !== 'architechlaboratory');
+                                const exists = filtered.some(c => c.username === 'architech');
+                                this.clients = exists ? filtered : [...this.clients, ...filtered];
                             }
                         } catch(e) {}
                     }
@@ -566,19 +567,24 @@
                     if (user) {
                         try {
                             const parsedUser = JSON.parse(user);
-                            const matchedClient = this.clients.find(c => c.username === parsedUser.username);
-                            if (matchedClient) {
-                                this.currentUser = parsedUser;
-                                this.isLoggedIn = true;
-                                if (matchedClient.planTier) {
-                                    this.clientBot.planTier = matchedClient.planTier;
-                                }
-                                this.fetchLiveChats();
-                                this.loadClientMessages();
-                                this.loadCompanyProfileData();
-                                this.loadBrainSettings();
-                            } else {
+                            // Sekat serta-merta jika nama adalah architechlaboratory
+                            if (parsedUser.username.toLowerCase() === 'architechlaboratory') {
                                 this.logout();
+                            } else {
+                                const matchedClient = this.clients.find(c => c.username === parsedUser.username);
+                                if (matchedClient) {
+                                    this.currentUser = parsedUser;
+                                    this.isLoggedIn = true;
+                                    if (matchedClient.planTier) {
+                                        this.clientBot.planTier = matchedClient.planTier;
+                                    }
+                                    this.fetchLiveChats();
+                                    this.loadClientMessages();
+                                    this.loadCompanyProfileData();
+                                    this.loadBrainSettings();
+                                } else {
+                                    this.logout();
+                                }
                             }
                         } catch(e) {
                             this.logout();
@@ -680,13 +686,20 @@
                 },
 
                 login() {
+                    const usernameInput = this.loginForm.username.toLowerCase();
+                    if (usernameInput === 'architechlaboratory') {
+                        this.loginError = 'Akaun ini telah dilupuskan!';
+                        return;
+                    }
+
                     const saved = localStorage.getItem('leea_admin_clients');
                     if (saved) {
                         try {
                             const parsed = JSON.parse(saved);
-                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                const exists = parsed.some(c => c.username === 'architech');
-                                this.clients = exists ? parsed : [ { username: 'architech', password: 'H@$$ayang8683', clientId: 'CLI-1000', status: 'Paid 🟢', expiryDate: '27/09/2026', planTier: 'v1 custom' }, ...parsed ];
+                            if (Array.isArray(parsed)) {
+                                const filtered = parsed.filter(c => c.username.toLowerCase() !== 'architechlaboratory');
+                                const exists = filtered.some(c => c.username === 'architech');
+                                this.clients = exists ? filtered : [ { username: 'architech', password: 'H@$$ayang8683', clientId: 'CLI-1000', status: 'Paid 🟢', expiryDate: '27/09/2026', planTier: 'v1 custom' }, ...filtered ];
                             }
                         } catch(e) {}
                     }
