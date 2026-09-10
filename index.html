@@ -866,8 +866,7 @@
 
                 async loadClientMessages() {
                     if (!this.currentUser) return;
-                    // MASUKKAN URL APPS SCRIPT KHUSUS UNTUK INBOX ADMIN DI SINI[cite: 1]
-                    const inboxScriptUrl = "URL_APPS_SCRIPT_INBOX_ADMIN_ANDA_DI_SINI?t=" + new Date().getTime();
+                    const inboxScriptUrl = "https://script.google.com/macros/s/AKfycbxmy6KWzd9UMovyNUmndrtI7QGIeKfpz3B5yK-jsjAQtRZ2pzFzAZ0Xa_WEDsNa7Y1D/exec?t=" + new Date().getTime();
                     try {
                         const res = await fetch(inboxScriptUrl);
                         const data = await res.json();
@@ -908,8 +907,7 @@
                 },
 
                 async fetchLiveChats() {
-                    // MASUKKAN URL APPS SCRIPT KHUSUS UNTUK CHAT WHATSAPP DI SINI[cite: 1]
-                    const url = "URL_APPS_SCRIPT_WHATSAPP_CHAT_ANDA_DI_SINI?t=" + new Date().getTime();
+                    const url = "https://script.google.com/macros/s/AKfycbys_to1rnHpv_oN1eOA3C82ZTLJP8T84J0c-mt47_AhnqLPUX68yRpuIsMiSkM8K7bxvw/exec?t=" + new Date().getTime();
                     try {
                         const res = await fetch(url);
                         const data = await res.json();
