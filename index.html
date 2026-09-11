@@ -480,18 +480,43 @@
                     </template>
                 </div>
 
-                <!-- Tab Langganan & Bil -->
+                <!-- Tab Langganan & Bil (Kemas Kini Pakej Token & E-Wallet Redemption) -->
                 <div x-show="clientTab === 'billing'" class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-6 font-mono text-xs">
                     <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                        <h3 class="font-bold text-sm text-blue-300"><i class="fa-solid fa-credit-card mr-2"></i> Maklumat Pelan Langganan Semasa</h3>
+                        <h3 class="font-bold text-sm text-blue-300"><i class="fa-solid fa-credit-card mr-2"></i> Maklumat Pelan & Top-Up Token</h3>
                         <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full font-bold">STATUS: AKTIF 🟢</span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <!-- Bahagian Pakej Top-Up Token (500 & 1000 Token) -->
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-white uppercase tracking-wider text-xs">Pembelian Token Chat WhatsApp</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-gray-950 rounded-xl cyber-border space-y-3">
+                                <h5 class="font-bold text-blue-300">Pakej 500 Token WhatsApp</h5>
+                                <p class="text-gray-400 text-[11px]">Harga: <strong>RM300.00</strong></p>
+                                <div class="flex space-x-2">
+                                    <a href="https://toyyibpay.com/Leea-Sistem-500-token" target="_blank" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white text-center font-bold rounded-lg shadow">Bayar Online</a>
+                                    <button @click="buyTokenWithWallet(500)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[10px] shadow">Guna E-Wallet</button>
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-gray-950 rounded-xl cyber-border space-y-3">
+                                <h5 class="font-bold text-blue-300">Pakej 1000 Token WhatsApp</h5>
+                                <p class="text-gray-400 text-[11px]">Harga: <strong>RM500.00</strong></p>
+                                <div class="flex space-x-2">
+                                    <a href="https://toyyibpay.com/Leea-Sistem-1000-Token-Chat" target="_blank" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white text-center font-bold rounded-lg shadow">Bayar Online</a>
+                                    <button @click="buyTokenWithWallet(1000)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[10px] shadow">Guna E-Wallet</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pelan Langganan Bulanan Standard -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-4 border-t border-gray-800">
                         <div class="p-5 bg-gray-950 rounded-xl cyber-border space-y-3">
                             <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-blue-500/20 text-blue-300" x-text="'Pelan: ' + clientBot.planTier.toUpperCase()"></span>
                             <h4 class="text-base font-bold text-white">LEEA WhatsApp Automation Standard</h4>
-                            <p class="text-gray-400">Kadar Semasa: <strong class="text-blue-300">RM130</strong> per bulan (Auto-Billing Enabled)</p>
+                            <p class="text-gray-400">Kadar Semasa: <strong class="text-blue-300">RM130</strong> per bulan</p>
                             <div class="pt-2 border-t border-gray-800/80 flex justify-between items-center text-xs">
                                 <span class="text-gray-400">Tarikh Luput Langganan:</span>
                                 <span class="font-bold text-indigo-400 text-sm" x-text="currentUser.expiryDate"></span>
@@ -500,13 +525,13 @@
 
                         <div class="p-5 bg-gradient-to-br from-blue-950/60 to-gray-950 rounded-xl cyber-border space-y-4 text-center">
                             <div class="space-y-1">
-                                <h5 class="font-bold text-blue-200 text-sm">Sambung Langganan (Renew)</h5>
-                                <p class="text-gray-400 text-[11px]">Lakukan pembayaran bulanan melalui platform selamat ToyyibPay untuk memastikan bot anda terus beroperasi tanpa gangguan.</p>
+                                <h5 class="font-bold text-blue-200 text-sm">Sambung Langganan Bulanan (Renew)</h5>
+                                <p class="text-gray-400 text-[11px]">Lakukan pembayaran bulanan melalui platform selamat ToyyibPay.</p>
                             </div>
                             <div>
-                                <a href="https://toyyibpay.com/Architech-Laboratory" target="_blank" class="inline-flex items-center justify-center space-x-2 w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg glow-effect transition transform hover:-translate-y-0.5">
+                                <a href="https://toyyibpay.com/Architech-Laboratory" target="_blank" class="inline-flex items-center justify-center space-x-2 w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg glow-effect transition">
                                     <i class="fa-solid fa-lock text-xs"></i>
-                                    <span>Renew Langganan Sekarang (RM130)</span>
+                                    <span>Renew Langganan (RM130)</span>
                                 </a>
                             </div>
                         </div>
@@ -587,7 +612,7 @@
                             <div class="flex justify-between items-center">
                                 <div class="flex items-center space-x-2">
                                     <span class="font-bold text-blue-400 text-xs" x-text="msg.senderTitle || 'Master Administrator'"></span>
-                                    <span class="px-2 py-0.5 rounded text-[9px] font-bold" :class="msg.isRead ? 'bg-gray-800 text-gray-400' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'" x-text="msg.isRead ? 'Telah Dibaca' Baru"></span>
+                                    <span class="px-2 py-0.5 rounded text-[9px] font-bold" :class="msg.isRead ? 'bg-gray-800 text-gray-400' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'" x-text="msg.isRead ? 'Telah Dibaca' : 'Baru'"></span>
                                 </div>
                                 <span class="text-[10px] text-gray-500" x-text="msg.date"></span>
                             </div>
@@ -750,6 +775,20 @@
                             this.loadClientMessages();
                         }
                     }, 4000);
+                },
+
+                buyTokenWithWallet(packageSize) {
+                    let cost = packageSize === 500 ? 300 : 500;
+                    if (this.affiliateData.walletBalance < cost) {
+                        alert('Baki E-Wallet anda tidak mencukupi untuk pembelian ' + packageSize + ' token (Keperluan: RM ' + cost + '.00).');
+                        return;
+                    }
+                    
+                    if (confirm('Adakah anda pasti untuk menebus ' + packageSize + ' token menggunakan baki E-Wallet (RM ' + cost + '.00)? Permohonan akan dihantar kepada Admin untuk kelulusan.')) {
+                        this.affiliateData.walletBalance -= cost;
+                        this.saveAffiliateDataToStorage();
+                        alert('Permohonan pembelian ' + packageSize + ' token menggunakan E-Wallet telah berjaya dihantar kepada Administrator untuk disahkan.');
+                    }
                 },
 
                 markAsRead(index) {
@@ -941,18 +980,16 @@
                                             senderTitle: row.sender || 'Master Administrator',
                                             date: (row.timestamp ? row.timestamp.substring(0, 10) + ' ' : '') + formattedInboxTime,
                                             content: row.message || '',
-                                            isRead: false // Status baca lalai
+                                            isRead: false
                                         });
                                     }
                                 }
                             });
 
-                            // Semak sama ada ada status baca / padam yang telah disimpan dalam localStorage klien
                             const savedState = localStorage.getItem('leea_client_inbox_state_' + this.currentUser.username);
                             if (savedState) {
                                 try {
                                     const parsedState = JSON.parse(savedState);
-                                    // Padankan mesej berdasarkan isi kandungan & tarikh supaya status isRead dikekalkan
                                     msgs.forEach(m => {
                                         const foundMatch = parsedState.find(s => s.content === m.content && s.date === m.date);
                                         if (foundMatch) {
@@ -962,7 +999,7 @@
                                 } catch(e) {}
                             }
 
-                            this.clientMessages = msgs.reverse(); // Mesej terkini di atas
+                            this.clientMessages = msgs.reverse();
                         }
                     } catch(err) {
                         console.error("Gagal tarik mesej inbox:", err);
