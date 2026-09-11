@@ -1054,7 +1054,7 @@
 
                 async loadClientMessages() {
                     if (!this.currentUser) return;
-                    const inboxScriptUrl = "https://script.google.com/macros/s/AKfycby_eguXxzQ-E6HKkFdyL9BOSgPddjI0N-bwILLc58Npk3OvWB9caS0qve1Lc71QKn4T/exec?t=" + new Date().getTime();
+                    const inboxScriptUrl = "https://script.google.com/macros/s/AKfycbyu_sszjigSPdhk0ZCGfidw4co91_Cea-LjtFU4iH50ivfGMSnM5FxmKvrCPSrARRSA/exec?t=" + new Date().getTime();
                     try {
                         const res = await fetch(inboxScriptUrl);
                         const data = await res.json();
@@ -1063,8 +1063,10 @@
                             let deletedList = JSON.parse(localStorage.getItem('leea_deleted_msgs_' + this.currentUser.username) || '[]');
 
                             data.data.forEach(row => {
-                                // Semak sama ada jenis data adalah inbox atau peranan admin
-                                if (String(row.type || '').trim().toLowerCase() === 'inbox' || String(row.role || '').trim().toLowerCase() === 'admin') {
+                                const rowType = String(row.type || '').trim().toLowerCase();
+                                const rowRole = String(row.role || '').trim().toLowerCase();
+                                
+                                if (rowType === 'inbox' || rowRole === 'admin' || rowType === 'admin') {
                                     const target = String(row.targetClient || 'ALL').trim();
                                     if (target === 'ALL' || target.toLowerCase() === this.currentUser.username.toLowerCase()) {
                                         let formattedInboxTime = '';
@@ -1092,7 +1094,7 @@
 
                                         const isDeleted = deletedList.some(d => d.content === msgContent && d.date === msgDate);
 
-                                        if (!isDeleted) {
+                                        if (!isDeleted && msgContent !== '') {
                                             msgs.push({
                                                 senderTitle: row.sender || 'Master Administrator',
                                                 date: msgDate,
