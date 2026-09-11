@@ -409,12 +409,12 @@
                     </div>
                 </div>
 
-                <!-- TAB: AFFILIATE PROGRAM & E-WALLET KOMISEN (3% DENGAN SOKONGAN DUITNOW & BANK DIGITAL) -->
+                <!-- TAB: AFFILIATE PROGRAM & E-WALLET KOMISEN (10% DENGAN SOKONGAN DUITNOW & BANK DIGITAL) -->
                 <div x-show="clientTab === 'affiliate'" class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-6 font-mono text-xs">
                     <div class="border-b border-gray-800 pb-3 flex justify-between items-center">
                         <div>
-                            <h3 class="font-bold text-sm text-blue-300"><i class="fa-solid fa-handshake-angle mr-2"></i> Program Affiliate & E-Wallet Komisen</h3>
-                            <p class="text-[10px] text-gray-400 mt-1">Jana pendapatan pasif 3% setiap bulan selagi sub-affiliate anda mengekalkan langganan aktif!</p>
+                            <h3 class="font-bold text-sm text-blue-300"><i class="fa-solid fa-handshake-angle mr-2"></i> Program Affiliate & E-Wallet Komisen (10%)</h3>
+                            <p class="text-[10px] text-gray-400 mt-1">Jana pendapatan pasif 10% setiap bulan selagi sub-affiliate anda mengekalkan langganan aktif!</p>
                         </div>
                         <span class="px-3 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full font-bold" x-text="affiliateData.isAgent ? 'STATUS: AGEN AFFILIATE AKTIF 🟢' : 'STATUS: BELUM MENDAFTAR'"></span>
                     </div>
@@ -426,9 +426,9 @@
                                 <h4 class="font-bold text-sm text-white uppercase tracking-wider">Perjanjian & Terma Syarat Rasmi Agensi Affiliate LEEA System</h4>
                                 <div class="p-4 bg-gray-900 border border-gray-800 rounded-xl text-gray-300 text-[11px] leading-relaxed max-h-48 overflow-y-auto space-y-2">
                                     <p><strong>1. Pelantikan Rasmi:</strong> Dengan menyertai program ini, anda dilantik secara sah sebagai Agen Affiliate bebas untuk memasarkan perkhidmatan LEEA AI System di bawah kelolaan Architech Labs.</p>
-                                    <p><strong>2. Struktur Komisen Bulanan 3%:</strong> Agen layak menerima komisen berkala sebanyak 3% daripada nilai pakej langganan bulanan sah yang dibayar oleh sub-affiliate (pengguna yang mendaftar melalui pautan rujukan unik anda).</p>
-                                    <p><strong>3. Syarat Kelayakan & Pembayaran Aktif:</strong> Komisen 3% ini dibayar secara berterusan <em>selagi dan hanya jika sub-affiliate anda mengekalkan status langganan aktif</em> pada setiap bulan. Sekiranya sub-affiliate gagal memperbaharui langganan atau menamatkan perkhidmatan, hak bayaran komisen bagi sub-affiliate tersebut akan dihentikan serta-merta pada bulan berkenaan.</p>
-                                    <p><strong>4. Pengurusan E-Wallet & Bank:</strong> Segala terkumpul komisen akan dipaparkan di dalam E-Wallet portal anda. Klien wajib mengisi maklumat akaun bank atau nombor akaun DuitNow yang sah untuk tujuan pengeluaran pampasan komisen oleh pihak pentadbir.</p>
+                                    <p><strong>2. Struktur Komisen Bulanan 10%:</strong> Agen layak menerima komisen berkala sebanyak 10% daripada nilai pakej langganan bulanan sah yang dibayar oleh sub-affiliate (pengguna yang mendaftar melalui pautan rujukan unik anda).</p>
+                                    <p><strong>3. Syarat Kelayakan & Pembayaran Aktif:</strong> Komisen 10% ini dibayar secara berterusan <em>selagi dan hanya jika sub-affiliate anda mengekalkan status langganan aktif</em> pada setiap bulan. Sekiranya sub-affiliate gagal memperbaharui langganan atau menamatkan perkhidmatan, hak bayaran komisen bagi sub-affiliate tersebut akan dihentikan serta-merta pada bulan berkenaan.</p>
+                                    <p><strong>4. Pengurusan E-Wallet & Bank:</strong> Segala terkumpul komisen akan dipaparkan di dalam E-Wallet portal anda. Klien wajib mengisi maklumat akaun bank atau nombor akaun DuitNow yang sah untuk tujuan pengeluaran pampasan komisen oleh pihak pentadbir (Minimum pengeluaran RM1.00).</p>
                                     <p><strong>5. Integriti & Etika Pemasaran:</strong> Dilarang keras menggunakan taktik pemasaran palsu atau aktiviti spam yang melanggar undang-undang siber. Pelanggaran terma akan menyebabkan akaun digantung dan baki komisen dilucuthakkan.</p>
                                 </div>
                             </div>
@@ -449,7 +449,7 @@
                             <!-- Kad Ringkasan E-Wallet & Statistik -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div class="bg-gray-950 p-6 rounded-2xl cyber-border space-y-2">
-                                    <span class="text-[10px] text-gray-400 uppercase">Baki E-Wallet (Komisen 3%)</span>
+                                    <span class="text-[10px] text-gray-400 uppercase">Baki E-Wallet (Komisen 10%)</span>
                                     <h3 class="text-3xl font-black text-emerald-400" x-text="'RM ' + affiliateData.walletBalance.toFixed(2)"></h3>
                                     <button @click="requestWithdrawal()" class="mt-2 w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition shadow">Tuntut Pengeluaran (Payout)</button>
                                 </div>
@@ -472,7 +472,7 @@
                                     <input type="text" readonly :value="'https://leea-portal.vercel.app/?ref=' + currentUser.username" class="w-full px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-xl text-blue-300 select-all">
                                     <button @click="copyAffiliateLink()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition whitespace-nowrap shadow"><i class="fa-solid fa-copy mr-1"></i> Salin Pautan</button>
                                 </div>
-                                <span class="text-[10px] text-gray-400 block">Kongsikan pautan ini. Anda akan menerima komisen 3% selagi sub-affiliate menyambung langganan mereka setiap bulan.</span>
+                                <span class="text-[10px] text-gray-400 block">Kongsikan pautan ini. Anda akan menerima komisen 10% selagi sub-affiliate menyambung langganan mereka setiap bulan.</span>
                             </div>
 
                             <!-- Borang Tetapan Akaun Bank / E-Wallet / DuitNow untuk Payout -->
@@ -1039,17 +1039,58 @@
                 },
 
                 requestWithdrawal() {
-                    if (this.affiliateData.walletBalance < 50) {
-                        alert('Minimum pengeluaran E-Wallet adalah RM50.00.');
+                    if (this.affiliateData.walletBalance < 1.00) {
+                        alert('Minimum pengeluaran E-Wallet adalah RM1.00.');
                         return;
                     }
                     if (!this.affiliateBank.accountNo) {
-                        alert('Sila tetapkan akaun terlebih dahulu.');
+                        alert('Sila tetapkan maklumat akaun bank atau DuitNow terlebih dahulu.');
                         return;
                     }
-                    alert('Permohonan pengeluaran komisen telah dihantar kepada pentadbir. Bayaran akan dikreditkan dalam masa 3 hari bekerja.');
-                    this.affiliateData.walletBalance = 0;
-                    this.saveAffiliateDataToStorage();
+                    
+                    const payoutAmount = this.affiliateData.walletBalance;
+                    
+                    if (confirm('Sahkan permohonan pengeluaran (payout) sebanyak RM ' + payoutAmount.toFixed(2) + '? Permohonan akan dihantar dan notifikasi e-mel keselamatan akan dikeluarkan.')) {
+                        
+                        const payoutPayload = {
+                            timestamp: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' }),
+                            type: 'payout_request',
+                            sender: this.currentUser.username,
+                            phone: this.affiliateBank.accountNo,
+                            role: 'agent',
+                            message: `[PERMOHONAN PAYOUT AFFILIATE]\nKlien: ${this.currentUser.username}\nJumlah: RM ${payoutAmount.toFixed(2)}\nBank: ${this.affiliateBank.bankName}\nAkaun: ${this.affiliateBank.accountNo}\nNama: ${this.affiliateBank.accountHolder}`
+                        };
+
+                        const emailClientPayload = {
+                            timestamp: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' }),
+                            type: 'payout_client_email',
+                            sender: 'Master Administrator',
+                            username: this.currentUser.username,
+                            role: 'admin',
+                            message: `[NOTIFIKASI KESELAMATAN: PERMOHONAN PENGELUARAN E-WALLET]\n\nHai ${this.currentUser.username},\n\nSistem kami telah menerima satu permohonan pengeluaran (payout) komisen sebanyak RM ${payoutAmount.toFixed(2)} daripada e-wallet affiliate anda ke akaun ${this.affiliateBank.bankName} (${this.affiliateBank.accountNo}).\n\n⚠️ PERHATIAN PENTING:\nSekiranya pengeluaran ini BUKAN dilakukan oleh pihak anda, sila hubungi team sokongan kami dengan kadar segera atau WhatsApp ke live chat support / live chat sokongan di talian 60183172114 untuk tindakan keselamatan.\n\nTerima kasih,\nTeam Architech Labs / LEEA System`
+                        };
+
+                        const gasEndpoint = "https://script.google.com/macros/s/AKfycbxaZ76G3wCvMLiNUxqksGR1ayEF8PvJHQ5MjjwYgMr8Ek7K1XLkRBLmSH_cZ7fEMjB-/exec";
+                        
+                        fetch(gasEndpoint, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payoutPayload)
+                        }).catch(err => console.error("Ralat hantar payout:", err));
+
+                        fetch(gasEndpoint, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(emailClientPayload)
+                        }).catch(err => console.error("Ralat hantar emel notifikasi klien:", err));
+
+                        alert('Permohonan pengeluaran sebanyak RM ' + payoutAmount.toFixed(2) + ' berjaya dihantar! E-mel notifikasi keselamatan telah dihantar kepada e-mel berdaftar anda.');
+                        
+                        this.affiliateData.walletBalance = 0;
+                        this.saveAffiliateDataToStorage();
+                    }
                 },
 
                 async loadClientMessages() {
