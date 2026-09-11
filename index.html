@@ -863,9 +863,25 @@
 
                 deleteSelectedMessage() {
                     if (confirm('Adakah anda pasti untuk memadam mesej ini?')) {
+                        let deletedList = JSON.parse(localStorage.getItem('leea_deleted_msgs_' + this.currentUser.username) || '[]');
+                        deletedList.push({ content: this.selectedMessage.content, date: this.selectedMessage.date });
+                        localStorage.setItem('leea_deleted_msgs_' + this.currentUser.username, JSON.stringify(deletedList));
+
                         this.clientMessages.splice(this.selectedMessage.index, 1);
                         this.saveClientMessagesState();
                         this.showMsgDetailModal = false;
+                    }
+                },
+
+                deleteInboxMessage(index) {
+                    if (confirm('Adakah anda pasti untuk memadam mesej ini?')) {
+                        let targetMsg = this.clientMessages[index];
+                        let deletedList = JSON.parse(localStorage.getItem('leea_deleted_msgs_' + this.currentUser.username) || '[]');
+                        deletedList.push({ content: targetMsg.content, date: targetMsg.date });
+                        localStorage.setItem('leea_deleted_msgs_' + this.currentUser.username, JSON.stringify(deletedList));
+
+                        this.clientMessages.splice(index, 1);
+                        this.saveClientMessagesState();
                     }
                 },
 
@@ -886,13 +902,6 @@
                 markAsRead(index) {
                     if (this.clientMessages[index]) {
                         this.clientMessages[index].isRead = true;
-                        this.saveClientMessagesState();
-                    }
-                },
-
-                deleteInboxMessage(index) {
-                    if (confirm('Adakah anda pasti untuk memadam mesej ini?')) {
-                        this.clientMessages.splice(index, 1);
                         this.saveClientMessagesState();
                     }
                 },
@@ -1039,12 +1048,14 @@
 
                 async loadClientMessages() {
                     if (!this.currentUser) return;
-                    const inboxScriptUrl = "https://script.google.com/macros/s/AKfycbxmy6KWzd9UMovyNUmndrtI7QGIeKfpz3B5yK-jsjAQtRZ2pzFzAZ0Xa_WEDsNa7Y1D/exec?t=" + new Date().getTime();
+                    const inboxScriptUrl = "https://script.google.com/macros/s/AKfycby_eguXxzQ-E6HKkFdyL9BOSgPddjI0N-bwILLc58Npk3OvWB9caS0qve1Lc71QKn4T/exec?t=" + new Date().getTime();
                     try {
                         const res = await fetch(inboxScriptUrl);
                         const data = await res.json();
                         if (data && data.status === "success" && Array.isArray(data.data)) {
                             const msgs = [];
+                            let deletedList = JSON.parse(localStorage.getItem('leea_deleted_msgs_' + this.currentUser.username) || '[]');
+
                             data.data.forEach(row => {
                                 if (row.type === 'inbox' || row.role === 'admin') {
                                     const target = String(row.targetClient || 'ALL').trim();
@@ -1068,12 +1079,21 @@
                                                 formattedInboxTime = String(row.timestamp).substring(11, 16);
                                             }
                                         }
-                                        msgs.push({
-                                            senderTitle: row.sender || 'Master Administrator',
-                                            date: (row.timestamp ? row.timestamp.substring(0, 10) + ' ' : '') + formattedInboxTime,
-                                            content: row.message || '',
-                                            isRead: false
-                                        });
+
+                                        const msgContent = row.message || '';
+                                        const msgDate = (row.timestamp ? row.timestamp.substring(0, 10) + ' ' : '') + formattedInboxTime;
+
+                                        // Semak sama ada mesej telah dipadam secara lokal oleh klien
+                                        const isDeleted = deletedList.some(d => d.content === msgContent && d.date === msgDate);
+
+                                        if (!isDeleted) {
+                                            msgs.push({
+                                                senderTitle: row.sender || 'Master Administrator',
+                                                date: msgDate,
+                                                content: msgContent,
+                                                isRead: false
+                                            });
+                                        }
                                     }
                                 }
                             });
