@@ -666,6 +666,10 @@
                     if (savedProfile) {
                         try { this.clientProfile = JSON.parse(savedProfile); } catch(e) {}
                     }
+                    if (!this.clientProfile.companyName) {
+                        let matchedClient = this.clients.find(c => c.username === this.currentUser.username);
+                        this.clientProfile.companyName = (matchedClient && matchedClient.companyName) ? matchedClient.companyName : this.currentUser.username;
+                    }
                 },
 
                 saveClientCompanyProfile() {
