@@ -632,16 +632,26 @@
                 <div class="p-4 bg-gray-950 border-b border-gray-800 flex justify-between items-center">
                     <div class="flex items-center space-x-2">
                         <i class="fa-solid fa-bell text-blue-400"></i>
-                        <h3 class="font-bold text-sm text-blue-300 uppercase tracking-wider">Message Inbox (Notifikasi Pentadbir)</h3>
+                        <h3 class="font-bold text-sm text-blue-300 uppercase tracking-wider">Message Inbox (Pusat Notifikasi)</h3>
                     </div>
                     <button @click="showInboxModal = false" class="text-gray-400 hover:text-red-400 p-2 transition text-base focus:outline-none">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
-                <div class="p-6 max-h-[400px] overflow-y-auto space-y-4">
-                    <template x-for="(msg, mIdx) in clientMessages" :key="mIdx">
-                        <div class="p-4 rounded-xl cyber-border space-y-2 transition" :class="msg.isRead ? 'bg-gray-950/60 border-gray-800 opacity-75' : 'bg-gray-950 border-blue-500/60 shadow-lg'">
+                <div class="p-6 max-h-[420px] overflow-y-auto space-y-4">
+                    <!-- AMARAN KAPASITI MAKSIMUM 10 MESEJ -->
+                    <div class="p-3 bg-blue-950/30 border border-blue-500/30 rounded-xl flex items-center justify-between text-[11px] text-blue-300">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+                            <span>Kapasiti Inbox: <strong x-text="clientMessages.length"></strong> / 10 Mesej</span>
+                        </div>
+                        <span class="text-[10px] text-gray-400" x-show="clientMessages.length >= 10">⚠️ Had penuh tercapai. Sila padam mesej lama.</span>
+                    </div>
+
+                    <!-- SENARAI MESEJ (DIHADKAN KEPADA 10 TERKINI - KLIK UNTUK BACA PENUH) -->
+                    <template x-for="(msg, mIdx) in clientMessages.slice(0, 10)" :key="mIdx">
+                        <div @click="openMessageDetail(msg, mIdx)" class="p-4 rounded-xl cyber-border space-y-2 transition cursor-pointer hover:border-blue-400" :class="msg.isRead ? 'bg-gray-950/60 border-gray-800 opacity-75' : 'bg-gray-950 border-blue-500/60 shadow-lg'">
                             <div class="flex justify-between items-center">
                                 <div class="flex items-center space-x-2">
                                     <span class="font-bold text-blue-400 text-xs" x-text="msg.senderTitle || 'Master Administrator'"></span>
@@ -649,36 +659,62 @@
                                 </div>
                                 <span class="text-[10px] text-gray-500" x-text="msg.date"></span>
                             </div>
-                            <p class="text-gray-200 text-xs leading-relaxed" x-text="msg.content"></p>
-                            
-                            <!-- Butang Tindakan: Mark as Read & Delete -->
-                            <div class="flex justify-end space-x-2 pt-2 border-t border-gray-800/60">
-                                <template x-if="!msg.isRead">
-                                    <button @click="markAsRead(mIdx)" class="px-3 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-bold transition flex items-center space-x-1">
-                                        <i class="fa-solid fa-check"></i>
-                                        <span>Tandakan Telah Dibaca</span>
-                                    </button>
-                                </template>
-                                <template x-if="msg.isRead">
-                                    <button @click="deleteInboxMessage(mIdx)" class="px-3 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 rounded-lg text-[10px] font-bold transition flex items-center space-x-1">
-                                        <i class="fa-solid fa-trash"></i>
-                                        <span>Padam Mesej</span>
-                                    </button>
-                                </template>
-                            </div>
+                            <p class="text-gray-200 text-xs truncate" x-text="msg.content"></p>
+                            <div class="text-[10px] text-blue-400 text-right italic">Klik untuk baca mesej penuh &rarr;</div>
                         </div>
                     </template>
 
                     <template x-if="clientMessages.length === 0">
                         <div class="p-8 text-center text-gray-500 text-xs">
                             <i class="fa-regular fa-envelope-open text-2xl mb-2 text-gray-600 block"></i>
-                            Tiada mesej baru daripada pentadbir sistem buat masa ini.
+                            Tiada notifikasi atau mesej rasmi daripada pentadbir sistem buat masa ini.
                         </div>
                     </template>
                 </div>
 
-                <div class="p-3 bg-gray-950 border-t border-gray-800 text-right">
+                <div class="p-3 bg-gray-950 border-t border-gray-800 flex justify-between items-center text-[10px] text-gray-400 px-4">
+                    <span>Sistem Pemesejan Terenkripsi LEEA</span>
                     <button @click="showInboxModal = false" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition">Tutup (Close)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- POPUP MODAL BACA MESEJ PENUH (DETAILED VIEW) -->
+        <div x-show="showMsgDetailModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 font-mono" x-cloak>
+            <div class="bg-gray-900 border border-blue-500/50 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden glow-effect space-y-4">
+                <div class="p-4 bg-gray-950 border-b border-gray-800 flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-envelope-open-text text-emerald-400"></i>
+                        <h3 class="font-bold text-sm text-emerald-300 uppercase tracking-wider">Paparan Mesej Penuh</h3>
+                    </div>
+                    <button @click="showMsgDetailModal = false" class="text-gray-400 hover:text-red-400 p-2 transition text-base focus:outline-none">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 space-y-4 text-xs font-mono">
+                    <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase">Pengirim:</span>
+                            <strong class="text-blue-400 text-sm" x-text="selectedMessage.senderTitle"></strong>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-gray-400 block text-[10px] uppercase">Tarikh / Masa:</span>
+                            <span class="text-indigo-300" x-text="selectedMessage.date"></span>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-950 p-4 rounded-xl cyber-border min-h-[140px] max-h-[250px] overflow-y-auto">
+                        <p class="text-gray-100 leading-relaxed whitespace-pre-wrap text-sm" x-text="selectedMessage.content"></p>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-950 border-t border-gray-800 flex justify-between items-center">
+                    <button @click="deleteSelectedMessage()" class="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold transition flex items-center space-x-1">
+                        <i class="fa-solid fa-trash"></i>
+                        <span>Padam Mesej Ini</span>
+                    </button>
+                    <button @click="showMsgDetailModal = false" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition">Kembali ke Inbox</button>
                 </div>
             </div>
         </div>
@@ -724,6 +760,8 @@
                 replyText: '',
                 clientMessages: [],
                 showInboxModal: false,
+                showMsgDetailModal: false,
+                selectedMessage: { senderTitle: '', date: '', content: '', index: null },
                 brainPrompt: 'Anda adalah pembantu khidmat pelanggan profesional.',
                 botSettings: { tone: 'professional' },
                 clientBot: {
@@ -812,6 +850,23 @@
                             this.loadClientMessages();
                         }
                     }, 4000);
+                },
+
+                openMessageDetail(msg, index) {
+                    this.selectedMessage = { ...msg, index: index };
+                    this.showMsgDetailModal = true;
+                    if (!msg.isRead) {
+                        this.clientMessages[index].isRead = true;
+                        this.saveClientMessagesState();
+                    }
+                },
+
+                deleteSelectedMessage() {
+                    if (confirm('Adakah anda pasti untuk memadam mesej ini?')) {
+                        this.clientMessages.splice(this.selectedMessage.index, 1);
+                        this.saveClientMessagesState();
+                        this.showMsgDetailModal = false;
+                    }
                 },
 
                 buyTokenWithWallet(packageSize) {
