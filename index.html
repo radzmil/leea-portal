@@ -81,7 +81,7 @@
 
                     <button @click="showInboxModal = true" class="relative p-2 rounded-xl bg-gray-800/60 hover:bg-gray-800 text-blue-300 transition" title="Message Inbox">
                         <i class="fa-solid fa-bell text-sm"></i>
-                        <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full blinking-red-dot" x-show="clientMessages.length > 0"></span>
+                        <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full blinking-red-dot" x-show="hasUnreadMessages"></span>
                     </button>
 
                     <div class="flex items-center space-x-2 border-l pl-4 border-gray-800">
@@ -583,12 +583,31 @@
 
                 <div class="p-6 max-h-[400px] overflow-y-auto space-y-4">
                     <template x-for="(msg, mIdx) in clientMessages" :key="mIdx">
-                        <div class="p-4 bg-gray-950 rounded-xl cyber-border space-y-2 border-l-4 border-blue-500">
+                        <div class="p-4 rounded-xl cyber-border space-y-2 transition" :class="msg.isRead ? 'bg-gray-950/60 border-gray-800 opacity-75' : 'bg-gray-950 border-blue-500/60 shadow-lg'">
                             <div class="flex justify-between items-center">
-                                <span class="font-bold text-blue-400 text-xs" x-text="msg.senderTitle || 'Master Administrator'"></span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-blue-400 text-xs" x-text="msg.senderTitle || 'Master Administrator'"></span>
+                                    <span class="px-2 py-0.5 rounded text-[9px] font-bold" :class="msg.isRead ? 'bg-gray-800 text-gray-400' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'" x-text="msg.isRead ? 'Telah Dibaca' Baru"></span>
+                                </div>
                                 <span class="text-[10px] text-gray-500" x-text="msg.date"></span>
                             </div>
                             <p class="text-gray-200 text-xs leading-relaxed" x-text="msg.content"></p>
+                            
+                            <!-- Butang Tindakan: Mark as Read & Delete -->
+                            <div class="flex justify-end space-x-2 pt-2 border-t border-gray-800/60">
+                                <template x-if="!msg.isRead">
+                                    <button @click="markAsRead(mIdx)" class="px-3 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-bold transition flex items-center space-x-1">
+                                        <i class="fa-solid fa-check"></i>
+                                        <span>Tandakan Telah Dibaca</span>
+                                    </button>
+                                </template>
+                                <template x-if="msg.isRead">
+                                    <button @click="deleteInboxMessage(mIdx)" class="px-3 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 rounded-lg text-[10px] font-bold transition flex items-center space-x-1">
+                                        <i class="fa-solid fa-trash"></i>
+                                        <span>Padam Mesej</span>
+                                    </button>
+                                </template>
+                            </div>
                         </div>
                     </template>
 
@@ -677,6 +696,10 @@
                     accountHolder: ''
                 },
 
+                get hasUnreadMessages() {
+                    return this.clientMessages.some(m => !m.isRead);
+                },
+
                 init() {
                     const saved = localStorage.getItem('leea_admin_clients');
                     if (saved) {
@@ -727,6 +750,25 @@
                             this.loadClientMessages();
                         }
                     }, 4000);
+                },
+
+                markAsRead(index) {
+                    if (this.clientMessages[index]) {
+                        this.clientMessages[index].isRead = true;
+                        this.saveClientMessagesState();
+                    }
+                },
+
+                deleteInboxMessage(index) {
+                    if (confirm('Adakah anda pasti untuk memadam mesej ini?')) {
+                        this.clientMessages.splice(index, 1);
+                        this.saveClientMessagesState();
+                    }
+                },
+
+                saveClientMessagesState() {
+                    if (!this.currentUser) return;
+                    localStorage.setItem('leea_client_inbox_state_' + this.currentUser.username, JSON.stringify(this.clientMessages));
                 },
 
                 handleBotUpgrade() {
@@ -856,7 +898,7 @@
                         return;
                     }
                     if (!this.affiliateBank.accountNo) {
-                        alert('Sila tetapkan maklumat akaun terlebih dahulu.');
+                        alert('Sila tetapkan akaun terlebih dahulu.');
                         return;
                     }
                     alert('Permohonan pengeluaran komisen telah dihantar kepada pentadbir. Bayaran akan dikreditkan dalam masa 3 hari bekerja.');
@@ -879,27 +921,48 @@
                                         let formattedInboxTime = '';
                                         if (row.timestamp) {
                                             try {
-                                                const d = new Date(row.timestamp);
+                                                let rawTs = String(row.timestamp).trim();
+                                                if (rawTs.match(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/)) {
+                                                    rawTs = rawTs.replace(' ', 'T') + 'Z';
+                                                } else if (!rawTs.endsWith('Z') && !rawTs.includes('+') && rawTs.includes('T')) {
+                                                    rawTs += 'Z';
+                                                }
+                                                const d = new Date(rawTs);
                                                 if (!isNaN(d.getTime())) {
                                                     formattedInboxTime = d.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', hour12: false });
                                                 } else {
-                                                    const parts = String(row.timestamp).split(' ');
-                                                    if (parts.length > 1) formattedInboxTime = parts[1].substring(0, 5);
-                                                    else formattedInboxTime = String(row.timestamp).substring(11, 16);
+                                                    formattedInboxTime = rawTs.substring(11, 16);
                                                 }
                                             } catch (e) {
                                                 formattedInboxTime = String(row.timestamp).substring(11, 16);
                                             }
                                         }
-                                        msgs.unshift({
+                                        msgs.push({
                                             senderTitle: row.sender || 'Master Administrator',
                                             date: (row.timestamp ? row.timestamp.substring(0, 10) + ' ' : '') + formattedInboxTime,
-                                            content: row.message || ''
+                                            content: row.message || '',
+                                            isRead: false // Status baca lalai
                                         });
                                     }
                                 }
                             });
-                            this.clientMessages = msgs;
+
+                            // Semak sama ada ada status baca / padam yang telah disimpan dalam localStorage klien
+                            const savedState = localStorage.getItem('leea_client_inbox_state_' + this.currentUser.username);
+                            if (savedState) {
+                                try {
+                                    const parsedState = JSON.parse(savedState);
+                                    // Padankan mesej berdasarkan isi kandungan & tarikh supaya status isRead dikekalkan
+                                    msgs.forEach(m => {
+                                        const foundMatch = parsedState.find(s => s.content === m.content && s.date === m.date);
+                                        if (foundMatch) {
+                                            m.isRead = foundMatch.isRead;
+                                        }
+                                    });
+                                } catch(e) {}
+                            }
+
+                            this.clientMessages = msgs.reverse(); // Mesej terkini di atas
                         }
                     } catch(err) {
                         console.error("Gagal tarik mesej inbox:", err);
@@ -931,16 +994,17 @@
                                     let formattedTime = '';
                                     if (row.timestamp) {
                                         try {
-                                            const d = new Date(row.timestamp);
+                                            let rawTs = String(row.timestamp).trim();
+                                            if (rawTs.match(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/)) {
+                                                rawTs = rawTs.replace(' ', 'T') + 'Z';
+                                            } else if (!rawTs.endsWith('Z') && !rawTs.includes('+') && rawTs.includes('T')) {
+                                                rawTs += 'Z';
+                                            }
+                                            const d = new Date(rawTs);
                                             if (!isNaN(d.getTime())) {
                                                 formattedTime = d.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', hour12: false });
                                             } else {
-                                                const parts = String(row.timestamp).split(' ');
-                                                if (parts.length > 1) {
-                                                    formattedTime = parts[1].substring(0, 5);
-                                                } else {
-                                                    formattedTime = String(row.timestamp).substring(11, 16);
-                                                }
+                                                formattedTime = rawTs.substring(11, 16);
                                             }
                                         } catch (e) {
                                             formattedTime = String(row.timestamp).substring(11, 16);
