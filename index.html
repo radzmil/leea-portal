@@ -245,27 +245,27 @@
                         </div>
                     </div>
 
-                    <!-- Kotak Saiz Memori Bot Neural (500MB Limit & Upgrade V2) -->
+                    <!-- Kotak Saiz Memori Bot Neural (300MB Limit untuk V1 & Upgrade V2) -->
                     <div class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-4 font-mono">
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-2">
                                 <i class="fa-solid fa-database text-blue-400"></i>
-                                <h3 class="font-bold text-sm text-blue-300 uppercase">Kapasiti Memori Neural Bot</h3>
+                                <h3 class="font-bold text-sm text-blue-300 uppercase">Kapasiti Memori Neural Bot (Model V1)</h3>
                             </div>
-                            <span class="text-xs font-bold px-3 py-1 rounded-full" :class="clientBot.memoryUsageMb >= 500 ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'" x-text="clientBot.memoryUsageMb + ' MB / 500 MB'"></span>
+                            <span class="text-xs font-bold px-3 py-1 rounded-full" :class="clientBot.memoryUsageMb >= 300 ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'" x-text="clientBot.memoryUsageMb + ' MB / 300 MB'"></span>
                         </div>
 
                         <div class="w-full bg-gray-950 rounded-full h-3.5 p-0.5 border border-gray-800">
-                            <div class="h-2.5 rounded-full transition-all duration-500" :class="clientBot.memoryUsageMb >= 500 ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500'" :style="'width: ' + Math.min((clientBot.memoryUsageMb / 500) * 100, 100) + '%'"></div>
+                            <div class="h-2.5 rounded-full transition-all duration-500" :class="clientBot.memoryUsageMb >= 300 ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500'" :style="'width: ' + Math.min((clientBot.memoryUsageMb / 300) * 100, 100) + '%'"></div>
                         </div>
 
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pt-2">
                             <p class="text-[11px] text-gray-400 leading-relaxed">
-                                <template x-if="clientBot.memoryUsageMb >= 500">
-                                    <span class="text-red-400 font-bold">⚠️ Amaran: Had memori 500MB telah dicapai! Sistem disekat daripada memasukkan data input baru. Sila naik taraf ke Versi V2.</span>
+                                <template x-if="clientBot.memoryUsageMb >= 300">
+                                    <span class="text-red-400 font-bold">⚠️ Amaran: Had memori 300MB telah dicapai! Sistem disekat daripada memasukkan data input baru. Sila naik taraf ke Versi V2.</span>
                                 </template>
-                                <template x-if="clientBot.memoryUsageMb < 500">
-                                    <span>Memori aktif untuk latihan data skrip produk, sejarah perbualan, dan fail latihan bot.</span>
+                                <template x-if="clientBot.memoryUsageMb < 300">
+                                    <span>Memori aktif untuk latihan data skrip produk, sejarah perbualan, dan fail latihan bot V1.</span>
                                 </template>
                             </p>
                             <button @click="handleBotUpgrade()" class="px-5 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow transition whitespace-nowrap">
@@ -285,7 +285,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-12 min-h-[450px]">
                         <div class="md:col-span-4 border-r border-gray-800 overflow-y-auto max-h-[450px] divide-y divide-gray-800">
                             <template x-for="chat in liveChats" :key="chat.id">
-                                <div @click="activeChat = chat" class="p-3 cursor-pointer hover:bg-gray-800/40 transition font-mono text-xs" :class="activeChat && activeChat.id === chat.id ? 'bg-blue-950/50 border-l-4 border-blue-500' : ''">
+                                <div @click="activeChat = chat; $nextTick(() => { scrollToBottom(); })" class="p-3 cursor-pointer hover:bg-gray-800/40 transition font-mono text-xs" :class="activeChat && activeChat.id === chat.id ? 'bg-blue-950/50 border-l-4 border-blue-500' : ''">
                                     <div class="flex justify-between font-bold text-blue-200">
                                         <span x-text="chat.phone"></span>
                                         <span class="text-[10px] text-gray-500" x-text="chat.time"></span>
@@ -309,7 +309,7 @@
                                 <div class="flex flex-col h-full flex-grow">
                                     <div class="p-3 bg-gray-900 border-b border-gray-800 font-mono text-xs font-bold text-blue-300" x-text="'Chat bersama: ' + activeChat.phone"></div>
                                     
-                                    <div class="p-4 overflow-y-auto space-y-3 flex-grow max-h-[320px] font-mono text-xs">
+                                    <div x-ref="chatContainer" class="p-4 overflow-y-auto space-y-3 flex-grow max-h-[320px] font-mono text-xs">
                                         <template x-for="msg in activeChat.messages">
                                             <div class="flex" :class="msg.sender === 'customer' ? 'justify-start' : 'justify-end'">
                                                 <div class="max-w-[80%] rounded-xl px-3 py-2" :class="msg.sender === 'customer' ? 'bg-gray-900 text-gray-200' : 'bg-blue-600 text-white'">
@@ -397,7 +397,7 @@
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-gray-400">Had Memori:</span>
-                                    <span class="font-bold text-blue-400" x-text="clientBot.memoryUsageMb + ' MB / 500 MB'"></span>
+                                    <span class="font-bold text-blue-400" x-text="clientBot.memoryUsageMb + ' MB / 300 MB'"></span>
                                 </div>
                             </div>
 
@@ -852,6 +852,12 @@
                     }, 4000);
                 },
 
+                scrollToBottom() {
+                    if (this.$refs.chatContainer) {
+                        this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight;
+                    }
+                },
+
                 openMessageDetail(msg, index) {
                     this.selectedMessage = { ...msg, index: index };
                     this.showMsgDetailModal = true;
@@ -1083,7 +1089,6 @@
                                         const msgContent = row.message || '';
                                         const msgDate = (row.timestamp ? row.timestamp.substring(0, 10) + ' ' : '') + formattedInboxTime;
 
-                                        // Semak sama ada mesej telah dipadam secara lokal oleh klien
                                         const isDeleted = deletedList.some(d => d.content === msgContent && d.date === msgDate);
 
                                         if (!isDeleted) {
@@ -1173,6 +1178,7 @@
                             this.liveChats = Object.values(chatMap);
                             if (this.liveChats.length > 0 && !this.activeChat) {
                                 this.activeChat = this.liveChats[0];
+                                this.$nextTick(() => { this.scrollToBottom(); });
                             }
                         }
                     } catch (err) {
@@ -1185,6 +1191,7 @@
                     this.activeChat.messages.push({ sender: 'agent', text: this.replyText, time: 'Now' });
                     this.activeChat.lastMessage = this.replyText;
                     this.replyText = '';
+                    this.$nextTick(() => { this.scrollToBottom(); });
                 },
 
                 login() {
