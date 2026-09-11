@@ -191,7 +191,7 @@
                     </button>
                 </div>
 
-                <!-- Tab Dashboard / Analytics & Limit Memori -->
+                <!-- Tab Dashboard / Analytics & Statistik Kuota Chat & Token -->
                 <div x-show="clientTab === 'dashboard'" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 font-mono">
                         <div class="bg-gray-900 p-6 rounded-2xl cyber-border">
@@ -209,6 +209,39 @@
                         <div class="bg-gray-900 p-6 rounded-2xl cyber-border">
                             <span class="text-xs text-gray-400 uppercase">Tarikh Luput</span>
                             <h3 class="text-xl font-black mt-2 text-indigo-400" x-text="currentUser.expiryDate"></h3>
+                        </div>
+                    </div>
+
+                    <!-- KOTAK STATISTIK PENGGUNAAN KUOTA 1000 CHAT & TOKEN -->
+                    <div class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-4 font-mono">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-comments-dollar text-emerald-400"></i>
+                                <h3 class="font-bold text-sm text-emerald-300 uppercase">Statistik Kuota Chat & Token Semasa</h3>
+                            </div>
+                            <span class="text-xs font-bold px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full" x-text="(clientBot.tokenBalance || 1000) + ' / 1000 Baki Chat'"></span>
+                        </div>
+
+                        <div class="w-full bg-gray-950 rounded-full h-3.5 p-0.5 border border-gray-800">
+                            <div class="h-2.5 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full transition-all duration-500" :style="'width: ' + Math.min(((clientBot.tokenBalance || 1000) / 1000) * 100, 100) + '%'"></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-[11px]">
+                            <div class="bg-gray-950 p-3 rounded-xl cyber-border space-y-1">
+                                <span class="text-gray-400 block uppercase">Kuota Percuma Asas</span>
+                                <span class="font-bold text-blue-300 text-sm">1,000 Chat</span>
+                                <p class="text-[10px] text-gray-500">Peruntukan mesej automatik AI bulanan.</p>
+                            </div>
+                            <div class="bg-gray-950 p-3 rounded-xl cyber-border space-y-1">
+                                <span class="text-gray-400 block uppercase">Chat Digunakan</span>
+                                <span class="font-bold text-amber-400 text-sm" x-text="liveChats.length + ' Chat'"></span>
+                                <p class="text-[10px] text-gray-500">Jumlah interaksi pelanggan aktif.</p>
+                            </div>
+                            <div class="bg-gray-950 p-3 rounded-xl cyber-border space-y-1">
+                                <span class="text-gray-400 block uppercase">Tambah Nilai (Top-Up)</span>
+                                <a @click="clientTab = 'billing'" class="text-blue-400 hover:text-blue-300 font-bold underline cursor-pointer block">Beli Pakej 500 / 1000 Token &rarr;</a>
+                                <p class="text-[10px] text-gray-500">Rujuk tab Langganan & Bil untuk top-up.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -696,7 +729,8 @@
                 clientBot: {
                     botName: 'bot',
                     planTier: 'v1 pro',
-                    memoryUsageMb: 120
+                    memoryUsageMb: 120,
+                    tokenBalance: 1000
                 },
                 clientProfile: {
                     companyName: '',
@@ -754,6 +788,9 @@
                                     this.isLoggedIn = true;
                                     if (matchedClient.planTier) {
                                         this.clientBot.planTier = matchedClient.planTier;
+                                    }
+                                    if (matchedClient.tokenBalance) {
+                                        this.clientBot.tokenBalance = matchedClient.tokenBalance;
                                     }
                                     this.fetchLiveChats();
                                     this.loadClientMessages();
@@ -1103,6 +1140,9 @@
                         this.isLoggedIn = true;
                         this.clientBot.botName = found.username + '-bot';
                         this.clientBot.planTier = found.planTier || 'v1 pro';
+                        if (found.tokenBalance) {
+                            this.clientBot.tokenBalance = found.tokenBalance;
+                        }
                         localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
                         this.fetchLiveChats();
                         this.loadClientMessages();
