@@ -245,7 +245,7 @@
                         </div>
                     </div>
 
-                    <!-- Kotak Saiz Memori Bot Neural (300MB Limit untuk V1 & Upgrade V2) -->
+                    <!-- Kotak Saiz Memori Bot Neural (220MB / 300MB untuk V1) -->
                     <div class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-4 font-mono">
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-2">
@@ -767,7 +767,7 @@
                 clientBot: {
                     botName: 'bot',
                     planTier: 'v1 pro',
-                    memoryUsageMb: 120,
+                    memoryUsageMb: 220,
                     tokenBalance: 1000
                 },
                 clientProfile: {
@@ -1063,7 +1063,8 @@
                             let deletedList = JSON.parse(localStorage.getItem('leea_deleted_msgs_' + this.currentUser.username) || '[]');
 
                             data.data.forEach(row => {
-                                if (row.type === 'inbox' || row.role === 'admin') {
+                                // Semak sama ada jenis data adalah inbox atau peranan admin
+                                if (String(row.type || '').trim().toLowerCase() === 'inbox' || String(row.role || '').trim().toLowerCase() === 'admin') {
                                     const target = String(row.targetClient || 'ALL').trim();
                                     if (target === 'ALL' || target.toLowerCase() === this.currentUser.username.toLowerCase()) {
                                         let formattedInboxTime = '';
@@ -1087,7 +1088,7 @@
                                         }
 
                                         const msgContent = row.message || '';
-                                        const msgDate = (row.timestamp ? row.timestamp.substring(0, 10) + ' ' : '') + formattedInboxTime;
+                                        const msgDate = (row.timestamp ? String(row.timestamp).substring(0, 10) + ' ' : '') + formattedInboxTime;
 
                                         const isDeleted = deletedList.some(d => d.content === msgContent && d.date === msgDate);
 
