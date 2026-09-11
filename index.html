@@ -513,7 +513,7 @@
                     </template>
                 </div>
 
-                <!-- Tab Langganan & Bil (Kemas Kini Pakej Token & E-Wallet Redemption) -->
+                <!-- Tab Langganan & Bil (Kemas Kini Pautan ToyyibPay Rasmi) -->
                 <div x-show="clientTab === 'billing'" class="bg-gray-900 p-6 rounded-2xl cyber-border space-y-6 font-mono text-xs">
                     <div class="flex justify-between items-center border-b border-gray-800 pb-3">
                         <h3 class="font-bold text-sm text-blue-300"><i class="fa-solid fa-credit-card mr-2"></i> Maklumat Pelan & Top-Up Token</h3>
@@ -528,7 +528,7 @@
                                 <h5 class="font-bold text-blue-300">Pakej 500 Token WhatsApp</h5>
                                 <p class="text-gray-400 text-[11px]">Harga: <strong>RM300.00</strong></p>
                                 <div class="flex space-x-2">
-                                    <a href="https://toyyibpay.com/Leea-Sistem-500-token" target="_blank" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white text-center font-bold rounded-lg shadow">Bayar Online</a>
+                                    <a href="https://toyyibpay.com/Leea-System-500-Token-Chat" target="_blank" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white text-center font-bold rounded-lg shadow">Bayar Online</a>
                                     <button @click="buyTokenWithWallet(500)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[10px] shadow">Guna E-Wallet</button>
                                 </div>
                             </div>
@@ -537,7 +537,7 @@
                                 <h5 class="font-bold text-blue-300">Pakej 1000 Token WhatsApp</h5>
                                 <p class="text-gray-400 text-[11px]">Harga: <strong>RM500.00</strong></p>
                                 <div class="flex space-x-2">
-                                    <a href="https://toyyibpay.com/Leea-Sistem-1000-Token-Chat" target="_blank" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white text-center font-bold rounded-lg shadow">Bayar Online</a>
+                                    <a href="https://toyyibpay.com/Leea-Sistem-1000-token" target="_blank" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white text-center font-bold rounded-lg shadow">Bayar Online</a>
                                     <button @click="buyTokenWithWallet(1000)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[10px] shadow">Guna E-Wallet</button>
                                 </div>
                             </div>
@@ -1044,7 +1044,7 @@
                 },
 
                 async fetchLiveChats() {
-                    const url = "https://script.google.com/macros/s/AKfycbys_to1rnHpv_oN1eOA3C82ZTLJP8T84J0c-mt47_AhnqLPUX68yRpuIsMiSkM8K7bxvw/exec?t=" + new Date().getTime();
+                    const url = "https://script.google.com/macros/s/AKfycbw3UcO_u2ZiEoLMoUQYrvDplzzPoyhlf6v2XIVvb1c22Iq9U3MEaiEnPFySfxDdBBy7Wg/exec?t=" + new Date().getTime();
                     try {
                         const res = await fetch(url);
                         const data = await res.json();
