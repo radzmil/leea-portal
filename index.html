@@ -357,7 +357,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block uppercase text-blue-400 mb-1">Nama Identiti Bot</label>
-                                    <input type="text" x-model="clientBot.botName" placeholder="contoh: sbltransport-bot" class="w-full p-2.5 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
+                                    <input type="text" x-model="clientBot.botName" placeholder="contoh: syarikat-bot" class="w-full p-2.5 bg-gray-950 border border-gray-800 rounded-xl text-blue-100 focus:outline-none">
                                     <span class="text-[10px] text-gray-500 mt-1 block">Format lalai: [nama-klien]-bot</span>
                                 </div>
                                 <div>
@@ -1174,7 +1174,7 @@
                         const data = await res.json();
                         if (data && data.status === "success" && Array.isArray(data.data)) {
                             const chatMap = {};
-                            let lastPhone = "601123687357";
+                            let lastPhone = "";
 
                             data.data.forEach(row => {
                                 if (row.type && row.type !== 'chat') return;
@@ -1182,6 +1182,8 @@
                                 let phone = row.phone ? String(row.phone).trim() : lastPhone;
                                 if (!phone || phone === "Unknown") phone = lastPhone;
                                 else lastPhone = phone;
+
+                                if (!phone) return;
 
                                 const cleanPhone = phone.replace(/[^0-9]/g, '');
                                 if (!chatMap[cleanPhone]) {
