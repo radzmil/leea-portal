@@ -1,0 +1,11 @@
+[
+    {
+        "username": "sbltransport",
+        "password": "password123",
+        "clientId": "CLI-1001",
+        "status": "Paid 🟢",
+        "expiryDate": "27/09/2026",
+        "planTier": "v1 pro",
+        "tokenBalance": 1000
+    }
+]
