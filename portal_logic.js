@@ -119,7 +119,7 @@ function applyTranslations() {
     document.getElementById('btnSaveProfile').innerText = t.btnSaveProfile;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     applyTranslations();
     const currentClient = localStorage.getItem('leea_current_client');
     
@@ -138,9 +138,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const affiliateInput = document.getElementById('affiliateLinkInput');
         if (affiliateInput) affiliateInput.value = 'https://www.architechlaboratory.my/ref/' + currentClient.toLowerCase();
 
+        // Tetapan URL Railway dikawal sepenuhnya oleh Admin secara automatik
+        let railwayUrl = 'https://web-production-07b92.up.railway.app/';
+        try {
+            const dbRes = await fetch('clients_db.json');
+            if (dbRes.ok) {
+                const clients = await dbRes.json();
+                const foundClient = clients.find(c => c.username === currentClient);
+                if (foundClient && foundClient.railway_url) {
+                    railwayUrl = foundClient.railway_url;
+                }
+            }
+        } catch (e) {
+            console.log("Menggunakan laluan Railway standard rasmi.");
+        }
+
         const adminEmail = localStorage.getItem('admin_email_' + currentClient) || (currentClient.toLowerCase() + '@adminportal.my');
         const adminPhone = localStorage.getItem('admin_phone_' + currentClient) || '+60 19-000 0000';
-        const railwayUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
 
         document.getElementById('modalUsername').value = currentClient;
         document.getElementById('modalAdminEmail').value = adminEmail;
@@ -188,7 +202,6 @@ async function clientLogin() {
     }
 
     try {
-        // Cuba semak melalui Flask API terlebih dahulu
         const response = await fetch('/portal/api-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -206,7 +219,6 @@ async function clientLogin() {
             return;
         }
     } catch (err) {
-        // Jika gagal berhubung dengan Flask (cth: di Vercel), semak terus daripada fail clients_db.json
         try {
             const dbRes = await fetch('clients_db.json');
             if (dbRes.ok) {
@@ -337,28 +349,29 @@ async function fetchChatHistory(clientName, serverUrl, phone) {
 
             if(messages && messages.length > 0) {
                 messages.forEach(m => {
-                    let borderColor = 'var(--accent)';
-                    let bgCol = 'rgba(0,240,255,0.05)';
-                    let senderLabel = '[Bot WhatsApp]';
+                    let isBotOrAgent = (m.sender === 'bot' || m.sender === 'human' || m.sender === 'agent');
                     
-                    if(m.sender === 'user') {
-                        borderColor = '#10b981';
-                        bgCol = 'rgba(16,185,129,0.05)';
-                        senderLabel = '[' + m.name + ']';
-                    } else if(m.sender === 'human') {
-                        borderColor = '#38bdf8';
-                        bgCol = 'rgba(56,189,248,0.08)';
-                        senderLabel = currentLang === 'BM' ? '[Agen Manusia - Anda]' : '[Human Agent - You]';
-                    }
+                    let bubbleAlign = isBotOrAgent 
+                        ? 'margin-left: auto; text-align: right; background: rgba(0, 240, 255, 0.12); border-color: var(--accent);' 
+                        : 'margin-right: auto; text-align: left; background: rgba(16, 185, 129, 0.08); border-color: #10b981;';
+                    
+                    let borderColor = isBotOrAgent ? 'var(--accent)' : '#10b981';
+                    let senderLabel = '[' + m.name + ']';
+                    
+                    if(m.sender === 'bot') senderLabel = '[Zulfa (Bot)]';
+                    else if(m.sender === 'human') senderLabel = currentLang === 'BM' ? '[Agen Manusia]' : '[Human Agent]';
 
                     chatBox.innerHTML += `
-                        <div style="background: ${bgCol}; padding: 6px 10px; border-radius: 4px; border-left: 2px solid ${borderColor};">
-                            <span style="color: ${borderColor}; font-size: 10px; display: block;">${senderLabel} - ${m.time}</span>
-                            ${m.text}
+                        <div style="max-width: 75%; ${bubbleAlign} padding: 8px 12px; border-radius: 8px; border: 1px solid ${borderColor}; margin-bottom: 8px; word-break: break-word;">
+                            <span style="color: ${borderColor}; font-size: 10px; display: block; margin-bottom: 3px;">${senderLabel} - ${m.time}</span>
+                            <span style="color: #fff; font-size: 12px;">${m.text}</span>
                         </div>
                     `;
                 });
-                chatBox.scrollTop = chatBox.scrollHeight;
+                
+                setTimeout(() => {
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 50);
             }
         }
     } catch(e) {
@@ -370,7 +383,7 @@ function selectLead(phone, name) {
     selectedActivePhone = phone;
     document.getElementById('activeChatTitle').innerText = (currentLang === 'BM' ? 'Prospek: ' : 'Lead: ') + name + ' (' + phone + ')';
     const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
-    const railwayUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
+    const railwayUrl = document.getElementById('modalRailwayUrl').value || 'https://web-production-07b92.up.railway.app/';
     fetchChatHistory(currentClient, railwayUrl, phone);
 }
 
@@ -440,7 +453,7 @@ function updateBotName() {
 async function saveClientBrainPrompt() {
     const promptText = document.getElementById('clientBrainPrompt').value.trim();
     const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
-    const serverUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
+    const serverUrl = document.getElementById('modalRailwayUrl').value || 'https://web-production-07b92.up.railway.app/';
 
     if(!promptText) {
         alert(currentLang === 'BM' ? 'Sila masukkan skrip prompt minda bot terlebih dahulu.' : 'Please enter the bot brain prompt script first.');
@@ -506,7 +519,7 @@ async function sendManualMessage() {
     }
 
     const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
-    const serverUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
+    const serverUrl = document.getElementById('modalRailwayUrl').value || 'https://web-production-07b92.up.railway.app/';
 
     try {
         const response = await fetch(`${serverUrl}/api/send-whatsapp`, {

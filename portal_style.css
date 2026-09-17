@@ -303,6 +303,8 @@ button.action-btn:hover {
 
 .chat-messages {
     flex-grow: 1;
+    height: 250px;
+    max-height: 260px;
     overflow-y: auto;
     padding: 10px;
     font-family: monospace;
@@ -310,6 +312,7 @@ button.action-btn:hover {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    scroll-behavior: smooth;
 }
 
 .chat-input-area {
