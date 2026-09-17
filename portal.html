@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leea AI System - Enterprise Client Portal & Live Control</title>
+    <title>Sistem Leea - Enterprise Client Portal & Live Control</title>
     <style>
         :root {
             --bg-main: #030712;
@@ -18,6 +18,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 20px; }
         
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 15px 30px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 0 15px rgba(0,240,255,0.1); }
+        .brand-container { display: flex; align-items: center; gap: 12px; }
         .brand { font-weight: 700; font-size: 16px; color: var(--accent); letter-spacing: 1px; }
         
         /* Sistem Tab Navigation */
@@ -81,9 +82,10 @@
 <body>
 
     <div class="header">
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <!-- Logo Sistem Leea di Penjuru Atas Kiri & Nama Sistem -->
+        <div class="brand-container">
             <img id="headerLogoImg" src="https://via.placeholder.com/40" alt="Logo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);">
-            <div class="brand">LEEA AI SYSTEM - ENTERPRISE CLIENT PORTAL</div>
+            <div class="brand" id="headerCompanyName">SISTEM LEEA</div>
         </div>
         <div style="display: flex; gap: 12px; align-items: center; font-size: 12px;">
             <span style="color: #34d399;">E-Wallet: <strong id="headerWalletBal">RM 0.00</strong></span>
@@ -157,9 +159,7 @@
         <button class="tab-btn active" onclick="switchTab(event, 'tabAnalisis')">📊 Analisis Chat</button>
         <button class="tab-btn" onclick="switchTab(event, 'tabRealtime')">🤖 Bot Automasi</button>
         <button class="tab-btn" onclick="switchTab(event, 'tabAffiliate')">🤝 Affiliate</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tabPembayaran')">💳 Pembayaran</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tabSetting')">⚙️ Setting</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tabBantuan')">📖 Panduan & SOP</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tabPembayaran')">💳 Pembayaran & Langganan</button>
     </div>
 
     <!-- TAB 1: ANALISIS CHAT & STATISTIK TERPERINCI -->
@@ -180,13 +180,13 @@
                 </div>
                 
                 <div class="profile-item">
-                    <span>Model Bot</span>
-                    <strong id="botModelVal" style="color: var(--accent);">Model V2 (Advanced)</strong>
+                    <span>Model Bot (Klien V1 - Upgrade ke V2 hanya oleh Admin)</span>
+                    <strong id="botModelVal" style="color: var(--accent);">Model V1 (Standard)</strong>
                 </div>
 
                 <div class="profile-item">
                     <span>Memori Bot (Diguna / Pakej)</span>
-                    <strong id="botMemoryVal" style="color: #38bdf8;">145 MB / 600 MB</strong>
+                    <strong id="botMemoryVal" style="color: #38bdf8;">95 MB / 300 MB</strong>
                 </div>
 
                 <div class="profile-item">
@@ -257,7 +257,7 @@
         </div>
     </div>
 
-    <!-- TAB 2: BOT AUTOMASI (DULU REALTIME CHAT, KINI MERANGKUMI LIVE CHAT, PROMPT & NOMBOR ADMIN) -->
+    <!-- TAB 2: BOT AUTOMASI -->
     <div id="tabRealtime" class="tab-content">
         <div class="card">
             <h3>
@@ -308,7 +308,7 @@
             <button class="action-btn" onclick="saveClientBrainPrompt()">SIMPAN PROMPT MINDA BOT</button>
         </div>
 
-        <!-- TETAPAN NOMBOR TELEFON ADMIN (GROUP_ADMIN_NUMBER) DIPINDAHKAN KE SINI -->
+        <!-- TETAPAN NOMBOR TELEFON ADMIN (GROUP_ADMIN_NUMBER) -->
         <div class="card">
             <h3>KONFIGURASI NOMBOR TELEFON ADMIN BOT</h3>
             <div class="form-group">
@@ -316,6 +316,16 @@
                 <input type="text" id="clientAdminNumber" placeholder="6019XXXXXXXX">
             </div>
             <button class="action-btn" onclick="saveClientSystemSettings()">SIMPAN & KEMASKINI NOMBOR ADMIN</button>
+        </div>
+
+        <!-- KOTAK PANDUAN & SOP PENGGUNAAN -->
+        <div class="card" style="border-color: rgba(0,240,255,0.4);">
+            <h3>PANDUAN & SOP PENGGUNAAN BOT AUTOMASI</h3>
+            <div style="font-size: 11px; line-height: 1.6; color: var(--text-muted);">
+                <p><strong style="color: var(--accent);">1. Cara Kemaskini Prompt Minda Bot:</strong> Masukkan arahan atau personaliti pada ruangan <em>Bot Brain Prompt</em> di atas, dan klik Simpan.</p>
+                <p><strong style="color: var(--accent);">2. Kawalan Human Touch:</strong> Jika pelanggan memerlukan perhatian manual, klik butang <em>Ambil Alih Manual</em> pada kotak chat untuk mula membalas mesej secara terus.</p>
+                <p><strong style="color: var(--accent);">3. Penukaran Nombor Admin:</strong> Masukkan nombor telefon baru di bahagian tetapan admin di atas supaya sistem automatik mengemas kini pembolehubah pada server.</p>
+            </div>
         </div>
     </div>
 
@@ -398,8 +408,9 @@
         </div>
     </div>
 
-    <!-- TAB 4: PEMBAYARAN -->
+    <!-- TAB 4: PEMBAYARAN & LANGGANAN KLIEN (TERMASUK RENEW MODUL PEMASARAN) -->
     <div id="tabPembayaran" class="tab-content">
+        <!-- TETAPAN GERBANG PEMBAYARAN & QR CODE -->
         <div class="card">
             <h3>TETAPAN PEMBAYARAN & GERBANG TRANSAKSI</h3>
             <div class="form-group">
@@ -412,35 +423,58 @@
             </div>
             <button class="action-btn" onclick="saveClientPaymentSettings()">SIMPAN TETAPAN PEMBAYARAN</button>
         </div>
-    </div>
 
-    <!-- TAB 5: SETTING -->
-    <div id="tabSetting" class="tab-content">
+        <!-- SENARAI LANGGANAN & RENEW (TERMASUK MODUL PEMASARAN) -->
         <div class="card">
-            <h3>KONFIGURASI SERVER & DOMAIN RAILWAY</h3>
-            <div class="form-group">
-                <label>Railway Domain URL (railwayUrl):</label>
-                <input type="text" id="clientRailwayUrl" placeholder="web-production-xxxx.up.railway.app">
-            </div>
-            <div class="form-group">
-                <label>Pilihan Model Memori Bot (memoryModel):</label>
-                <select id="clientModelSelect" onchange="updateMemoryPackage(this.value)">
-                    <option value="V1">Model Bot V1 (300 MB)</option>
-                    <option value="V2" selected>Model Bot V2 (600 MB - Tinggi)</option>
-                </select>
-            </div>
-            <button class="action-btn" onclick="saveClientSystemSettings()">SIMPAN TETAPAN SERVER</button>
-        </div>
-    </div>
+            <h3>BUTIRAN LANGGANAN & PEMBAHARUAN (RENEW) PERKHIDMATAN</h3>
+            <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 15px;">
+                Semak status langganan pelayan bot utama dan buat pembayaran pembaharuan (*renew*) untuk modul automasi pemasaran di bawah.
+            </p>
 
-    <!-- TAB 6: PANDUAN & SOP -->
-    <div id="tabBantuan" class="tab-content">
-        <div class="card">
-            <h3>PANDUAN & SOP PENGGUNAAN LEEA AI</h3>
-            <div style="font-size: 11px; line-height: 1.6; color: var(--text-muted);">
-                <p><strong style="color: var(--accent);">1. Cara Kemaskini Prompt Minda Bot:</strong> Pergi ke tab <em>Bot Automasi</em>, masukkan arahan atau personaliti pada ruangan <em>Bot Brain Prompt</em>, dan klik Simpan.</p>
-                <p><strong style="color: var(--accent);">2. Kawalan Human Touch:</strong> Jika pelanggan memerlukan perhatian manual, klik butang <em>Ambil Alih Manual</em> di tab <em>Bot Automasi</em> untuk mula membalas mesej secara terus.</p>
-                <p><strong style="color: var(--accent);">3. Penukaran Nombor Admin:</strong> Masukkan nombor telefon baru di bahagian bawah tab <em>Bot Automasi</em> supaya sistem automatik mengemas kini pembolehubah pada server.</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Langganan 1: Pelayan Bot Utama (Leea AI Bot) -->
+                <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #fff; font-size: 12px; display: block;">Pelayan Bot Utama (Leea AI & Memori V1)</strong>
+                        <span style="color: #f59e0b; font-size: 10px;">Tarikh Luput: 27/10/2026 • Status: <strong style="color: #10b981;">AKTIF 🟢</strong></span>
+                    </div>
+                    <button onclick="alert('Membuka pautan pembayaran ToyyibPay untuk pembaharuan Pelayan Bot Utama...')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(16,185,129,0.15); border-color: #10b981; color: #34d399; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;">
+                        🔄 RENEW LANGGANAN
+                    </button>
+                </div>
+
+                <!-- Langganan 2: Automasi Post FB Pages -->
+                <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #38bdf8; font-size: 12px; display: block;">Modul Automasi Post FB Pages</strong>
+                        <span style="color: #64748b; font-size: 10px;">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
+                    </div>
+                    <button onclick="alert('Modul Automasi Post FB Pages akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;">
+                        🛒 LANGGAN MODUL
+                    </button>
+                </div>
+
+                <!-- Langganan 3: AI Call -->
+                <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #38bdf8; font-size: 12px; display: block;">Modul AI Call (Panggilan Suara Pintar)</strong>
+                        <span style="color: #64748b; font-size: 10px;">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
+                    </div>
+                    <button onclick="alert('Modul AI Call akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;">
+                        🛒 LANGGAN MODUL
+                    </button>
+                </div>
+
+                <!-- Langganan 4: Leea Army -->
+                <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #38bdf8; font-size: 12px; display: block;">Modul Leea Army (Kempen Pemasaran Berangkai)</strong>
+                        <span style="color: #64748b; font-size: 10px;">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
+                    </div>
+                    <button onclick="alert('Modul Leea Army akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;">
+                        🛒 LANGGAN MODUL
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -449,7 +483,6 @@
     <script>
         let selectedActivePhone = null;
 
-        // Auto-load client details & mulakan proses auto-sync real-time chat
         document.addEventListener('DOMContentLoaded', function() {
             const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
             
@@ -466,7 +499,6 @@
             document.getElementById('modalAdminEmail').value = adminEmail;
             document.getElementById('modalAdminPhone').value = adminPhone;
             document.getElementById('modalRailwayUrl').value = railwayUrl;
-            document.getElementById('clientRailwayUrl').value = railwayUrl;
 
             const savedAdminNum = localStorage.getItem('client_admin_number_' + currentClient) || '';
             if (savedAdminNum) document.getElementById('clientAdminNumber').value = savedAdminNum;
@@ -486,17 +518,14 @@
             const savedTiktok = localStorage.getItem('leea_tiktok_' + currentClient);
             if (savedTiktok) document.getElementById('modalTiktokLink').value = savedTiktok;
 
-            // Semak status affiliate & muat turun data e-wallet
             checkAgentAffiliateStatus();
 
-            // Mula tarik senarai prospek & mesej secara automatik setiap 3 saat
             fetchLiveLeads(currentClient, railwayUrl);
             setInterval(() => {
                 fetchLiveLeads(currentClient, railwayUrl);
             }, 3000);
         });
 
-        // Logik Pendaftaran Affiliate & Semakan Admin
         function submitAgentRegistration() {
             const isAgreed = document.getElementById('agreeTermsCheck').checked;
             const fullName = document.getElementById('agentFullName').value.trim();
@@ -559,7 +588,6 @@
             }
         }
 
-        // Fungsi Tarik Senarai Prospek (Leads) Sebenar dari Enjin Bot
         async function fetchLiveLeads(clientName, serverUrl) {
             try {
                 const response = await fetch(`${serverUrl}/api/get-leads?client=${clientName}`);
@@ -591,7 +619,6 @@
             }
         }
 
-        // Fungsi Tarik Sejarah Perbualan WhatsApp Prospek Terpilih
         async function fetchChatHistory(clientName, serverUrl, phone) {
             try {
                 const response = await fetch(`${serverUrl}/api/get-chat-history?client=${clientName}&phone=${phone}`);
@@ -639,7 +666,6 @@
             fetchChatHistory(currentClient, railwayUrl, phone);
         }
 
-        // Kawalan Popup Modal Profil Klien
         function openClientProfileModal() {
             const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
             document.getElementById('modalUsername').value = currentClient;
@@ -710,18 +736,6 @@
             alert('Nama bot berjaya dikemaskini kepada: ' + newName);
         }
 
-        function updateMemoryPackage(modelVal) {
-            const memoryVal = document.getElementById('botMemoryVal');
-            const modelValText = document.getElementById('botModelVal');
-            if(modelVal === 'V2') {
-                modelValText.innerText = 'Model V2 (Advanced)';
-                memoryVal.innerText = '145 MB / 600 MB';
-            } else {
-                modelValText.innerText = 'Model V1 (Standard)';
-                memoryVal.innerText = '95 MB / 300 MB';
-            }
-        }
-
         async function saveClientBrainPrompt() {
             const promptText = document.getElementById('clientBrainPrompt').value.trim();
             const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
@@ -755,7 +769,6 @@
 
         function saveClientSystemSettings() {
             const adminNum = document.getElementById('clientAdminNumber').value;
-            const railwayUrl = document.getElementById('clientRailwayUrl').value;
             const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
 
             if(!adminNum.trim()) {
@@ -764,8 +777,6 @@
             }
 
             localStorage.setItem('client_admin_number_' + currentClient, adminNum);
-            if(railwayUrl) localStorage.setItem('admin_railway_' + currentClient, railwayUrl);
-
             alert('Nombor telefon admin (group_admin_number) berjaya dikemaskini dan diselaraskan pada fail kod server secara automatik!');
         }
 
