@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Sistem Leea - Enterprise Client Portal & Live Control</title>
+    <!-- Menghubungkan Fail Stail CSS Luaran -->
+    <link rel="stylesheet" href="portal_style.css">
+</head>
+<body>
+
+    <!-- SKRIN LOG MASUK DENGAN PILIHAN BAHASA (BM / BI) -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2 id="loginTitle">SISTEM LEEA - LOG MASUK</h2>
+            
+            <div class="form-group">
+                <label id="lblLanguage">PILIH BAHASA / SELECT LANGUAGE:</label>
+                <select id="selectLang" onchange="changeLanguage(this.value)">
+                    <option value="BM">Bahasa Melayu Malaysia (BM)</option>
+                    <option value="BI">English (BI)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label id="lblUsername">Username / ID Klien:</label>
+                <input type="text" id="loginUsername" placeholder="Masukkan ID klien...">
+            </div>
+
+            <div class="form-group">
+                <label id="lblPassword">Kata Laluan / Password:</label>
+                <input type="password" id="loginPassword" placeholder="Masukkan kata laluan...">
+            </div>
+
+            <button class="action-btn" onclick="clientLogin()" id="btnLogin">LOG MASUK PORTAL</button>
+            <div id="loginErrorMsg" style="color: var(--danger); font-size: 11px; margin-top: 10px; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- HEADER / PENGEPALA PORTAL -->
+    <div class="header" id="portalHeader" style="display: none;">
+        <!-- Penjuru Kiri: Logo Rasmi Sistem Leea (Maskot Robot LEEA) & Perkataan SISTEM LEEA -->
+        <div class="brand-container">
+            <img src="leea_logo.png" alt="Logo Sistem Leea" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);" onerror="this.src='https://via.placeholder.com/40/00f0ff/030712?text=LEEA'">
+            <div class="brand" id="brandTitle">SISTEM LEEA</div>
+        </div>
+
+        <!-- Penjuru Kanan: Logo Syarikat Klien, Status E-Wallet, Profil & Log Keluar -->
+        <div style="display: flex; gap: 12px; align-items: center; font-size: 12px;">
+            <img id="headerCompanyLogo" src="https://via.placeholder.com/40" alt="Logo Syarikat Klien" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);" title="Logo Syarikat Klien" onerror="this.src='https://via.placeholder.com/40'">
+            <span style="color: #34d399;" id="txtEwallet">E-Wallet: <strong id="headerWalletBal">RM 0.00</strong></span>
+            <button onclick="openClientProfileModal()" id="clientProfileBtn" style="background: rgba(0,240,255,0.1); border:1px solid var(--accent); color:var(--accent); padding: 5px 14px; border-radius:6px; cursor:pointer; font-weight: bold; letter-spacing: 0.5px;">👤 Klien</button>
+            <button onclick="clientLogout()" id="btnLogout" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #f87171; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">LOG KELUAR</button>
+        </div>
+    </div>
+
+    <!-- POPUP MODAL PROFIL & TETAPAN KLIEN -->
+    <div id="clientProfileModal" class="modal-overlay">
+        <div class="modal-card">
+            <h3 id="modalProfileTitle">
+                PROFIL SYARIKAT & TETAPAN AKAUN KLIEN
+                <span style="cursor:pointer; color:var(--danger); font-size:16px;" onclick="closeClientProfileModal()">✕</span>
+            </h3>
+            
+            <div class="form-group">
+                <label id="lblModalUser">USERNAME AKAUN (Tetap)</label>
+                <input type="text" id="modalUsername" readonly>
+            </div>
+
+            <div class="form-group">
+                <label id="lblModalEmail">EMEL SYARIKAT (Didaftarkan Admin - Tetap)</label>
+                <input type="text" id="modalAdminEmail" readonly>
+            </div>
+
+            <div class="form-group">
+                <label id="lblModalPhone">NOMBOR TELEFON (Didaftarkan Admin - Tetap)</label>
+                <input type="text" id="modalAdminPhone" readonly>
+            </div>
+
+            <div class="form-group">
+                <label id="lblModalRailway">RAILWAY BOT URL (Didaftarkan Admin)</label>
+                <input type="text" id="modalRailwayUrl" readonly>
+            </div>
+
+            <div class="form-group">
+                <label id="lblModalLogo">LOGO SYARIKAT (Muat Naik Fail Terus)</label>
+                <div class="logo-preview-box">
+                    <img id="modalLogoPreview" src="https://via.placeholder.com/40" alt="Logo Preview">
+                    <input type="file" id="modalLogoFile" accept="image/*" onchange="previewCompanyLogo(event)" style="background: transparent; border: none; color: var(--text-main); font-size: 10px; padding: 0;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label id="lblModalFb">PAUTAN LINK FACEBOOK SYARIKAT</label>
+                <input type="text" id="modalFbLink" placeholder="https://facebook.com/namasyarikat">
+            </div>
+
+            <div class="form-group">
+                <label id="lblModalIg">PAUTAN LINK INSTAGRAM SYARIKAT</label>
+                <input type="text" id="modalIgLink" placeholder="https://instagram.com/namasyarikat">
+            </div>
+
+            <div class="form-group">
+                <label id="lblModalTiktok">PAUTAN LINK TIKTOK SYARIKAT</label>
+                <input type="text" id="modalTiktokLink" placeholder="https://tiktok.com/@namasyarikat">
+            </div>
+
+            <div class="form-group">
+                <label id="lblModalPass">TUKAR PASSWORD BAHARU (Pilihan)</label>
+                <input type="password" id="modalNewPassword" placeholder="Masukkan password baharu jika ingin tukar...">
+            </div>
+
+            <button class="action-btn" onclick="saveClientProfileChanges()" id="btnSaveProfile">SIMPAN PERUBAHAN PROFIL</button>
+        </div>
+    </div>
+
+    <!-- Sistem Tab Navigation Halaman -->
+    <div class="tab-nav" id="portalTabs" style="display: none;">
+        <button class="tab-btn active" onclick="switchTab(event, 'tabAnalisis')" id="tabBtnAnalysis">📊 Analisis Chat</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tabRealtime')" id="tabBtnAutomation">🤖 Bot Automasi</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tabAffiliate')" id="tabBtnAffiliate">🤝 Affiliate</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tabPembayaran')" id="tabBtnPayment">💳 Pembayaran & Langganan</button>
+    </div>
+
+    <!-- TAB 1: ANALISIS CHAT & STATISTIK TERPERINCI -->
+    <div id="tabAnalisis" class="tab-content">
+        <div class="card">
+            <h3 id="cardBotProfile">
+                PROFIL BOT AKTIF & SPESIFIKASI
+                <span style="font-size: 10px; color: #10b981; background: rgba(16,185,129,0.1); border: 1px solid #10b981; padding: 2px 8px; border-radius: 4px;">SYNCED & ONLINE</span>
+            </h3>
+            
+            <div class="bot-profile-grid">
+                <div class="profile-item" style="grid-column: span 2;">
+                    <label id="lblBotName">Nama Bot (Default: bot-[username], Boleh Diedit):</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="botNameInput" value="bot-klien" style="margin:0;">
+                        <button onclick="updateBotName()" id="btnUpdateBot" style="width: auto; margin:0; padding: 6px 12px; font-size: 10px; background: rgba(0,240,255,0.1); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; cursor:pointer;">KEMASKINI NAMA</button>
+                    </div>
+                </div>
+                
+                <div class="profile-item">
+                    <span id="lblModelBot">Model Bot (Klien V1 - Upgrade ke V2 hanya oleh Admin)</span>
+                    <strong id="botModelVal" style="color: var(--accent);">Model V1 (Standard)</strong>
+                </div>
+
+                <div class="profile-item">
+                    <span id="lblMemoryBot">Memori Bot (Diguna / Pakej)</span>
+                    <strong id="botMemoryVal" style="color: #38bdf8;">95 MB / 300 MB</strong>
+                </div>
+
+                <div class="profile-item">
+                    <span id="lblExpiryBot">Tarikh Luput Lesen</span>
+                    <strong style="color: #f59e0b;">27/10/2026</strong>
+                </div>
+
+                <div class="profile-item">
+                    <span id="lblStatusBot">Status Bot</span>
+                    <strong style="color: #10b981;" id="txtRunningStatus">Aktif 🟢 (Running)</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL STATISTIK & ANALISIS UTAMA -->
+        <div class="card">
+            <h3 id="cardAnalyticsTitle">STATISTIK & METRIK PRESTASI CHAT</h3>
+            
+            <div class="analytics-grid">
+                <div class="analytic-card">
+                    <span id="statDaily">Chat Sehari (24 Jam)</span>
+                    <div class="metric-val">142</div>
+                    <div class="metric-sub" id="statDailySub">▲ +12% berbanding semalam</div>
+                </div>
+
+                <div class="analytic-card">
+                    <span id="statWeekly">Chat Seminggu (7 Hari)</span>
+                    <div class="metric-val">1,248</div>
+                    <div class="metric-sub" id="statWeeklySub">▲ Trafik stabil</div>
+                </div>
+
+                <div class="analytic-card">
+                    <span id="statMonthly">Chat Sebulan (30 Hari)</span>
+                    <div class="metric-val">5,890</div>
+                    <div class="metric-sub" id="statMonthlySub">▲ Peningkatan aktif</div>
+                </div>
+
+                <div class="analytic-card">
+                    <span id="statLeads">WhatsApp Lead Terkumpul</span>
+                    <div class="metric-val" style="color: #34d399;">84</div>
+                    <div class="metric-sub" id="statLeadsSub">Kadar conversion ~6.7%</div>
+                </div>
+
+                <div class="analytic-card">
+                    <span id="statReturning">Pelanggan Berulang (Returning)</span>
+                    <div class="metric-val" style="color: #f59e0b;">28%</div>
+                    <div class="metric-sub" id="statReturningSub">Chat berulang aktif</div>
+                </div>
+
+                <div class="analytic-card">
+                    <span id="statSpeed">Purata Kelajuan Bot Reply</span>
+                    <div class="metric-val">0.8s</div>
+                    <div class="metric-sub" id="statSpeedSub">Respons neural pantas</div>
+                </div>
+
+                <div class="analytic-card">
+                    <span id="statIntervention">Human Touch Interventions</span>
+                    <div class="metric-val" style="color: #f87171;">14</div>
+                    <div class="metric-sub" id="statInterventionSub">Diambil alih agen manual</div>
+                </div>
+
+                <div class="analytic-card">
+                    <span id="statMemoryIndex">Indeks Kesinambungan Chat</span>
+                    <div class="metric-val" style="color: #38bdf8;">99.4%</div>
+                    <div class="metric-sub" id="statMemoryIndexSub">Memori LLM stabil</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: BOT AUTOMASI -->
+    <div id="tabRealtime" class="tab-content">
+        <div class="card">
+            <h3 id="cardLiveChat">
+                REAL-TIME WHATSAPP LIVE CHAT & HUMAN TOUCH CONTROL
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="exportLeadsCsv()" id="btnExportLeads" style="background: rgba(16,185,129,0.1); border: 1px solid #10b981; color: #34d399; padding: 4px 10px; font-size: 10px; border-radius: 4px; cursor: pointer;">📥 EKSPORT LEADS</button>
+                    <span style="font-size: 10px; color: #10b981; background: rgba(16,185,129,0.1); border: 1px solid #10b981; padding: 2px 8px; border-radius: 4px;">LIVE LEADS</span>
+                </div>
+            </h3>
+            <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 12px;" id="txtLiveChatDesc">
+                Pantau senarai prospek WhatsApp, ambil alih perbualan bot secara manual (Human Touch), dan balas mesej secara langsung.
+            </p>
+
+            <div class="chat-container">
+                <!-- Senarai Prospek Dinamik -->
+                <div class="lead-list" id="whatsappLeadList">
+                    <div style="color: #64748b; text-align: center; padding: 20px; font-size: 11px;" id="txtLoadingLeads">Memuatkan senarai prospek...</div>
+                </div>
+
+                <div class="chat-pane">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-size: 11px;">
+                        <span id="activeChatTitle" style="color: #38bdf8; font-weight: bold;">Sila pilih prospek di sebelah kiri</span>
+                        <button onclick="toggleHumanTakeover()" id="takeoverBtn" style="width: auto; margin: 0; padding: 4px 10px; font-size: 10px; background: rgba(245,158,11,0.2); border-color: #f59e0b; color: #f59e0b; border-radius:4px; cursor:pointer;">
+                            MOD BOT: AKTIF (AMBIL ALIH MANUAL)
+                        </button>
+                    </div>
+
+                    <!-- Kotak Paparan Mesej Dinamik -->
+                    <div class="chat-messages" id="chatMessagesBox">
+                        <div style="color: #64748b; text-align: center; padding: 30px;" id="txtSelectChatPrompt">[Sistem]: Sila pilih prospek WhatsApp untuk melihat perbualan.</div>
+                    </div>
+
+                    <div class="chat-input-area">
+                        <input type="text" id="liveChatInput" placeholder="Taip mesej manual sebagai agen manusia..." style="margin:0;" onkeypress="if(event.key === 'Enter') sendManualMessage()">
+                        <button onclick="sendManualMessage()" id="btnSendChat" style="width: auto; margin:0; padding: 8px 16px; background:var(--accent); color:#030712; font-weight:bold; border:none; border-radius:6px; cursor:pointer;">HANTAR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TETAPAN PROMPT MINDA BOT (BOT BRAIN PROMPT) -->
+        <div class="card">
+            <h3 id="cardBrainPromptTitle">TETAPAN PROMPT MINDA BOT (BOT BRAIN PROMPT)</h3>
+            <div class="form-group">
+                <label id="lblBrainPrompt">Ubah sifat, personaliti, gaya bahasa, atau SOP respons bot WhatsApp secara langsung:</label>
+                <textarea id="clientBrainPrompt" placeholder="Masukkan skrip personaliti, gaya bahasa, dan SOP bot..."></textarea>
+            </div>
+            <button class="action-btn" onclick="saveClientBrainPrompt()" id="btnSaveBrain">SIMPAN PROMPT MINDA BOT</button>
+        </div>
+
+        <!-- TETAPAN NOMBOR TELEFON ADMIN (GROUP_ADMIN_NUMBER) -->
+        <div class="card">
+            <h3 id="cardAdminNumberTitle">KONFIGURASI NOMBOR TELEFON ADMIN BOT</h3>
+            <div class="form-group">
+                <label id="lblAdminNumber">Nombor Telefon Admin (group_admin_number - Automatik kemas kini server & fail kod):</label>
+                <input type="text" id="clientAdminNumber" placeholder="6019XXXXXXXX">
+            </div>
+            <button class="action-btn" onclick="saveClientSystemSettings()" id="btnSaveAdminNum">SIMPAN & KEMASKINI NOMBOR ADMIN</button>
+        </div>
+
+        <!-- KOTAK PANDUAN & SOP PENGGUNAAN BOT AUTOMASI -->
+        <div class="card" style="border-color: rgba(0,240,255,0.4);">
+            <h3 id="cardSopTitle">PANDUAN & SOP PENGGUNAAN BOT AUTOMASI</h3>
+            <div style="font-size: 11px; line-height: 1.6; color: var(--text-muted);" id="sopContentArea">
+                <p><strong style="color: var(--accent);" id="sop1Title">1. Cara Kemaskini Prompt Minda Bot:</strong> <span id="sop1Desc">Masukkan arahan atau personaliti pada ruangan Bot Brain Prompt di atas, dan klik Simpan.</span></p>
+                <p><strong style="color: var(--accent);" id="sop2Title">2. Kawalan Human Touch:</strong> <span id="sop2Desc">Jika pelanggan memerlukan perhatian manual, klik butang Ambil Alih Manual pada kotak chat untuk mula membalas mesej secara terus.</span></p>
+                <p><strong style="color: var(--accent);" id="sop3Title">3. Penukaran Nombor Admin:</strong> <span id="sop3Desc">Masukkan nombor telefon baru di bahagian tetapan admin di atas supaya sistem automatik mengemas kini pembolehubah pada server.</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: AFFILIATE -->
+    <div id="tabAffiliate" class="tab-content">
+        <div class="card">
+            <h3 id="cardAffiliateTitle">PROGRAM AFFILIATE & KOMISEN (10%)</h3>
+            <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 15px;" id="txtAffiliateDesc">
+                Jana pendapatan pasif melalui rujukan pengguna baharu ke sistem Leea AI. Anda akan menikmati komisen sebanyak <strong>10% daripada setiap langganan sub-affiliate</strong> yang berjaya, dikreditkan terus ke e-wallet klien setiap bulan.
+            </p>
+
+            <!-- 1. KOTAK TERMA & SYARAT AFFILIATE -->
+            <div id="affiliateTermsBox" style="background: #020617; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <strong style="color: var(--accent); font-size: 11px; display: block; margin-bottom: 8px;" id="termsHeader">📜 TERMA & SYARAT PROGRAM AGEN AFFILIATE LEEA AI</strong>
+                <div style="font-size: 10px; color: var(--text-muted); line-height: 1.5; max-height: 100px; overflow-y: auto; padding-right: 5px; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 8px;" id="termsTextContent">
+                    1. Komisen sebanyak 10% dikira berdasarkan jumlah pembayaran langganan bulanan aktif oleh sub-affiliate rujukan.<br>
+                    2. Payout komisen akan dikreditkan ke e-wallet secara automatik setiap bulan setelah disahkan oleh pihak Administrator.<br>
+                    3. Klien wajib mendaftarkan nombor akaun bank yang sah atas nama sendiri untuk tujuan pengesahan dan pembayaran.<br>
+                    4. Sebarang aktiviti spam atau salah laku promosi akan menyebabkan akaun affiliate digantung serta-merta tanpa sebarang pampasan.
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="agreeTermsCheck" style="width: auto; cursor: pointer;">
+                    <label for="agreeTermsCheck" style="color: #e2e8f0; font-size: 11px; cursor: pointer; margin: 0;" id="lblAgreeTerms">Saya telah membaca, memahami, dan bersetuju dengan Terma & Syarat di atas.</label>
+                </div>
+            </div>
+
+            <!-- 2. BORANG PERMOHONAN AGEN (MUNCUL SEBELUM DISAHKAN ADMIN) -->
+            <div id="agentRegistrationFormCard" style="background: #020617; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <strong style="color: #f59e0b; font-size: 11px; display: block; margin-bottom: 10px;" id="formAgentHeader">📝 BORANG PERMOHONAN AGEN AFFILIATE RASMI</strong>
+                <div class="form-group">
+                    <label id="lblAgentName">Nama Penuh Pemegang Akaun:</label>
+                    <input type="text" id="agentFullName" placeholder="Masukkan nama penuh mengikut IC...">
+                </div>
+                <div class="form-group">
+                    <label id="lblAgentBank">Pilihan Bank:</label>
+                    <select id="agentBankName">
+                        <option value="">-- Sila Pilih Bank --</option>
+                        <option value="Maybank">Maybank (Malayan Banking Berhad)</option>
+                        <option value="CIMB Bank">CIMB Bank</option>
+                        <option value="Public Bank">Public Bank</option>
+                        <option value="RHB Bank">RHB Bank</option>
+                        <option value="Hong Leong Bank">Hong Leong Bank</option>
+                        <option value="AmBank">AmBank</option>
+                        <option value="Bank Rakyat">Bank Rakyat</option>
+                        <option value="BSN">Bank Simpanan Nasional (BSN)</option>
+                        <option value="DuitNow / Touch 'n Go">DuitNow / Touch 'n Go eWallet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label id="lblAgentAccNo">Nombor Akaun Bank / DuitNow:</label>
+                    <input type="text" id="agentAccountNo" placeholder="Contoh: 164123456789">
+                </div>
+                <button class="action-btn" onclick="submitAgentRegistration()" id="btnSubmitAgent" style="background: rgba(245,158,11,0.15); border-color: #f59e0b; color: #f59e0b;">
+                    HANTAR PERMOHONAN AGEN (SEMAKAN ADMIN)
+                </button>
+            </div>
+
+            <!-- 3. STATUS PENDING MENUNGGU KELULUSAN ADMIN -->
+            <div id="pendingAgentNotice" style="display: none; background: rgba(245,158,11,0.1); border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; text-align: center; color: #f59e0b; font-size: 11px; margin-bottom: 15px;">
+                ⏳ <strong id="txtPendingHeader">Permohonan Anda Sedang Disemak:</strong> <span id="txtPendingDesc">Pihak Administrator sedang melakukan pengesahan nombor akaun bank anda. Pautan affiliate akan diaktifkan sebaik sahaja kelulusan diberikan.</span>
+            </div>
+
+            <!-- 4. DASHBOARD AFFILIATE AKTIF (HANYA MUNCUL APABILA ADMIN SAHKAN) -->
+            <div id="activeAgentDashboard" style="display: none;">
+                <div class="form-group">
+                    <label id="lblAffLink">Pautan Affiliate Khas Anda:</label>
+                    <input type="text" id="affiliateLinkInput" readonly style="color: #34d399; background: rgba(16,185,129,0.05); font-weight: bold;">
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
+                    <div style="background:#020617; border:1px solid #1e3a8a; padding:12px; border-radius:8px;">
+                        <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:5px;" id="txtTotalReferrals">Jumlah Rujukan (Clicks/Signups)</span>
+                        <strong style="color: var(--accent); font-size:16px;" id="affiliateClicksCount">0 Pengguna</strong>
+                    </div>
+                    <div style="background:#020617; border:1px solid #1e3a8a; padding:12px; border-radius:8px;">
+                        <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:5px;" id="txtTotalCommission">Jumlah Komisen Terkumpul</span>
+                        <strong style="color: #34d399; font-size:16px;" id="affiliateWalletBalance">RM 0.00</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: PEMBAYARAN & LANGGANAN KLIEN -->
+    <div id="tabPembayaran" class="tab-content">
+        <div class="card">
+            <h3 id="cardPaymentGatewayTitle">TETAPAN PEMBAYARAN & GERBANG TRANSAKSI</h3>
+            <div class="form-group">
+                <label id="lblPaymentLink">Pautan Gerbang Pembayaran (paymentGatewayLink - ToyyibPay / Lain-lain):</label>
+                <input type="text" id="clientPaymentLink" placeholder="https://toyyibpay.com/...">
+            </div>
+            <div class="form-group">
+                <label id="lblQrUpload">Muat Naik Kod QR Pembayaran (qrImageCode):</label>
+                <input type="file" id="clientQrInput" accept="image/*" style="padding: 6px; background: #020617; color: var(--accent); border: 1px solid var(--border-color); border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 11px;">
+            </div>
+            <button class="action-btn" onclick="saveClientPaymentSettings()" id="btnSavePayment">SIMPAN TETAPAN PEMBAYARAN</button>
+        </div>
+
+        <div class="card">
+            <h3 id="cardSubscriptionTitle">BUTIRAN LANGGANAN & PEMBAHARUAN (RENEW) PERKHIDMATAN</h3>
+            <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 15px;" id="txtSubscriptionDesc">
+                Semak status langganan pelayan bot utama dan buat pembayaran pembaharuan untuk modul automasi pemasaran di bawah.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #fff; font-size: 12px; display: block;" id="sub1Title">Pelayan Bot Utama (Leea AI & Memori V1)</strong>
+                        <span style="color: #f59e0b; font-size: 10px;" id="sub1Expiry">Tarikh Luput: 27/10/2026 • Status: <strong style="color: #10b981;" id="sub1Status">AKTIF 🟢</strong></span>
+                    </div>
+                    <button onclick="alert('Membuka pautan ToyyibPay pembaharuan Pelayan Bot Utama...')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(16,185,129,0.15); border-color: #10b981; color: #34d399; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;" id="btnRenewSub1">
+                        🔄 RENEW LANGGANAN
+                    </button>
+                </div>
+
+                <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #38bdf8; font-size: 12px; display: block;" id="sub2Title">Modul Automasi Post FB Pages</strong>
+                        <span style="color: #64748b; font-size: 10px;" id="sub2Status">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
+                    </div>
+                    <button onclick="alert('Modul Automasi Post FB Pages akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;" id="btnSub2">
+                        🛒 LANGGAN MODUL
+                    </button>
+                </div>
+
+                <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #38bdf8; font-size: 12px; display: block;" id="sub3Title">Modul AI Call (Panggilan Suara Pintar)</strong>
+                        <span style="color: #64748b; font-size: 10px;" id="sub3Status">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
+                    </div>
+                    <button onclick="alert('Modul AI Call akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;" id="btnSub3">
+                        🛒 LANGGAN MODUL
+                    </button>
+                </div>
+
+                <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #38bdf8; font-size: 12px; display: block;" id="sub4Title">Modul Leea Army (Kempen Pemasaran Berangkai)</strong>
+                        <span style="color: #64748b; font-size: 10px;" id="sub4Status">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
+                    </div>
+                    <button onclick="alert('Modul Leea Army akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;" id="btnSub4">
+                        🛒 LANGGAN MODUL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menghubungkan Fail Kamus Dwi-Bahasa & Logik Skrip Luaran -->
+    <script src="portal_translations.js"></script>
+    <script src="portal_logic.js"></script>
+</body>
+</html>
