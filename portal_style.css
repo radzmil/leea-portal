@@ -1,0 +1,394 @@
+/* portal_style.css - Stail CSS Portal Klien Sistem Leea */
+:root {
+    --bg-main: #030712;
+    --bg-card: #0b1329;
+    --border-color: #1e3a8a;
+    --accent: #00f0ff;
+    --text-main: #e0f2fe;
+    --text-muted: #60a5fa;
+    --success: #10b981;
+    --danger: #ef4444;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    margin: 0;
+    padding: 20px;
+}
+
+/* Skrin Log Masuk Dwi-Bahasa */
+#loginOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 7, 18, 0.95);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-card {
+    background: var(--bg-card);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 30px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.25);
+}
+
+.login-card h2 {
+    color: var(--accent);
+    font-size: 16px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 15px 30px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+}
+
+.brand-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--accent);
+    letter-spacing: 1px;
+}
+
+/* Sistem Tab Navigation */
+.tab-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    background: #020617;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover, .tab-btn.active {
+    background: rgba(0, 240, 255, 0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
+}
+
+.card h3 {
+    color: var(--accent);
+    font-size: 13px;
+    margin-top: 0;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    letter-spacing: 0.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+label {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 500;
+}
+
+input[type="text"], input[type="password"], textarea, select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border-color);
+    background: #020617;
+    color: var(--accent);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 11px;
+    font-family: inherit;
+}
+
+input[readonly] {
+    color: #64748b;
+    background: #020617;
+    border-color: #1e293b;
+    cursor: not-allowed;
+}
+
+textarea {
+    resize: vertical;
+    height: 75px;
+}
+
+button.action-btn {
+    width: 100%;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+}
+
+button.action-btn:hover {
+    background: var(--accent);
+    color: #030712;
+}
+
+.bot-profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    background: #020617;
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.profile-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.profile-item span {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.profile-item strong {
+    font-size: 12px;
+    color: #fff;
+}
+
+/* Grid Statistik Analisis Lanjutan */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+@media(max-width: 1200px) {
+    .analytics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.analytic-card {
+    background: #020617;
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.analytic-card span {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.analytic-card .metric-val {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.analytic-card .metric-sub {
+    font-size: 9px;
+    color: #34d399;
+    margin-top: 4px;
+}
+
+/* Realtime Chat Panel */
+.chat-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 15px;
+    height: 380px;
+    background: #020617;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.lead-list {
+    border-right: 1px solid var(--border-color);
+    overflow-y: auto;
+    background: rgba(11, 19, 41, 0.5);
+}
+
+.lead-item {
+    padding: 10px;
+    border-bottom: 1px solid #1e293b;
+    cursor: pointer;
+    font-size: 11px;
+    transition: background 0.2s;
+}
+
+.lead-item:hover, .lead-item.active {
+    background: rgba(0, 240, 255, 0.15);
+    border-left: 3px solid var(--accent);
+}
+
+.chat-pane {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 10px;
+}
+
+/* Popup Modal Profil Klien */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(3, 7, 18, 0.88);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    padding: 20px 0;
+}
+
+.modal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 22px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-card h3 {
+    color: var(--accent);
+    font-size: 13px;
+    margin-top: 0;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-preview-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #020617;
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.logo-preview-box img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--accent);
+}
+
+.red-blink-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 6px #ef4444;
+    animation: blink-red-fast 0.5s infinite alternate;
+}
+
+@keyframes blink-red-fast {
+    0% { opacity: 0.2; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 10px #ef4444; }
+}
