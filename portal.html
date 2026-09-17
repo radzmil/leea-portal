@@ -72,11 +72,11 @@
 <body>
 
     <div class="header">
-        <div class="brand">LEEA AI SYSTEM - ENTERPRISE CLIENT PORTAL</div>
+        <div class="brand">LEEA AI SYSTEM - ENTERPRISE CLIENT PORTAL (<span id="clientHeaderDisplay" style="color: #38bdf8;">Klien</span>)</div>
         <div style="display: flex; gap: 15px; align-items: center; font-size: 12px;">
             <span style="color: #34d399;">E-Wallet: <strong>RM 0.00</strong></span>
             <button onclick="location.reload()" style="background:none; border:1px solid var(--accent); color:var(--accent); padding: 5px 12px; border-radius:6px; cursor:pointer; font-weight: bold;">SEGAR SEMULA</button>
-            <a href="index.html" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #f87171; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-weight: bold;">LOG KELUAR</a>
+            <a href="index.html" onclick="localStorage.removeItem('leea_current_client')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #f87171; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-weight: bold;">LOG KELUAR</a>
         </div>
     </div>
 
@@ -259,7 +259,7 @@
             </p>
             <div class="form-group">
                 <label>Pautan Affiliate Khas Anda:</label>
-                <input type="text" value="https://www.architechlaboratory.my/ref/CLI-1001" readonly style="color: #34d399; background: rgba(16,185,129,0.05); font-weight: bold;">
+                <input type="text" id="affiliateLinkInput" value="https://www.architechlaboratory.my/ref/CLI-1001" readonly style="color: #34d399; background: rgba(16,185,129,0.05); font-weight: bold;">
             </div>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
                 <div style="background:#020617; border:1px solid #1e3a8a; padding:12px; border-radius:8px;">
@@ -379,6 +379,21 @@
     </div>
 
     <script>
+        // Auto-load client details on startup based on login session
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentClient = localStorage.getItem('leea_current_client');
+            if (currentClient) {
+                const headerDisplay = document.getElementById('clientHeaderDisplay');
+                if (headerDisplay) headerDisplay.innerText = currentClient;
+
+                const botInput = document.getElementById('botNameInput');
+                if (botInput) botInput.value = 'bot-' + currentClient.toLowerCase();
+
+                const affiliateInput = document.getElementById('affiliateLinkInput');
+                if (affiliateInput) affiliateInput.value = 'https://www.architechlaboratory.my/ref/' + currentClient.toLowerCase();
+            }
+        });
+
         let isHumanManualMode = false;
 
         function switchTab(evt, tabName) {
