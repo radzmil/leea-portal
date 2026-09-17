@@ -31,10 +31,11 @@
         .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.5); margin-bottom: 20px; }
         .card h3 { color: var(--accent); font-size: 13px; margin-top: 0; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
         
-        .form-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 4px; color: var(--text-muted); font-size: 11px; font-weight: 500; }
-        input[type="text"], textarea, select { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); background: #020617; color: var(--accent); border-radius: 6px; box-sizing: border-box; font-size: 11px; font-family: inherit; }
-        textarea { resize: vertical; height: 85px; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 3px; color: var(--text-muted); font-size: 10px; font-weight: 500; }
+        input[type="text"], input[type="password"], textarea, select { width: 100%; padding: 7px 10px; border: 1px solid var(--border-color); background: #020617; color: var(--accent); border-radius: 6px; box-sizing: border-box; font-size: 11px; font-family: inherit; }
+        input[readonly] { color: #64748b; background: #020617; border-color: #1e293b; cursor: not-allowed; }
+        textarea { resize: vertical; height: 75px; }
         
         button.action-btn { width: 100%; background: rgba(0,240,255,0.1); border: 1px solid var(--accent); color: var(--accent); padding: 10px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
         button.action-btn:hover { background: var(--accent); color: #030712; }
@@ -62,6 +63,14 @@
         .chat-messages { flex-grow: 1; overflow-y: auto; padding: 10px; font-family: monospace; font-size: 11px; display: flex; flex-direction: column; gap: 8px; }
         .chat-input-area { display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; }
 
+        /* Popup Modal Profil Klien */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.88); z-index: 1000; justify-content: center; align-items: center; overflow-y: auto; padding: 20px 0; }
+        .modal-card { background: var(--bg-card); border: 1px solid var(--accent); border-radius: 12px; padding: 22px; width: 100%; max-width: 480px; box-shadow: 0 0 30px rgba(0,240,255,0.2); max-height: 90vh; overflow-y: auto; }
+        .modal-card h3 { color: var(--accent); font-size: 13px; margin-top: 0; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+
+        .logo-preview-box { display: flex; align-items: center; gap: 12px; background: #020617; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; }
+        .logo-preview-box img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent); }
+
         .red-blink-dot { width: 6px; height: 6px; background-color: #ef4444; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #ef4444; animation: blink-red-fast 0.5s infinite alternate; }
         @keyframes blink-red-fast {
             0% { opacity: 0.2; transform: scale(0.9); }
@@ -72,11 +81,74 @@
 <body>
 
     <div class="header">
-        <div class="brand">LEEA AI SYSTEM - ENTERPRISE CLIENT PORTAL (<span id="clientHeaderDisplay" style="color: #38bdf8;">Klien</span>)</div>
-        <div style="display: flex; gap: 15px; align-items: center; font-size: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img id="headerLogoImg" src="https://via.placeholder.com/40" alt="Logo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);">
+            <div class="brand">LEEA AI SYSTEM - ENTERPRISE CLIENT PORTAL</div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; font-size: 12px;">
             <span style="color: #34d399;">E-Wallet: <strong>RM 0.00</strong></span>
-            <button onclick="location.reload()" style="background: rgba(0,240,255,0.1); border:1px solid var(--accent); color:var(--accent); padding: 5px 12px; border-radius:6px; cursor:pointer; font-weight: bold; letter-spacing: 0.5px;">REFRESH</button>
+            <button onclick="openClientProfileModal()" id="clientProfileBtn" style="background: rgba(0,240,255,0.1); border:1px solid var(--accent); color:var(--accent); padding: 5px 14px; border-radius:6px; cursor:pointer; font-weight: bold; letter-spacing: 0.5px;">👤 Klien</button>
             <a href="index.html" onclick="localStorage.removeItem('leea_current_client')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #f87171; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-weight: bold;">LOG KELUAR</a>
+        </div>
+    </div>
+
+    <!-- POPUP MODAL PROFIL & TETAPAN KLIEN -->
+    <div id="clientProfileModal" class="modal-overlay">
+        <div class="modal-card">
+            <h3>
+                PROFIL SYARIKAT & TETAPAN AKAUN KLIEN
+                <span style="cursor:pointer; color:var(--danger); font-size:16px;" onclick="closeClientProfileModal()">✕</span>
+            </h3>
+            
+            <div class="form-group">
+                <label>USERNAME AKAUN (Tetap)</label>
+                <input type="text" id="modalUsername" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>EMEL SYARIKAT (Didaftarkan Admin - Tetap / Tidak Boleh Diubah)</label>
+                <input type="text" id="modalAdminEmail" readonly title="Emel ditetapkan oleh admin dan tidak boleh diubah">
+            </div>
+
+            <div class="form-group">
+                <label>NOMBOR TELEFON (Didaftarkan Admin - Tetap / Tidak Boleh Diubah)</label>
+                <input type="text" id="modalAdminPhone" readonly title="Nombor telefon ditetapkan oleh admin dan tidak boleh diubah">
+            </div>
+
+            <div class="form-group">
+                <label>RAILWAY BOT URL (Didaftarkan Admin)</label>
+                <input type="text" id="modalRailwayUrl" readonly title="Pautan enjin Railway bot klien">
+            </div>
+
+            <div class="form-group">
+                <label>LOGO SYARIKAT (Muat Naik Fail Terus)</label>
+                <div class="logo-preview-box">
+                    <img id="modalLogoPreview" src="https://via.placeholder.com/40" alt="Logo Preview">
+                    <input type="file" id="modalLogoFile" accept="image/*" onchange="previewCompanyLogo(event)" style="background: transparent; border: none; color: var(--text-main); font-size: 10px; padding: 0;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>PAUTAN LINK FACEBOOK SYARIKAT</label>
+                <input type="text" id="modalFbLink" placeholder="https://facebook.com/namasyarikat">
+            </div>
+
+            <div class="form-group">
+                <label>PAUTAN LINK INSTAGRAM SYARIKAT</label>
+                <input type="text" id="modalIgLink" placeholder="https://instagram.com/namasyarikat">
+            </div>
+
+            <div class="form-group">
+                <label>PAUTAN LINK TIKTOK SYARIKAT</label>
+                <input type="text" id="modalTiktokLink" placeholder="https://tiktok.com/@namasyarikat">
+            </div>
+
+            <div class="form-group">
+                <label>TUKAR PASSWORD BAHARU (Pilihan)</label>
+                <input type="password" id="modalNewPassword" placeholder="Masukkan password baharu jika ingin tukar...">
+            </div>
+
+            <button class="action-btn" onclick="saveClientProfileChanges()">SIMPAN PERUBAHAN PROFIL</button>
         </div>
     </div>
 
@@ -200,35 +272,22 @@
             </p>
 
             <div class="chat-container">
+                <!-- Senarai Prospek Dinamik -->
                 <div class="lead-list" id="whatsappLeadList">
-                    <div class="lead-item active" onclick="selectLead('60191234567', 'Ali bin Abu (Lead #1)')">
-                        <strong style="color: var(--accent); display: block;">Ali bin Abu</strong>
-                        <span style="color: #64748b; font-size: 10px;">+60 19-123 4567 • Baru</span>
-                    </div>
-                    <div class="lead-item" onclick="selectLead('60129876543', 'Siti Zulaikha (Lead #2)')">
-                        <strong style="color: var(--accent); display: block;">Siti Zulaikha</strong>
-                        <span style="color: #64748b; font-size: 10px;">+60 12-987 6543 • Berminat</span>
-                    </div>
+                    <div style="color: #64748b; text-align: center; padding: 20px; font-size: 11px;">Memuatkan senarai prospek...</div>
                 </div>
 
                 <div class="chat-pane">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-size: 11px;">
-                        <span id="activeChatTitle" style="color: #38bdf8; font-weight: bold;">Prospek: Ali bin Abu (+60 19-123 4567)</span>
+                        <span id="activeChatTitle" style="color: #38bdf8; font-weight: bold;">Sila pilih prospek di sebelah kiri</span>
                         <button onclick="toggleHumanTakeover()" id="takeoverBtn" style="width: auto; margin: 0; padding: 4px 10px; font-size: 10px; background: rgba(245,158,11,0.2); border-color: #f59e0b; color: #f59e0b; border-radius:4px; cursor:pointer;">
                             MOD BOT: AKTIF (AMBIL ALIH MANUAL)
                         </button>
                     </div>
 
+                    <!-- Kotak Paparan Mesej Dinamik -->
                     <div class="chat-messages" id="chatMessagesBox">
-                        <div style="color: #64748b; text-align: center;">[Sistem]: Memuatkan sejarah perbualan WhatsApp...</div>
-                        <div style="background: rgba(0,240,255,0.05); padding: 6px 10px; border-radius: 4px; border-left: 2px solid var(--accent);">
-                            <span style="color: var(--accent); font-size: 10px; display: block;">[Bot WhatsApp] - 03:15 PM</span>
-                            Hi Ali! Terima kasih kerana berminat dengan servis kami. Ada apa yang boleh saya bantu?
-                        </div>
-                        <div style="background: rgba(16,185,129,0.05); padding: 6px 10px; border-radius: 4px; border-left: 2px solid #10b981;">
-                            <span style="color: #10b981; font-size: 10px; display: block;">[Ali bin Abu] - 03:16 PM</span>
-                            Saya nak tahu pakej harga untuk setup bot WhatsApp penuh.
-                        </div>
+                        <div style="color: #64748b; text-align: center; padding: 30px;">[Sistem]: Sila pilih prospek WhatsApp untuk melihat perbualan.</div>
                     </div>
 
                     <div class="chat-input-area">
@@ -239,7 +298,7 @@
             </div>
         </div>
 
-        <!-- TETAPAN PROMPT MINDA BOT (BOT BRAIN PROMPT) DI DALAM TAB REALTIME CHAT -->
+        <!-- TETAPAN PROMPT MINDA BOT (BOT BRAIN PROMPT) -->
         <div class="card">
             <h3>TETAPAN PROMPT MINDA BOT (BOT BRAIN PROMPT)</h3>
             <div class="form-group">
@@ -312,7 +371,7 @@
             <button class="action-btn" onclick="saveClientSystemSettings()">SIMPAN & SELARASKAN SERVER</button>
         </div>
 
-        <!-- Modul Automasi & Pemasaran Lanjutan (Coming Soon dengan Lampu LED Merah Kelip) -->
+        <!-- Modul Automasi & Pemasaran Lanjutan -->
         <div class="card">
             <h3>MODUL AUTOMASI & PEMASARAN LANJUTAN</h3>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
@@ -379,20 +438,178 @@
     </div>
 
     <script>
-        // Auto-load client details on startup based on login session
+        let selectedActivePhone = null;
+
+        // Auto-load client details & mulakan proses auto-sync real-time chat
         document.addEventListener('DOMContentLoaded', function() {
-            const currentClient = localStorage.getItem('leea_current_client');
-            if (currentClient) {
-                const headerDisplay = document.getElementById('clientHeaderDisplay');
-                if (headerDisplay) headerDisplay.innerText = currentClient;
+            const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+            
+            const profileBtn = document.getElementById('clientProfileBtn');
+            if (profileBtn) profileBtn.innerText = '👤 ' + currentClient;
 
-                const botInput = document.getElementById('botNameInput');
-                if (botInput) botInput.value = 'bot-' + currentClient.toLowerCase();
+            const botInput = document.getElementById('botNameInput');
+            if (botInput) botInput.value = 'bot-' + currentClient.toLowerCase();
 
-                const affiliateInput = document.getElementById('affiliateLinkInput');
-                if (affiliateInput) affiliateInput.value = 'https://www.architechlaboratory.my/ref/' + currentClient.toLowerCase();
+            const affiliateInput = document.getElementById('affiliateLinkInput');
+            if (affiliateInput) affiliateInput.value = 'https://www.architechlaboratory.my/ref/' + currentClient.toLowerCase();
+
+            const adminEmail = localStorage.getItem('admin_email_' + currentClient) || (currentClient.toLowerCase() + '@adminportal.my');
+            const adminPhone = localStorage.getItem('admin_phone_' + currentClient) || '+60 19-000 0000';
+            const railwayUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
+
+            document.getElementById('modalAdminEmail').value = adminEmail;
+            document.getElementById('modalAdminPhone').value = adminPhone;
+            document.getElementById('modalRailwayUrl').value = railwayUrl;
+
+            const savedLogo = localStorage.getItem('leea_logo_' + currentClient);
+            if (savedLogo) {
+                document.getElementById('headerLogoImg').src = savedLogo;
+                document.getElementById('modalLogoPreview').src = savedLogo;
             }
+
+            const savedFb = localStorage.getItem('leea_fb_' + currentClient);
+            if (savedFb) document.getElementById('modalFbLink').value = savedFb;
+
+            const savedIg = localStorage.getItem('leea_ig_' + currentClient);
+            if (savedIg) document.getElementById('modalIgLink').value = savedIg;
+
+            const savedTiktok = localStorage.getItem('leea_tiktok_' + currentClient);
+            if (savedTiktok) document.getElementById('modalTiktokLink').value = savedTiktok;
+
+            // Mula tarik senarai prospek & mesej secara automatik setiap 3 saat
+            fetchLiveLeads(currentClient, railwayUrl);
+            setInterval(() => {
+                fetchLiveLeads(currentClient, railwayUrl);
+            }, 3000);
         });
+
+        // Fungsi Tarik Senarai Prospek (Leads) Sebenar dari Enjin Bot
+        async function fetchLiveLeads(clientName, serverUrl) {
+            try {
+                const response = await fetch(`${serverUrl}/api/get-leads?client=${clientName}`);
+                if(response.ok) {
+                    const leads = await response.json();
+                    const leadListContainer = document.getElementById('whatsappLeadList');
+                    
+                    if(leads && leads.length > 0) {
+                        leadListContainer.innerHTML = '';
+                        leads.forEach(lead => {
+                            const activeClass = (selectedActivePhone === lead.phone) ? 'lead-item active' : 'lead-item';
+                            leadListContainer.innerHTML += `
+                                <div class="${activeClass}" onclick="selectLead('${lead.phone}', '${lead.name}')">
+                                    <strong style="color: var(--accent); display: block;">${lead.name}</strong>
+                                    <span style="color: #64748b; font-size: 10px;">${lead.phone} • ${lead.status || 'Aktif'}</span>
+                                </div>
+                            `;
+                        });
+
+                        // Jika belum pilih mana-mana, auto-pilih prospek pertama
+                        if(!selectedActivePhone && leads[0]) {
+                            selectLead(leads[0].phone, leads[0].name);
+                        } else if(selectedActivePhone) {
+                            fetchChatHistory(clientName, serverUrl, selectedActivePhone);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log("Mod menunggu sambungan aktif ke server enjin bot...");
+            }
+        }
+
+        // Fungsi Tarik Sejarah Perbualan WhatsApp Prospek Terpilih
+        async function fetchChatHistory(clientName, serverUrl, phone) {
+            try {
+                const response = await fetch(`${serverUrl}/api/get-chat-history?client=${clientName}&phone=${phone}`);
+                if(response.ok) {
+                    const messages = await response.json();
+                    const chatBox = document.getElementById('chatMessagesBox');
+                    chatBox.innerHTML = '';
+
+                    if(messages && messages.length > 0) {
+                        messages.forEach(m => {
+                            let borderColor = 'var(--accent)';
+                            let bgCol = 'rgba(0,240,255,0.05)';
+                            let senderLabel = '[Bot WhatsApp]';
+                            
+                            if(m.sender === 'user') {
+                                borderColor = '#10b981';
+                                bgCol = 'rgba(16,185,129,0.05)';
+                                senderLabel = '[' + m.name + 'kanal]';
+                            } else if(m.sender === 'human') {
+                                borderColor = '#38bdf8';
+                                bgCol = 'rgba(56,189,248,0.08)';
+                                senderLabel = '[Agen Manusia - Anda]';
+                            }
+
+                            chatBox.innerHTML += `
+                                <div style="background: ${bgCol}; padding: 6px 10px; border-radius: 4px; border-left: 2px solid ${borderColor};">
+                                    <span style="color: ${borderColor}; font-size: 10px; display: block;">${senderLabel} - ${m.time}</span>
+                                    ${m.text}
+                                </div>
+                            `;
+                        });
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
+                }
+            } catch(e) {
+                console.error("Gagal memuatkan sejarah chat:", e);
+            }
+        }
+
+        function selectLead(phone, name) {
+            selectedActivePhone = phone;
+            document.getElementById('activeChatTitle').innerText = 'Prospek: ' + name + ' (' + phone + ')';
+            const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+            const railwayUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
+            fetchChatHistory(currentClient, railwayUrl, phone);
+        }
+
+        // Kawalan Popup Modal Profil Klien
+        function openClientProfileModal() {
+            const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+            document.getElementById('modalUsername').value = currentClient;
+            document.getElementById('clientProfileModal').style.display = 'flex';
+        }
+
+        function closeClientProfileModal() {
+            document.getElementById('clientProfileModal').style.display = 'none';
+        }
+
+        function previewCompanyLogo(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Img = e.target.result;
+                    document.getElementById('modalLogoPreview').src = base64Img;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveClientProfileChanges() {
+            const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+            const newPass = document.getElementById('modalNewPassword').value.trim();
+            const fbLink = document.getElementById('modalFbLink').value.trim();
+            const igLink = document.getElementById('modalIgLink').value.trim();
+            const tiktokLink = document.getElementById('modalTiktokLink').value.trim();
+            
+            if(newPass && newPass.length < 6) {
+                alert('Kata laluan baharu mestilah sekurang-kurangnya 6 aksara.');
+                return;
+            }
+
+            const logoSrc = document.getElementById('modalLogoPreview').src;
+            localStorage.setItem('leea_logo_' + currentClient, logoSrc);
+            localStorage.setItem('leea_fb_' + currentClient, fbLink);
+            localStorage.setItem('leea_ig_' + currentClient, igLink);
+            localStorage.setItem('leea_tiktok_' + currentClient, tiktokLink);
+
+            document.getElementById('headerLogoImg').src = logoSrc;
+            
+            alert('Profil syarikat, pautan sosial media, dan tetapan akaun berjaya disimpan!');
+            closeClientProfileModal();
+        }
 
         let isHumanManualMode = false;
 
@@ -430,8 +647,31 @@
             }
         }
 
-        function saveClientBrainPrompt() {
-            alert('Prompt minda bot berjaya disimpan dan diselaraskan pada sistem!');
+        async function saveClientBrainPrompt() {
+            const promptText = document.getElementById('clientBrainPrompt').value.trim();
+            const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+            const serverUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
+
+            if(!promptText) {
+                alert('Sila masukkan skrip prompt minda bot terlebih dahulu.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${serverUrl}/api/update-prompt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ client: currentClient, prompt: promptText })
+                });
+
+                if(response.ok) {
+                    alert('Prompt minda bot berjaya dihantar dan dikemaskini terus pada enjin bot klien!');
+                } else {
+                    alert('Gagal dikemaskini. Sila semak status server bot.');
+                }
+            } catch (err) {
+                alert('Amaran: Sambungan ke server bot tempatan/Railway tidak terhasil. Pastikan pelayan Python sedang aktif.');
+            }
         }
 
         function saveClientPaymentSettings() {
@@ -445,10 +685,6 @@
                 return;
             }
             alert('Konfigurasi sistem & nombor admin berjaya diselaraskan pada server & fail kod klien secara automatik!');
-        }
-
-        function selectLead(phone, name) {
-            document.getElementById('activeChatTitle').innerText = 'Prospek: ' + name + ' (' + phone + ')';
         }
 
         function toggleHumanTakeover() {
@@ -467,22 +703,34 @@
             }
         }
 
-        function sendManualMessage() {
+        async function sendManualMessage() {
             const input = document.getElementById('liveChatInput');
             const msg = input.value.trim();
-            if(!msg) return;
+            if(!msg || !selectedActivePhone) {
+                alert('Sila pilih prospek dan masukkan mesej.');
+                return;
+            }
 
-            const chatBox = document.getElementById('chatMessagesBox');
-            const newMsg = document.createElement('div');
-            newMsg.style.background = 'rgba(56,189,248,0.08)';
-            newMsg.style.padding = '6px 10px';
-            newMsg.style.borderRadius = '4px';
-            newMsg.style.borderLeft = '2px solid #38bdf8';
-            newMsg.innerHTML = '<span style="color: #38bdf8; font-size: 10px; display: block;">[Agen Manusia - Anda] - Baru sahaja</span>' + msg;
-            
-            chatBox.appendChild(newMsg);
-            chatBox.scrollTop = chatBox.scrollHeight;
-            input.value = '';
+            const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+            const serverUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
+
+            try {
+                const response = await fetch(`${serverUrl}/api/send-whatsapp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ client: currentClient, phone: selectedActivePhone, message: msg })
+                });
+
+                if(response.ok) {
+                    input.value = '';
+                    fetchChatHistory(currentClient, serverUrl, selectedActivePhone);
+                } else {
+                    alert('Gagal menghantar mesej WhatsApp.');
+                }
+            } catch(e) {
+                console.error("Gagal menghantar mesej ke pelayan bot:", e);
+                alert('Ralat sambungan ke pelayan bot.');
+            }
         }
 
         function exportLeadsCsv() {
