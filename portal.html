@@ -39,15 +39,15 @@
 
     <!-- HEADER / PENGEPALA PORTAL -->
     <div class="header" id="portalHeader" style="display: none;">
-        <!-- Penjuru Kiri: Logo Rasmi Sistem Leea & Perkataan SISTEM LEEA -->
+        <!-- Penjuru Kiri: Logo Rasmi Sistem Leea (Maskot Robot LEEA) & Perkataan SISTEM LEEA -->
         <div class="brand-container">
-            <img src="leea_logo.png" alt="Logo Sistem Leea" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);" onerror="this.src='https://via.placeholder.com/40/00f0ff/030712?text=LEE'">
+            <img src="leea_logo.png" alt="Logo Sistem Leea" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);" onerror="this.src='https://via.placeholder.com/40/00f0ff/030712?text=LEEA'">
             <div class="brand" id="brandTitle">SISTEM LEEA</div>
         </div>
 
         <!-- Penjuru Kanan: Logo Syarikat Klien, Status E-Wallet, Profil & Log Keluar -->
         <div style="display: flex; gap: 12px; align-items: center; font-size: 12px;">
-            <img id="headerCompanyLogo" src="https://via.placeholder.com/40" alt="Logo Syarikat" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);" title="Logo Syarikat Klien">
+            <img id="headerCompanyLogo" src="https://via.placeholder.com/40" alt="Logo Syarikat Klien" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);" title="Logo Syarikat Klien" onerror="this.src='https://via.placeholder.com/40'">
             <span style="color: #34d399;" id="txtEwallet">E-Wallet: <strong id="headerWalletBal">RM 0.00</strong></span>
             <button onclick="openClientProfileModal()" id="clientProfileBtn" style="background: rgba(0,240,255,0.1); border:1px solid var(--accent); color:var(--accent); padding: 5px 14px; border-radius:6px; cursor:pointer; font-weight: bold; letter-spacing: 0.5px;">👤 Klien</button>
             <button onclick="clientLogout()" id="btnLogout" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #f87171; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">LOG KELUAR</button>
