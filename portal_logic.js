@@ -1,4 +1,4 @@
-// portal_logic.js - Kemas kini fungsi login dan paparan
+// portal_logic.js - Skrip Fungsi Utama Portal Klien Sistem Leea (Sokongan Lokal & Vercel)
 let selectedActivePhone = null;
 let isHumanManualMode = false;
 let currentLang = localStorage.getItem('leea_portal_lang') || 'BM';
@@ -188,6 +188,7 @@ async function clientLogin() {
     }
 
     try {
+        // Cuba semak melalui Flask API terlebih dahulu
         const response = await fetch('/portal/api-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -202,12 +203,31 @@ async function clientLogin() {
             document.getElementById('portalTabs').style.display = 'flex';
             document.getElementById('tabAnalisis').classList.add('active');
             location.reload();
-        } else {
-            errBox.innerText = translations[currentLang].errorLogin;
+            return;
         }
     } catch (err) {
-        errBox.innerText = currentLang === 'BM' ? 'Ralat sambungan pelayan backend.' : 'Server connection error.';
+        // Jika gagal berhubung dengan Flask (cth: di Vercel), semak terus daripada fail clients_db.json
+        try {
+            const dbRes = await fetch('clients_db.json');
+            if (dbRes.ok) {
+                const clients = await dbRes.json();
+                const found = clients.find(c => c.username === user && c.password === pass);
+                if (found) {
+                    localStorage.setItem('leea_current_client', found.username);
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    document.getElementById('portalHeader').style.display = 'flex';
+                    document.getElementById('portalTabs').style.display = 'flex';
+                    document.getElementById('tabAnalisis').classList.add('active');
+                    location.reload();
+                    return;
+                }
+            }
+        } catch (dbErr) {
+            console.error("Gagal membaca clients_db.json:", dbErr);
+        }
     }
+
+    errBox.innerText = translations[currentLang].errorLogin;
 }
 
 function clientLogout() {
