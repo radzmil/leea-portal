@@ -138,7 +138,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         const affiliateInput = document.getElementById('affiliateLinkInput');
         if (affiliateInput) affiliateInput.value = 'https://www.architechlaboratory.my/ref/' + currentClient.toLowerCase();
 
-        // Tetapan URL Railway dikawal sepenuhnya oleh Admin secara automatik
         let railwayUrl = 'https://web-production-07b92.up.railway.app/';
         try {
             const dbRes = await fetch('clients_db.json');
