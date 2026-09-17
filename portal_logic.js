@@ -180,8 +180,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         checkAgentAffiliateStatus();
         fetchLiveLeads(currentClient, railwayUrl);
+        fetchLiveAnalytics(railwayUrl);
+        
         setInterval(() => {
             fetchLiveLeads(currentClient, railwayUrl);
+            fetchLiveAnalytics(railwayUrl);
         }, 3000);
     } else {
         document.getElementById('loginOverlay').style.display = 'flex';
@@ -335,6 +338,25 @@ async function fetchLiveLeads(clientName, serverUrl) {
         }
     } catch (error) {
         console.log("Mod menunggu sambungan enjin bot...");
+    }
+}
+
+async function fetchLiveAnalytics(serverUrl) {
+    try {
+        const response = await fetch(`${serverUrl}/api/get-analytics`);
+        if (response.ok) {
+            const data = await response.json();
+            const cards = document.querySelectorAll('.analytic-card .metric-val');
+            if (cards.length >= 7) {
+                cards[0].innerText = data.daily_chats;
+                cards[1].innerText = data.weekly_chats;
+                cards[2].innerText = data.monthly_chats;
+                cards[3].innerText = data.total_leads;
+                cards[6].innerText = data.human_interventions;
+            }
+        }
+    } catch (e) {
+        console.log("Gagal memuatkan analitik live.");
     }
 }
 
