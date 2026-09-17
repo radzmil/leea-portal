@@ -86,7 +86,7 @@
             <div class="brand">LEEA AI SYSTEM - ENTERPRISE CLIENT PORTAL</div>
         </div>
         <div style="display: flex; gap: 12px; align-items: center; font-size: 12px;">
-            <span style="color: #34d399;">E-Wallet: <strong>RM 0.00</strong></span>
+            <span style="color: #34d399;">E-Wallet: <strong id="headerWalletBal">RM 0.00</strong></span>
             <button onclick="openClientProfileModal()" id="clientProfileBtn" style="background: rgba(0,240,255,0.1); border:1px solid var(--accent); color:var(--accent); padding: 5px 14px; border-radius:6px; cursor:pointer; font-weight: bold; letter-spacing: 0.5px;">👤 Klien</button>
             <a href="index.html" onclick="localStorage.removeItem('leea_current_client')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #f87171; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-weight: bold;">LOG KELUAR</a>
         </div>
@@ -309,25 +309,80 @@
         </div>
     </div>
 
-    <!-- TAB 3: AFFILIATE -->
+    <!-- TAB 3: AFFILIATE (DIKEMASKINI DENGAN TERMA, BORANG AGEN & KELULUSAN ADMIN) -->
     <div id="tabAffiliate" class="tab-content">
         <div class="card">
-            <h3>PROGRAM AFFILIATE & KOMISEN</h3>
+            <h3>PROGRAM AFFILIATE & KOMISEN (10%)</h3>
             <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 15px;">
-                Gunakan pautan affiliate di bawah untuk menjana pendapatan pasif daripada rujukan pengguna baru ke sistem Leea AI.
+                Jana pendapatan pasif melalui rujukan pengguna baharu ke sistem Leea AI. Anda akan menikmati komisen sebanyak <strong>10% daripada setiap langganan sub-affiliate</strong> yang berjaya, dikreditkan terus ke e-wallet klien setiap bulan.
             </p>
-            <div class="form-group">
-                <label>Pautan Affiliate Khas Anda:</label>
-                <input type="text" id="affiliateLinkInput" value="https://www.architechlaboratory.my/ref/CLI-1001" readonly style="color: #34d399; background: rgba(16,185,129,0.05); font-weight: bold;">
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
-                <div style="background:#020617; border:1px solid #1e3a8a; padding:12px; border-radius:8px;">
-                    <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:5px;">Jumlah Rujukan (Clicks/Signups)</span>
-                    <strong style="color: var(--accent); font-size:16px;">0 Pengguna</strong>
+
+            <!-- 1. KOTAK TERMA & SYARAT AFFILIATE -->
+            <div id="affiliateTermsBox" style="background: #020617; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <strong style="color: var(--accent); font-size: 11px; display: block; margin-bottom: 8px;">📜 TERMA & SYARAT PROGRAM AGEN AFFILIATE LEEA AI</strong>
+                <div style="font-size: 10px; color: var(--text-muted); line-height: 1.5; max-height: 100px; overflow-y: auto; padding-right: 5px; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 8px;">
+                    1. Komisen sebanyak 10% dikira berdasarkan jumlah pembayaran langganan bulanan aktif oleh sub-affiliate rujukan.<br>
+                    2. Payout komisen akan dikreditkan ke e-wallet secara automatik setiap bulan setelah disahkan oleh pihak Administrator.<br>
+                    3. Klien wajib mendaftarkan nombor akaun bank yang sah atas nama sendiri untuk tujuan pengesahan dan pembayaran.<br>
+                    4. Sebarang aktiviti spam atau salah laku promosi akan menyebabkan akaun affiliate digantung serta-merta tanpa sebarang pampasan.
                 </div>
-                <div style="background:#020617; border:1px solid #1e3a8a; padding:12px; border-radius:8px;">
-                    <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:5px;">Jumlah Komisen Terkumpul</span>
-                    <strong style="color: #34d399; font-size:16px;">RM 0.00</strong>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="agreeTermsCheck" style="width: auto; cursor: pointer;">
+                    <label for="agreeTermsCheck" style="color: #e2e8f0; font-size: 11px; cursor: pointer; margin: 0;">Saya telah membaca, memahami, dan bersetuju dengan Terma & Syarat di atas.</label>
+                </div>
+            </div>
+
+            <!-- 2. BORANG PERMOHONAN AGEN (MUNCUL SEBELUM DISAHKAN ADMIN) -->
+            <div id="agentRegistrationFormCard" style="background: #020617; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <strong style="color: #f59e0b; font-size: 11px; display: block; margin-bottom: 10px;">📝 BORANG PERMOHONAN AGEN AFFILIATE RASMI</strong>
+                <div class="form-group">
+                    <label>Nama Penuh Pemegang Akaun:</label>
+                    <input type="text" id="agentFullName" placeholder="Masukkan nama penuh mengikut IC...">
+                </div>
+                <div class="form-group">
+                    <label>Pilihan Bank:</label>
+                    <select id="agentBankName">
+                        <option value="">-- Sila Pilih Bank --</option>
+                        <option value="Maybank">Maybank (Malayan Banking Berhad)</option>
+                        <option value="CIMB Bank">CIMB Bank</option>
+                        <option value="Public Bank">Public Bank</option>
+                        <option value="RHB Bank">RHB Bank</option>
+                        <option value="Hong Leong Bank">Hong Leong Bank</option>
+                        <option value="AmBank">AmBank</option>
+                        <option value="Bank Rakyat">Bank Rakyat</option>
+                        <option value="BSN">Bank Simpanan Nasional (BSN)</option>
+                        <option value="DuitNow / Touch 'n Go">DuitNow / Touch 'n Go eWallet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nombor Akaun Bank / DuitNow:</label>
+                    <input type="text" id="agentAccountNo" placeholder="Contoh: 164123456789">
+                </div>
+                <button class="action-btn" onclick="submitAgentRegistration()" style="background: rgba(245,158,11,0.15); border-color: #f59e0b; color: #f59e0b;">
+                    HANTAR PERMOHONAN AGEN (SEMAKAN ADMIN)
+                </button>
+            </div>
+
+            <!-- 3. STATUS PENDING MENUNGGU KELULUSAN ADMIN -->
+            <div id="pendingAgentNotice" style="display: none; background: rgba(245,158,11,0.1); border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; text-align: center; color: #f59e0b; font-size: 11px; margin-bottom: 15px;">
+                ⏳ <strong>Permohonan Anda Sedang Disemak:</strong> Pihak Administrator sedang melakukan pengesahan nombor akaun bank anda. Pautan affiliate akan diaktifkan sebaik sahaja kelulusan diberikan.
+            </div>
+
+            <!-- 4. DASHBOARD AFFILIATE AKTIF (HANYA MUNCUL APABILA ADMIN SAHKAN) -->
+            <div id="activeAgentDashboard" style="display: none;">
+                <div class="form-group">
+                    <label>Pautan Affiliate Khas Anda:</label>
+                    <input type="text" id="affiliateLinkInput" readonly style="color: #34d399; background: rgba(16,185,129,0.05); font-weight: bold;">
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
+                    <div style="background:#020617; border:1px solid #1e3a8a; padding:12px; border-radius:8px;">
+                        <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:5px;">Jumlah Rujukan (Clicks/Signups)</span>
+                        <strong style="color: var(--accent); font-size:16px;" id="affiliateClicksCount">0 Pengguna</strong>
+                    </div>
+                    <div style="background:#020617; border:1px solid #1e3a8a; padding:12px; border-radius:8px;">
+                        <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:5px;">Jumlah Komisen Terkumpul</span>
+                        <strong style="color: #34d399; font-size:16px;" id="affiliateWalletBalance">RM 0.00</strong>
+                    </div>
                 </div>
             </div>
         </div>
@@ -450,9 +505,6 @@
             const botInput = document.getElementById('botNameInput');
             if (botInput) botInput.value = 'bot-' + currentClient.toLowerCase();
 
-            const affiliateInput = document.getElementById('affiliateLinkInput');
-            if (affiliateInput) affiliateInput.value = 'https://www.architechlaboratory.my/ref/' + currentClient.toLowerCase();
-
             const adminEmail = localStorage.getItem('admin_email_' + currentClient) || (currentClient.toLowerCase() + '@adminportal.my');
             const adminPhone = localStorage.getItem('admin_phone_' + currentClient) || '+60 19-000 0000';
             const railwayUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
@@ -476,12 +528,78 @@
             const savedTiktok = localStorage.getItem('leea_tiktok_' + currentClient);
             if (savedTiktok) document.getElementById('modalTiktokLink').value = savedTiktok;
 
+            // Semak status affiliate & muat turun data e-wallet
+            checkAgentAffiliateStatus();
+
             // Mula tarik senarai prospek & mesej secara automatik setiap 3 saat
             fetchLiveLeads(currentClient, railwayUrl);
             setInterval(() => {
                 fetchLiveLeads(currentClient, railwayUrl);
             }, 3000);
         });
+
+        // Logik Pendaftaran Affiliate & Semakan Admin
+        function submitAgentRegistration() {
+            const isAgreed = document.getElementById('agreeTermsCheck').checked;
+            const fullName = document.getElementById('agentFullName').value.trim();
+            const bankName = document.getElementById('agentBankName').value;
+            const accountNo = document.getElementById('agentAccountNo').value.trim();
+            const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+
+            if (!isAgreed) {
+                alert('Sila tandakan kotak persetujuan pada Terma & Syarat Affiliate terlebih dahulu.');
+                return;
+            }
+            if (!fullName || !bankName || !accountNo) {
+                alert('Sila lengkapkan nama penuh, jenis bank, dan nombor akaun bank.');
+                return;
+            }
+
+            const affiliatePayload = {
+                data: { isAgent: true, walletBalance: 0.00, totalReferrals: 0, totalEarned: 0, verifiedByAdmin: false },
+                bank: { fullName: fullName, bankName: bankName, accountNo: accountNo }
+            };
+
+            localStorage.setItem('leea_affiliate_' + currentClient, JSON.stringify(affiliatePayload));
+            
+            alert('Permohonan pendaftaran agen affiliate berjaya dihantar kepada Administrator untuk pengesahan akaun!');
+            checkAgentAffiliateStatus();
+        }
+
+        function checkAgentAffiliateStatus() {
+            const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+            const savedData = localStorage.getItem('leea_affiliate_' + currentClient);
+
+            const formCard = document.getElementById('agentRegistrationFormCard');
+            const termsBox = document.getElementById('affiliateTermsBox');
+            const activeDashboard = document.getElementById('activeAgentDashboard');
+            const pendingNotice = document.getElementById('pendingAgentNotice');
+
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    const affiliateInfo = parsed.data || {};
+                    const walletBal = affiliateInfo.walletBalance || 0.00;
+
+                    document.getElementById('affiliateWalletBalance').innerText = 'RM ' + walletBal.toFixed(2);
+                    document.getElementById('headerWalletBal').innerText = 'RM ' + walletBal.toFixed(2);
+
+                    if (affiliateInfo.isAgent) {
+                        termsBox.style.display = 'none';
+                        formCard.style.display = 'none';
+
+                        if (!affiliateInfo.verifiedByAdmin) {
+                            pendingNotice.style.display = 'block';
+                            activeDashboard.style.display = 'none';
+                        } else {
+                            pendingNotice.style.display = 'none';
+                            activeDashboard.style.display = 'block';
+                            document.getElementById('affiliateLinkInput').value = 'https://www.architechlaboratory.my/ref/' + currentClient.toLowerCase();
+                        }
+                    }
+                } catch(e) {}
+            }
+        }
 
         // Fungsi Tarik Senarai Prospek (Leads) Sebenar dari Enjin Bot
         async function fetchLiveLeads(clientName, serverUrl) {
@@ -503,7 +621,6 @@
                             `;
                         });
 
-                        // Jika belum pilih mana-mana, auto-pilih prospek pertama
                         if(!selectedActivePhone && leads[0]) {
                             selectLead(leads[0].phone, leads[0].name);
                         } else if(selectedActivePhone) {
@@ -534,7 +651,7 @@
                             if(m.sender === 'user') {
                                 borderColor = '#10b981';
                                 bgCol = 'rgba(16,185,129,0.05)';
-                                senderLabel = '[' + m.name + 'kanal]';
+                                senderLabel = '[' + m.name + ']';
                             } else if(m.sender === 'human') {
                                 borderColor = '#38bdf8';
                                 bgCol = 'rgba(56,189,248,0.08)';

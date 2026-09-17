@@ -34,7 +34,7 @@ function appData() {
                 try {
                     this.currentUser = JSON.parse(user);
                     this.isLoggedIn = true;
-                    // Tarik kesemua fail sheet DB klien apabila sesi aktif dimuatkan[cite: 2]
+                    // Tarik kesemua fail sheet DB klien apabila sesi aktif dimuatkan[cite: 2, 6]
                     this.fetchAllClientSheetsFromDrive(this.currentUser.clientId || this.currentUser.username);
                 } catch(e) { this.logout(); }
             }
@@ -63,7 +63,7 @@ function appData() {
                     this.isLoggedIn = true;
                     localStorage.setItem('leea_current_user', JSON.stringify(this.currentUser));
                     
-                    // Tarik kesemua data sheet DB dari Google Drive selepas log masuk berjaya[cite: 2]
+                    // Tarik kesemua data sheet DB dari Google Drive selepas log masuk berjaya[cite: 2, 6]
                     await this.fetchAllClientSheetsFromDrive(this.currentUser.clientId);
                 } else {
                     this.loginError = result.message || 'ID atau Katalaluan Salah!';
@@ -83,7 +83,7 @@ function appData() {
                 const result = await response.json();
                 
                 if (result.success && result.data) {
-                    // Masukkan data fail JSON ke dalam storan Alpine.js[cite: 2]
+                    // Masukkan data fail JSON ke dalam storan Alpine.js[cite: 2, 6]
                     this.clientDatabase.profile = result.data.client_profile || null;
                     this.clientDatabase.botBrain = result.data.bot_brain_config || null;
                     this.clientDatabase.chatHistory = result.data.chat_history_logs || [];
@@ -94,6 +94,12 @@ function appData() {
                     this.clientDatabase.paymentHistory = result.data.payment_history || [];
                     this.clientDatabase.railwayDeployment = result.data.railway_deployment || null;
                     
+                    // Sinkronisasi data e-wallet affiliate ke state tempatan jika ada
+                    if (this.clientDatabase.affiliate) {
+                        this.affiliateData.isAgent = this.clientDatabase.affiliate.isAgent || false;
+                        this.affiliateData.walletBalance = this.clientDatabase.affiliate.walletBalance || 0.00;
+                    }
+
                     console.log("Kesemua sheet DB Google Drive berjaya diselaraskan ke dashboard:", this.clientDatabase);
                 }
             } catch (error) {
@@ -112,11 +118,11 @@ function appData() {
                 
                 const response = await fetch(appsScriptUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Mengelakkan isu CORS preflight Google Apps Script
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Mengelakkan isu CORS preflight Google Apps Script[cite: 6]
                     body: JSON.stringify({
                         action: 'save_db',
                         client: clientId,
-                        sheet: sheetName, // cth: 'client_profile', 'bot_brain_config'[cite: 2]
+                        sheet: sheetName, // cth: 'client_profile', 'bot_brain_config'[cite: 2, 6]
                         data: payloadData
                     })
                 });
