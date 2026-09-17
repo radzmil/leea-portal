@@ -166,27 +166,48 @@
             <h3 id="cardAnalyticsTitle">STATISTIK & METRIK PRESTASI CHAT</h3>
             
             <div class="analytics-grid">
+                <!-- KAD KUOTA TOKEN CHAT BULANAN -->
+                <div class="analytic-card" style="border: 1px solid var(--accent); background: rgba(0, 240, 255, 0.03); grid-column: span 2;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="color: var(--accent); font-size: 12px; font-weight: bold;">⚡ KUOTA TOKEN CHAT BULANAN (1000 TOKEN)</span>
+                        <span style="color: #10b981; font-size: 11px; font-weight: bold;" id="tokenStatusText">Aktif (Auto-Refill)</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div>
+                            <span class="metric-val" id="tokenUsageCount" style="font-size: 22px; color: #fff;">60</span>
+                            <span style="color: #64748b; font-size: 11px;"> / 1000 Token</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: #94a3b8; font-size: 10px; display: block;">* Auto-refill 1000 token setiap 1 haribulan.</span>
+                            <span style="color: #f59e0b; font-size: 10px; display: block;">* Jika habis awal sebelum tempoh, sila buat topup token tambahan.</span>
+                        </div>
+                    </div>
+                    <div style="width: 100%; background: #1e293b; height: 6px; border-radius: 3px; margin-top: 10px; overflow: hidden;">
+                        <div id="tokenProgressBar" style="width: 6%; background: var(--accent); height: 100%; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+
                 <div class="analytic-card">
                     <span id="statDaily">Chat Sehari (24 Jam)</span>
-                    <div class="metric-val">142</div>
+                    <div class="metric-val">2</div>
                     <div class="metric-sub" id="statDailySub">▲ +12% berbanding semalam</div>
                 </div>
 
                 <div class="analytic-card">
                     <span id="statWeekly">Chat Seminggu (7 Hari)</span>
-                    <div class="metric-val">1,248</div>
+                    <div class="metric-val">14</div>
                     <div class="metric-sub" id="statWeeklySub">▲ Trafik stabil</div>
                 </div>
 
                 <div class="analytic-card">
                     <span id="statMonthly">Chat Sebulan (30 Hari)</span>
-                    <div class="metric-val">5,890</div>
+                    <div class="metric-val">60</div>
                     <div class="metric-sub" id="statMonthlySub">▲ Peningkatan aktif</div>
                 </div>
 
                 <div class="analytic-card">
                     <span id="statLeads">WhatsApp Lead Terkumpul</span>
-                    <div class="metric-val" style="color: #34d399;">84</div>
+                    <div class="metric-val" style="color: #34d399;">1</div>
                     <div class="metric-sub" id="statLeadsSub">Kadar conversion ~6.7%</div>
                 </div>
 
@@ -204,7 +225,7 @@
 
                 <div class="analytic-card">
                     <span id="statIntervention">Human Touch Interventions</span>
-                    <div class="metric-val" style="color: #f87171;">14</div>
+                    <div class="metric-val" style="color: #f87171;">0</div>
                     <div class="metric-sub" id="statInterventionSub">Diambil alih agen manual</div>
                 </div>
 

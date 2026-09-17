@@ -132,12 +132,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         const profileBtn = document.getElementById('clientProfileBtn');
         if (profileBtn) profileBtn.innerText = '👤 ' + currentClient;
 
-        const botInput = document.getElementById('botNameInput');
-        if (botInput) botInput.value = 'bot-' + currentClient.toLowerCase();
-
-        const affiliateInput = document.getElementById('affiliateLinkInput');
-        if (affiliateInput) affiliateInput.value = 'https://www.architechlaboratory.my/ref/' + currentClient.toLowerCase();
-
         let railwayUrl = 'https://web-production-07b92.up.railway.app/';
         try {
             const dbRes = await fetch('clients_db.json');
@@ -152,6 +146,37 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.log("Menggunakan laluan Railway standard rasmi.");
         }
 
+        // Muat turun data profil terkini dari server Railway supaya kekal
+        try {
+            const profileRes = await fetch(`${railwayUrl}/api/clients`);
+            if (profileRes.ok) {
+                const profileJson = await profileRes.json();
+                if (profileJson.status === 'success' && profileJson.data) {
+                    const clientData = profileJson.data.find(c => c.username === currentClient);
+                    if (clientData) {
+                        if (clientData.bot_name) {
+                            document.getElementById('botNameInput').value = clientData.bot_name;
+                        }
+                        if (clientData.logo) {
+                            document.getElementById('headerCompanyLogo').src = clientData.logo;
+                            document.getElementById('modalLogoPreview').src = clientData.logo;
+                        }
+                        if (clientData.fb_link) document.getElementById('modalFbLink').value = clientData.fb_link;
+                        if (clientData.ig_link) document.getElementById('modalIgLink').value = clientData.ig_link;
+                        if (clientData.tiktok_link) document.getElementById('modalTiktokLink').value = clientData.tiktok_link;
+                    }
+                }
+            }
+        } catch(err) {
+            console.log("Gagal memuatkan profil server, menggunakan tetapan lalai.");
+        }
+
+        const botInput = document.getElementById('botNameInput');
+        if (botInput && !botInput.value) botInput.value = 'bot-' + currentClient.toLowerCase();
+
+        const affiliateInput = document.getElementById('affiliateLinkInput');
+        if (affiliateInput) affiliateInput.value = 'https://www.architechlaboratory.my/ref/' + currentClient.toLowerCase();
+
         const adminEmail = localStorage.getItem('admin_email_' + currentClient) || (currentClient.toLowerCase() + '@adminportal.my');
         const adminPhone = localStorage.getItem('admin_phone_' + currentClient) || '+60 19-000 0000';
 
@@ -162,21 +187,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         const savedAdminNum = localStorage.getItem('client_admin_number_' + currentClient) || '';
         if (savedAdminNum) document.getElementById('clientAdminNumber').value = savedAdminNum;
-
-        const savedLogo = localStorage.getItem('leea_logo_' + currentClient);
-        if (savedLogo) {
-            document.getElementById('headerCompanyLogo').src = savedLogo;
-            document.getElementById('modalLogoPreview').src = savedLogo;
-        }
-
-        const savedFb = localStorage.getItem('leea_fb_' + currentClient);
-        if (savedFb) document.getElementById('modalFbLink').value = savedFb;
-
-        const savedIg = localStorage.getItem('leea_ig_' + currentClient);
-        if (savedIg) document.getElementById('modalIgLink').value = savedIg;
-
-        const savedTiktok = localStorage.getItem('leea_tiktok_' + currentClient);
-        if (savedTiktok) document.getElementById('modalTiktokLink').value = savedTiktok;
 
         checkAgentAffiliateStatus();
         fetchLiveLeads(currentClient, railwayUrl);
@@ -346,13 +356,24 @@ async function fetchLiveAnalytics(serverUrl) {
         const response = await fetch(`${serverUrl}/api/get-analytics`);
         if (response.ok) {
             const data = await response.json();
+            
             const cards = document.querySelectorAll('.analytic-card .metric-val');
-            if (cards.length >= 7) {
-                cards[0].innerText = data.daily_chats;
-                cards[1].innerText = data.weekly_chats;
-                cards[2].innerText = data.monthly_chats;
-                cards[3].innerText = data.total_leads;
-                cards[6].innerText = data.human_interventions;
+            if (cards.length >= 8) {
+                cards[1].innerText = data.daily_chats;
+                cards[2].innerText = data.weekly_chats;
+                cards[3].innerText = data.monthly_chats;
+                cards[4].innerText = data.total_leads;
+                cards[7].innerText = data.human_interventions;
+            }
+
+            const tokenCountEl = document.getElementById('tokenUsageCount');
+            const tokenBarEl = document.getElementById('tokenProgressBar');
+            if (tokenCountEl && data.monthly_chats !== undefined) {
+                let usedTokens = data.monthly_chats;
+                if (usedTokens > 1000) usedTokens = 1000;
+                tokenCountEl.innerText = usedTokens;
+                let percentage = (usedTokens / 1000) * 100;
+                if (tokenBarEl) tokenBarEl.style.width = percentage + '%';
             }
         }
     } catch (e) {
@@ -430,27 +451,43 @@ function previewCompanyLogo(event) {
     }
 }
 
-function saveClientProfileChanges() {
+async function saveClientProfileChanges() {
     const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+    const serverUrl = document.getElementById('modalRailwayUrl').value || 'https://web-production-07b92.up.railway.app/';
     const newPass = document.getElementById('modalNewPassword').value.trim();
     const fbLink = document.getElementById('modalFbLink').value.trim();
     const igLink = document.getElementById('modalIgLink').value.trim();
     const tiktokLink = document.getElementById('modalTiktokLink').value.trim();
+    const logoSrc = document.getElementById('modalLogoPreview').src;
     
     if(newPass && newPass.length < 6) {
         alert(currentLang === 'BM' ? 'Kata laluan baharu mestilah sekurang-kurangnya 6 aksara.' : 'New password must be at least 6 characters long.');
         return;
     }
 
-    const logoSrc = document.getElementById('modalLogoPreview').src;
-    localStorage.setItem('leea_logo_' + currentClient, logoSrc);
-    localStorage.setItem('leea_fb_' + currentClient, fbLink);
-    localStorage.setItem('leea_ig_' + currentClient, igLink);
-    localStorage.setItem('leea_tiktok_' + currentClient, tiktokLink);
+    try {
+        const response = await fetch(`${serverUrl}/api/update-client-profile`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentClient,
+                fb_link: fbLink,
+                ig_link: igLink,
+                tiktok_link: tiktokLink,
+                logo_base64: logoSrc
+            })
+        });
 
-    document.getElementById('headerCompanyLogo').src = logoSrc;
-    alert(currentLang === 'BM' ? 'Profil syarikat, pautan sosial media, dan tetapan akaun berjaya disimpan!' : 'Company profile, social links, and account settings saved successfully!');
-    closeClientProfileModal();
+        if(response.ok) {
+            document.getElementById('headerCompanyLogo').src = logoSrc;
+            alert(currentLang === 'BM' ? 'Profil syarikat dan tetapan berjaya disimpan secara kekal di server!' : 'Company profile and settings permanently saved on server!');
+            closeClientProfileModal();
+        } else {
+            alert(currentLang === 'BM' ? 'Gagal menyimpan ke server.' : 'Failed to save to server.');
+        }
+    } catch(e) {
+        alert(currentLang === 'BM' ? 'Ralat sambungan ke pelayan.' : 'Server connection error.');
+    }
 }
 
 function switchTab(evt, tabName) {
@@ -462,13 +499,31 @@ function switchTab(evt, tabName) {
     evt.currentTarget.classList.add('active');
 }
 
-function updateBotName() {
-    const newName = document.getElementById('botNameInput').value;
-    if(!newName.trim()) {
+async function updateBotName() {
+    const newName = document.getElementById('botNameInput').value.trim();
+    const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+    const serverUrl = document.getElementById('modalRailwayUrl').value || 'https://web-production-07b92.up.railway.app/';
+
+    if(!newName) {
         alert(currentLang === 'BM' ? 'Sila masukkan nama bot yang sah.' : 'Please enter a valid bot name.');
         return;
     }
-    alert((currentLang === 'BM' ? 'Nama bot berjaya dikemaskini kepada: ' : 'Bot name updated to: ') + newName);
+
+    try {
+        const response = await fetch(`${serverUrl}/api/update-client-profile`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentClient, bot_name: newName })
+        });
+
+        if(response.ok) {
+            alert((currentLang === 'BM' ? 'Nama bot berjaya dikemaskini dan disimpan ke server: ' : 'Bot name updated and saved to server: ') + newName);
+        } else {
+            alert(currentLang === 'BM' ? 'Gagal mengemaskini nama bot.' : 'Failed to update bot name.');
+        }
+    } catch(e) {
+        alert(currentLang === 'BM' ? 'Ralat sambungan ke pelayan.' : 'Server connection error.');
+    }
 }
 
 async function saveClientBrainPrompt() {
@@ -502,17 +557,32 @@ function saveClientPaymentSettings() {
     alert(currentLang === 'BM' ? 'Tetapan pembayaran dan gateway affiliate berjaya disimpan.' : 'Payment and gateway settings saved successfully.');
 }
 
-function saveClientSystemSettings() {
-    const adminNum = document.getElementById('clientAdminNumber').value;
+async function saveClientSystemSettings() {
+    const adminNum = document.getElementById('clientAdminNumber').value.trim();
     const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+    const serverUrl = document.getElementById('modalRailwayUrl').value || 'https://web-production-07b92.up.railway.app/';
 
-    if(!adminNum.trim()) {
+    if(!adminNum) {
         alert(currentLang === 'BM' ? 'Sila masukkan nombor admin yang sah.' : 'Please enter a valid admin number.');
         return;
     }
 
-    localStorage.setItem('client_admin_number_' + currentClient, adminNum);
-    alert(currentLang === 'BM' ? 'Nombor telefon admin (group_admin_number) berjaya dikemaskini dan diselaraskan pada fail kod server secara automatik!' : 'Admin phone number (group_admin_number) successfully updated and synchronized with the server automatically!');
+    try {
+        const response = await fetch(`${serverUrl}/api/update-client-profile`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentClient, admin_number: adminNum })
+        });
+
+        if(response.ok) {
+            localStorage.setItem('client_admin_number_' + currentClient, adminNum);
+            alert(currentLang === 'BM' ? 'Nombor telefon admin berjaya dikemaskini dan disimpan secara kekal di server!' : 'Admin phone number successfully updated and permanently saved on server!');
+        } else {
+            alert(currentLang === 'BM' ? 'Gagal menyimpan nombor admin ke server.' : 'Failed to save admin number to server.');
+        }
+    } catch(e) {
+        alert(currentLang === 'BM' ? 'Ralat sambungan ke pelayan.' : 'Server connection error.');
+    }
 }
 
 function toggleHumanTakeover() {
