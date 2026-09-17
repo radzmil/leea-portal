@@ -1,4 +1,4 @@
-// portal_logic.js - Skrip Fungsi Utama Portal Klien Sistem Leea
+// portal_logic.js - Kemas kini fungsi login dan paparan
 let selectedActivePhone = null;
 let isHumanManualMode = false;
 let currentLang = localStorage.getItem('leea_portal_lang') || 'BM';
@@ -125,6 +125,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (currentClient) {
         document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('portalHeader').style.display = 'flex';
+        document.getElementById('portalTabs').style.display = 'flex';
+        document.getElementById('tabAnalisis').classList.add('active');
         
         const profileBtn = document.getElementById('clientProfileBtn');
         if (profileBtn) profileBtn.innerText = '👤 ' + currentClient;
@@ -169,6 +172,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     } else {
         document.getElementById('loginOverlay').style.display = 'flex';
+        document.getElementById('portalHeader').style.display = 'none';
+        document.getElementById('portalTabs').style.display = 'none';
     }
 });
 
@@ -193,6 +198,9 @@ async function clientLogin() {
         if (response.ok && result.status === 'success') {
             localStorage.setItem('leea_current_client', result.client.username);
             document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('portalHeader').style.display = 'flex';
+            document.getElementById('portalTabs').style.display = 'flex';
+            document.getElementById('tabAnalisis').classList.add('active');
             location.reload();
         } else {
             errBox.innerText = translations[currentLang].errorLogin;
