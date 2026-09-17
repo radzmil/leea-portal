@@ -72,9 +72,7 @@
             const errorBox = document.getElementById('errorBox');
 
             if (user && pass) {
-                // Simpan username klien ke dalam localStorage supaya portal.html boleh baca
                 localStorage.setItem('leea_current_client', user);
-                // Terus bawa ke fail dashboard portal.html
                 window.location.href = 'portal.html';
             } else {
                 errorBox.style.display = 'block';
