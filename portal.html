@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Leea - Enterprise Client Portal & Live Control</title>
+    <title id="pageTitle">Sistem Leea - Enterprise Client Portal & Live Control</title>
     <style>
         :root {
             --bg-main: #030712;
@@ -17,6 +17,11 @@
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 20px; }
         
+        /* Popup Skrin Log Masuk Dwi-Bahasa */
+        #loginOverlay { position: fixed; inset: 0; background: rgba(3, 7, 18, 0.95); backdrop-filter: blur(8px); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .login-card { background: var(--bg-card); border: 1px solid var(--accent); border-radius: 12px; padding: 30px; width: 100%; max-width: 420px; box-shadow: 0 0 35px rgba(0,240,255,0.25); }
+        .login-card h2 { color: var(--accent); font-size: 16px; margin-top: 0; margin-bottom: 20px; text-align: center; letter-spacing: 1px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 15px 30px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 0 15px rgba(0,240,255,0.1); }
         .brand-container { display: flex; align-items: center; gap: 12px; }
         .brand { font-weight: 700; font-size: 16px; color: var(--accent); letter-spacing: 1px; }
@@ -81,49 +86,81 @@
 </head>
 <body>
 
-    <div class="header">
-        <!-- Logo Sistem Leea di Penjuru Atas Kiri & Nama Sistem -->
-        <div class="brand-container">
-            <img id="headerLogoImg" src="https://via.placeholder.com/40" alt="Logo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);">
-            <div class="brand" id="headerCompanyName">SISTEM LEEA</div>
+    <!-- SKRIN LOG MASUK DENGAN PILIHAN BAHASA (BM / BI) -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2 id="loginTitle">SISTEM LEEA - LOG MASUK</h2>
+            
+            <div class="form-group">
+                <label id="lblLanguage">PILIH BAHASA / SELECT LANGUAGE:</label>
+                <select id="selectLang" onchange="changeLanguage(this.value)">
+                    <option value="BM">Bahasa Melayu Malaysia (BM)</option>
+                    <option value="BI">English (BI)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label id="lblUsername">Username / ID Klien:</label>
+                <input type="text" id="loginUsername" placeholder="Masukkan ID klien...">
+            </div>
+
+            <div class="form-group">
+                <label id="lblPassword">Kata Laluan / Password:</label>
+                <input type="password" id="loginPassword" placeholder="Masukkan kata laluan...">
+            </div>
+
+            <button class="action-btn" onclick="clientLogin()" id="btnLogin">LOG MASUK PORTAL</button>
+            <div id="loginErrorMsg" style="color: var(--danger); font-size: 11px; margin-top: 10px; text-align: center;"></div>
         </div>
+    </div>
+
+    <!-- HEADER / PENGEPALA PORTAL -->
+    <div class="header" id="portalHeader">
+        <!-- Penjuru Kiri: Logo Sistem Leea & Perkataan SISTEM LEEA -->
+        <div class="brand-container">
+            <img src="https://via.placeholder.com/40/00f0ff/030712?text=LEEA" alt="Logo Sistem Leea" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);">
+            <div class="brand" id="brandTitle">SISTEM LEEA</div>
+        </div>
+
+        <!-- Penjuru Kanan: Logo Syarikat Klien, Status E-Wallet, Profil & Log Keluar -->
         <div style="display: flex; gap: 12px; align-items: center; font-size: 12px;">
-            <span style="color: #34d399;">E-Wallet: <strong id="headerWalletBal">RM 0.00</strong></span>
+            <img id="headerCompanyLogo" src="https://via.placeholder.com/40" alt="Logo Syarikat" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);" title="Logo Syarikat Klien">
+            <span style="color: #34d399;" id="txtEwallet">E-Wallet: <strong id="headerWalletBal">RM 0.00</strong></span>
             <button onclick="openClientProfileModal()" id="clientProfileBtn" style="background: rgba(0,240,255,0.1); border:1px solid var(--accent); color:var(--accent); padding: 5px 14px; border-radius:6px; cursor:pointer; font-weight: bold; letter-spacing: 0.5px;">👤 Klien</button>
-            <a href="index.html" onclick="localStorage.removeItem('leea_current_client')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #f87171; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-weight: bold;">LOG KELUAR</a>
+            <button onclick="clientLogout()" id="btnLogout" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #f87171; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">LOG KELUAR</button>
         </div>
     </div>
 
     <!-- POPUP MODAL PROFIL & TETAPAN KLIEN -->
     <div id="clientProfileModal" class="modal-overlay">
         <div class="modal-card">
-            <h3>
+            <h3 id="modalProfileTitle">
                 PROFIL SYARIKAT & TETAPAN AKAUN KLIEN
                 <span style="cursor:pointer; color:var(--danger); font-size:16px;" onclick="closeClientProfileModal()">✕</span>
             </h3>
             
             <div class="form-group">
-                <label>USERNAME AKAUN (Tetap)</label>
+                <label id="lblModalUser">USERNAME AKAUN (Tetap)</label>
                 <input type="text" id="modalUsername" readonly>
             </div>
 
             <div class="form-group">
-                <label>EMEL SYARIKAT (Didaftarkan Admin - Tetap / Tidak Boleh Diubah)</label>
-                <input type="text" id="modalAdminEmail" readonly title="Emel ditetapkan oleh admin dan tidak boleh diubah">
+                <label id="lblModalEmail">EMEL SYARIKAT (Didaftarkan Admin - Tetap)</label>
+                <input type="text" id="modalAdminEmail" readonly>
             </div>
 
             <div class="form-group">
-                <label>NOMBOR TELEFON (Didaftarkan Admin - Tetap / Tidak Boleh Diubah)</label>
-                <input type="text" id="modalAdminPhone" readonly title="Nombor telefon ditetapkan oleh admin dan tidak boleh diubah">
+                <label id="lblModalPhone">NOMBOR TELEFON (Didaftarkan Admin - Tetap)</label>
+                <input type="text" id="modalAdminPhone" readonly>
             </div>
 
             <div class="form-group">
-                <label>RAILWAY BOT URL (Didaftarkan Admin)</label>
-                <input type="text" id="modalRailwayUrl" readonly title="Pautan enjin Railway bot klien">
+                <label id="lblModalRailway">RAILWAY BOT URL (Didaftarkan Admin)</label>
+                <input type="text" id="modalRailwayUrl" readonly>
             </div>
 
             <div class="form-group">
-                <label>LOGO SYARIKAT (Muat Naik Fail Terus)</label>
+                <label id="lblModalLogo">LOGO SYARIKAT (Muat Naik Fail Terus)</label>
                 <div class="logo-preview-box">
                     <img id="modalLogoPreview" src="https://via.placeholder.com/40" alt="Logo Preview">
                     <input type="file" id="modalLogoFile" accept="image/*" onchange="previewCompanyLogo(event)" style="background: transparent; border: none; color: var(--text-main); font-size: 10px; padding: 0;">
@@ -131,150 +168,150 @@
             </div>
 
             <div class="form-group">
-                <label>PAUTAN LINK FACEBOOK SYARIKAT</label>
+                <label id="lblModalFb">PAUTAN LINK FACEBOOK SYARIKAT</label>
                 <input type="text" id="modalFbLink" placeholder="https://facebook.com/namasyarikat">
             </div>
 
             <div class="form-group">
-                <label>PAUTAN LINK INSTAGRAM SYARIKAT</label>
+                <label id="lblModalIg">PAUTAN LINK INSTAGRAM SYARIKAT</label>
                 <input type="text" id="modalIgLink" placeholder="https://instagram.com/namasyarikat">
             </div>
 
             <div class="form-group">
-                <label>PAUTAN LINK TIKTOK SYARIKAT</label>
+                <label id="lblModalTiktok">PAUTAN LINK TIKTOK SYARIKAT</label>
                 <input type="text" id="modalTiktokLink" placeholder="https://tiktok.com/@namasyarikat">
             </div>
 
             <div class="form-group">
-                <label>TUKAR PASSWORD BAHARU (Pilihan)</label>
+                <label id="lblModalPass">TUKAR PASSWORD BAHARU (Pilihan)</label>
                 <input type="password" id="modalNewPassword" placeholder="Masukkan password baharu jika ingin tukar...">
             </div>
 
-            <button class="action-btn" onclick="saveClientProfileChanges()">SIMPAN PERUBAHAN PROFIL</button>
+            <button class="action-btn" onclick="saveClientProfileChanges()" id="btnSaveProfile">SIMPAN PERUBAHAN PROFIL</button>
         </div>
     </div>
 
-    <!-- Sistem Tab Navigation Halaman -->
-    <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab(event, 'tabAnalisis')">📊 Analisis Chat</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tabRealtime')">🤖 Bot Automasi</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tabAffiliate')">🤝 Affiliate</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tabPembayaran')">💳 Pembayaran & Langganan</button>
+    <!-- Sistem Tab Navigation Halaman (Tab Setting Dibuang) -->
+    <div class="tab-nav" id="portalTabs">
+        <button class="tab-btn active" onclick="switchTab(event, 'tabAnalisis')" id="tabBtnAnalysis">📊 Analisis Chat</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tabRealtime')" id="tabBtnAutomation">🤖 Bot Automasi</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tabAffiliate')" id="tabBtnAffiliate">🤝 Affiliate</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tabPembayaran')" id="tabBtnPayment">💳 Pembayaran & Langganan</button>
     </div>
 
     <!-- TAB 1: ANALISIS CHAT & STATISTIK TERPERINCI -->
     <div id="tabAnalisis" class="tab-content active">
         <div class="card">
-            <h3>
+            <h3 id="cardBotProfile">
                 PROFIL BOT AKTIF & SPESIFIKASI
                 <span style="font-size: 10px; color: #10b981; background: rgba(16,185,129,0.1); border: 1px solid #10b981; padding: 2px 8px; border-radius: 4px;">SYNCED & ONLINE</span>
             </h3>
             
             <div class="bot-profile-grid">
                 <div class="profile-item" style="grid-column: span 2;">
-                    <label>Nama Bot (Default: bot-[username], Boleh Diedit):</label>
+                    <label id="lblBotName">Nama Bot (Default: bot-[username], Boleh Diedit):</label>
                     <div style="display: flex; gap: 8px;">
-                        <input type="text" id="botNameInput" value="bot-radzmil" style="margin:0;">
-                        <button onclick="updateBotName()" style="width: auto; margin:0; padding: 6px 12px; font-size: 10px; background: rgba(0,240,255,0.1); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; cursor:pointer;">KEMASKINI NAMA</button>
+                        <input type="text" id="botNameInput" value="bot-klien" style="margin:0;">
+                        <button onclick="updateBotName()" id="btnUpdateBot" style="width: auto; margin:0; padding: 6px 12px; font-size: 10px; background: rgba(0,240,255,0.1); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; cursor:pointer;">KEMASKINI NAMA</button>
                     </div>
                 </div>
                 
                 <div class="profile-item">
-                    <span>Model Bot (Klien V1 - Upgrade ke V2 hanya oleh Admin)</span>
+                    <span id="lblModelBot">Model Bot (Klien V1 - Upgrade ke V2 hanya oleh Admin)</span>
                     <strong id="botModelVal" style="color: var(--accent);">Model V1 (Standard)</strong>
                 </div>
 
                 <div class="profile-item">
-                    <span>Memori Bot (Diguna / Pakej)</span>
+                    <span id="lblMemoryBot">Memori Bot (Diguna / Pakej)</span>
                     <strong id="botMemoryVal" style="color: #38bdf8;">95 MB / 300 MB</strong>
                 </div>
 
                 <div class="profile-item">
-                    <span>Tarikh Luput Lesen</span>
+                    <span id="lblExpiryBot">Tarikh Luput Lesen</span>
                     <strong style="color: #f59e0b;">27/10/2026</strong>
                 </div>
 
                 <div class="profile-item">
-                    <span>Status Bot</span>
-                    <strong style="color: #10b981;">Aktif 🟢 (Running)</strong>
+                    <span id="lblStatusBot">Status Bot</span>
+                    <strong style="color: #10b981;" id="txtRunningStatus">Aktif 🟢 (Running)</strong>
                 </div>
             </div>
         </div>
 
         <!-- PANEL STATISTIK & ANALISIS UTAMA -->
         <div class="card">
-            <h3>STATISTIK & METRIK PRESTASI CHAT</h3>
+            <h3 id="cardAnalyticsTitle">STATISTIK & METRIK PRESTASI CHAT</h3>
             
             <div class="analytics-grid">
                 <div class="analytic-card">
-                    <span>Chat Sehari (24 Jam)</span>
+                    <span id="statDaily">Chat Sehari (24 Jam)</span>
                     <div class="metric-val">142</div>
-                    <div class="metric-sub">▲ +12% berbanding semalam</div>
+                    <div class="metric-sub" id="statDailySub">▲ +12% berbanding semalam</div>
                 </div>
 
                 <div class="analytic-card">
-                    <span>Chat Seminggu (7 Hari)</span>
+                    <span id="statWeekly">Chat Seminggu (7 Hari)</span>
                     <div class="metric-val">1,248</div>
-                    <div class="metric-sub">▲ Trafik stabil</div>
+                    <div class="metric-sub" id="statWeeklySub">▲ Trafik stabil</div>
                 </div>
 
                 <div class="analytic-card">
-                    <span>Chat Sebulan (30 Hari)</span>
+                    <span id="statMonthly">Chat Sebulan (30 Hari)</span>
                     <div class="metric-val">5,890</div>
-                    <div class="metric-sub">▲ Peningkatan aktif</div>
+                    <div class="metric-sub" id="statMonthlySub">▲ Peningkatan aktif</div>
                 </div>
 
                 <div class="analytic-card">
-                    <span>WhatsApp Lead Terkumpul</span>
+                    <span id="statLeads">WhatsApp Lead Terkumpul</span>
                     <div class="metric-val" style="color: #34d399;">84</div>
-                    <div class="metric-sub">Kadar conversion ~6.7%</div>
+                    <div class="metric-sub" id="statLeadsSub">Kadar conversion ~6.7%</div>
                 </div>
 
                 <div class="analytic-card">
-                    <span>Pelanggan Berulang (Returning)</span>
+                    <span id="statReturning">Pelanggan Berulang (Returning)</span>
                     <div class="metric-val" style="color: #f59e0b;">28%</div>
-                    <div class="metric-sub">Chat berulang aktif</div>
+                    <div class="metric-sub" id="statReturningSub">Chat berulang aktif</div>
                 </div>
 
                 <div class="analytic-card">
-                    <span>Purata Kelajuan Bot Reply</span>
+                    <span id="statSpeed">Purata Kelajuan Bot Reply</span>
                     <div class="metric-val">0.8s</div>
-                    <div class="metric-sub">Respons neural pantas</div>
+                    <div class="metric-sub" id="statSpeedSub">Respons neural pantas</div>
                 </div>
 
                 <div class="analytic-card">
-                    <span>Human Touch Interventions</span>
+                    <span id="statIntervention">Human Touch Interventions</span>
                     <div class="metric-val" style="color: #f87171;">14</div>
-                    <div class="metric-sub">Diambil alih agen manual</div>
+                    <div class="metric-sub" id="statInterventionSub">Diambil alih agen manual</div>
                 </div>
 
                 <div class="analytic-card">
-                    <span>Indeks Kesinambungan Chat</span>
+                    <span id="statMemoryIndex">Indeks Kesinambungan Chat</span>
                     <div class="metric-val" style="color: #38bdf8;">99.4%</div>
-                    <div class="metric-sub">Memori LLM stabil</div>
+                    <div class="metric-sub" id="statMemoryIndexSub">Memori LLM stabil</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TAB 2: BOT AUTOMASI -->
+    <!-- TAB 2: BOT AUTOMASI (REALTIME CHAT + BRAIN PROMPT + NOMBOR ADMIN + PANDUAN & SOP) -->
     <div id="tabRealtime" class="tab-content">
         <div class="card">
-            <h3>
+            <h3 id="cardLiveChat">
                 REAL-TIME WHATSAPP LIVE CHAT & HUMAN TOUCH CONTROL
                 <div style="display: flex; gap: 8px;">
-                    <button onclick="exportLeadsCsv()" style="background: rgba(16,185,129,0.1); border: 1px solid #10b981; color: #34d399; padding: 4px 10px; font-size: 10px; border-radius: 4px; cursor: pointer;">📥 EKSPORT LEADS</button>
+                    <button onclick="exportLeadsCsv()" id="btnExportLeads" style="background: rgba(16,185,129,0.1); border: 1px solid #10b981; color: #34d399; padding: 4px 10px; font-size: 10px; border-radius: 4px; cursor: pointer;">📥 EKSPORT LEADS</button>
                     <span style="font-size: 10px; color: #10b981; background: rgba(16,185,129,0.1); border: 1px solid #10b981; padding: 2px 8px; border-radius: 4px;">LIVE LEADS</span>
                 </div>
             </h3>
-            <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 12px;">
+            <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 12px;" id="txtLiveChatDesc">
                 Pantau senarai prospek WhatsApp, ambil alih perbualan bot secara manual (Human Touch), dan balas mesej secara langsung.
             </p>
 
             <div class="chat-container">
                 <!-- Senarai Prospek Dinamik -->
                 <div class="lead-list" id="whatsappLeadList">
-                    <div style="color: #64748b; text-align: center; padding: 20px; font-size: 11px;">Memuatkan senarai prospek...</div>
+                    <div style="color: #64748b; text-align: center; padding: 20px; font-size: 11px;" id="txtLoadingLeads">Memuatkan senarai prospek...</div>
                 </div>
 
                 <div class="chat-pane">
@@ -287,12 +324,12 @@
 
                     <!-- Kotak Paparan Mesej Dinamik -->
                     <div class="chat-messages" id="chatMessagesBox">
-                        <div style="color: #64748b; text-align: center; padding: 30px;">[Sistem]: Sila pilih prospek WhatsApp untuk melihat perbualan.</div>
+                        <div style="color: #64748b; text-align: center; padding: 30px;" id="txtSelectChatPrompt">[Sistem]: Sila pilih prospek WhatsApp untuk melihat perbualan.</div>
                     </div>
 
                     <div class="chat-input-area">
                         <input type="text" id="liveChatInput" placeholder="Taip mesej manual sebagai agen manusia..." style="margin:0;" onkeypress="if(event.key === 'Enter') sendManualMessage()">
-                        <button onclick="sendManualMessage()" style="width: auto; margin:0; padding: 8px 16px; background:var(--accent); color:#030712; font-weight:bold; border:none; border-radius:6px; cursor:pointer;">HANTAR</button>
+                        <button onclick="sendManualMessage()" id="btnSendChat" style="width: auto; margin:0; padding: 8px 16px; background:var(--accent); color:#030712; font-weight:bold; border:none; border-radius:6px; cursor:pointer;">HANTAR</button>
                     </div>
                 </div>
             </div>
@@ -300,47 +337,47 @@
 
         <!-- TETAPAN PROMPT MINDA BOT (BOT BRAIN PROMPT) -->
         <div class="card">
-            <h3>TETAPAN PROMPT MINDA BOT (BOT BRAIN PROMPT)</h3>
+            <h3 id="cardBrainPromptTitle">TETAPAN PROMPT MINDA BOT (BOT BRAIN PROMPT)</h3>
             <div class="form-group">
-                <label>Ubah sifat, personaliti, gaya bahasa, atau SOP respons bot WhatsApp secara langsung:</label>
+                <label id="lblBrainPrompt">Ubah sifat, personaliti, gaya bahasa, atau SOP respons bot WhatsApp secara langsung:</label>
                 <textarea id="clientBrainPrompt" placeholder="Masukkan skrip personaliti, gaya bahasa, dan SOP bot..."></textarea>
             </div>
-            <button class="action-btn" onclick="saveClientBrainPrompt()">SIMPAN PROMPT MINDA BOT</button>
+            <button class="action-btn" onclick="saveClientBrainPrompt()" id="btnSaveBrain">SIMPAN PROMPT MINDA BOT</button>
         </div>
 
         <!-- TETAPAN NOMBOR TELEFON ADMIN (GROUP_ADMIN_NUMBER) -->
         <div class="card">
-            <h3>KONFIGURASI NOMBOR TELEFON ADMIN BOT</h3>
+            <h3 id="cardAdminNumberTitle">KONFIGURASI NOMBOR TELEFON ADMIN BOT</h3>
             <div class="form-group">
-                <label>Nombor Telefon Admin (group_admin_number - Automatik kemas kini server & fail kod):</label>
+                <label id="lblAdminNumber">Nombor Telefon Admin (group_admin_number - Automatik kemas kini server & fail kod):</label>
                 <input type="text" id="clientAdminNumber" placeholder="6019XXXXXXXX">
             </div>
-            <button class="action-btn" onclick="saveClientSystemSettings()">SIMPAN & KEMASKINI NOMBOR ADMIN</button>
+            <button class="action-btn" onclick="saveClientSystemSettings()" id="btnSaveAdminNum">SIMPAN & KEMASKINI NOMBOR ADMIN</button>
         </div>
 
-        <!-- KOTAK PANDUAN & SOP PENGGUNAAN -->
+        <!-- KOTAK PANDUAN & SOP PENGGUNAAN BOT AUTOMASI -->
         <div class="card" style="border-color: rgba(0,240,255,0.4);">
-            <h3>PANDUAN & SOP PENGGUNAAN BOT AUTOMASI</h3>
-            <div style="font-size: 11px; line-height: 1.6; color: var(--text-muted);">
-                <p><strong style="color: var(--accent);">1. Cara Kemaskini Prompt Minda Bot:</strong> Masukkan arahan atau personaliti pada ruangan <em>Bot Brain Prompt</em> di atas, dan klik Simpan.</p>
-                <p><strong style="color: var(--accent);">2. Kawalan Human Touch:</strong> Jika pelanggan memerlukan perhatian manual, klik butang <em>Ambil Alih Manual</em> pada kotak chat untuk mula membalas mesej secara terus.</p>
-                <p><strong style="color: var(--accent);">3. Penukaran Nombor Admin:</strong> Masukkan nombor telefon baru di bahagian tetapan admin di atas supaya sistem automatik mengemas kini pembolehubah pada server.</p>
+            <h3 id="cardSopTitle">PANDUAN & SOP PENGGUNAAN BOT AUTOMASI</h3>
+            <div style="font-size: 11px; line-height: 1.6; color: var(--text-muted);" id="sopContentArea">
+                <p><strong style="color: var(--accent);" id="sop1Title">1. Cara Kemaskini Prompt Minda Bot:</strong> <span id="sop1Desc">Masukkan arahan atau personaliti pada ruangan Bot Brain Prompt di atas, dan klik Simpan.</span></p>
+                <p><strong style="color: var(--accent);" id="sop2Title">2. Kawalan Human Touch:</strong> <span id="sop2Desc">Jika pelanggan memerlukan perhatian manual, klik butang Ambil Alih Manual pada kotak chat untuk mula membalas mesej secara terus.</span></p>
+                <p><strong style="color: var(--accent);" id="sop3Title">3. Penukaran Nombor Admin:</strong> <span id="sop3Desc">Masukkan nombor telefon baru di bahagian tetapan admin di atas supaya sistem automatik mengemas kini pembolehubah pada server.</span></p>
             </div>
         </div>
     </div>
 
-    <!-- TAB 3: AFFILIATE -->
+    <!-- TAB 3: AFFILIATE (DENGAN TERMA, BORANG BANK & STATUS ADMIN) -->
     <div id="tabAffiliate" class="tab-content">
         <div class="card">
-            <h3>PROGRAM AFFILIATE & KOMISEN (10%)</h3>
-            <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 15px;">
+            <h3 id="cardAffiliateTitle">PROGRAM AFFILIATE & KOMISEN (10%)</h3>
+            <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 15px;" id="txtAffiliateDesc">
                 Jana pendapatan pasif melalui rujukan pengguna baharu ke sistem Leea AI. Anda akan menikmati komisen sebanyak <strong>10% daripada setiap langganan sub-affiliate</strong> yang berjaya, dikreditkan terus ke e-wallet klien setiap bulan.
             </p>
 
             <!-- 1. KOTAK TERMA & SYARAT AFFILIATE -->
             <div id="affiliateTermsBox" style="background: #020617; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                <strong style="color: var(--accent); font-size: 11px; display: block; margin-bottom: 8px;">📜 TERMA & SYARAT PROGRAM AGEN AFFILIATE LEEA AI</strong>
-                <div style="font-size: 10px; color: var(--text-muted); line-height: 1.5; max-height: 100px; overflow-y: auto; padding-right: 5px; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 8px;">
+                <strong style="color: var(--accent); font-size: 11px; display: block; margin-bottom: 8px;" id="termsHeader">📜 TERMA & SYARAT PROGRAM AGEN AFFILIATE LEEA AI</strong>
+                <div style="font-size: 10px; color: var(--text-muted); line-height: 1.5; max-height: 100px; overflow-y: auto; padding-right: 5px; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 8px;" id="termsTextContent">
                     1. Komisen sebanyak 10% dikira berdasarkan jumlah pembayaran langganan bulanan aktif oleh sub-affiliate rujukan.<br>
                     2. Payout komisen akan dikreditkan ke e-wallet secara automatik setiap bulan setelah disahkan oleh pihak Administrator.<br>
                     3. Klien wajib mendaftarkan nombor akaun bank yang sah atas nama sendiri untuk tujuan pengesahan dan pembayaran.<br>
@@ -348,19 +385,19 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <input type="checkbox" id="agreeTermsCheck" style="width: auto; cursor: pointer;">
-                    <label for="agreeTermsCheck" style="color: #e2e8f0; font-size: 11px; cursor: pointer; margin: 0;">Saya telah membaca, memahami, dan bersetuju dengan Terma & Syarat di atas.</label>
+                    <label for="agreeTermsCheck" style="color: #e2e8f0; font-size: 11px; cursor: pointer; margin: 0;" id="lblAgreeTerms">Saya telah membaca, memahami, dan bersetuju dengan Terma & Syarat di atas.</label>
                 </div>
             </div>
 
             <!-- 2. BORANG PERMOHONAN AGEN (MUNCUL SEBELUM DISAHKAN ADMIN) -->
             <div id="agentRegistrationFormCard" style="background: #020617; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                <strong style="color: #f59e0b; font-size: 11px; display: block; margin-bottom: 10px;">📝 BORANG PERMOHONAN AGEN AFFILIATE RASMI</strong>
+                <strong style="color: #f59e0b; font-size: 11px; display: block; margin-bottom: 10px;" id="formAgentHeader">📝 BORANG PERMOHONAN AGEN AFFILIATE RASMI</strong>
                 <div class="form-group">
-                    <label>Nama Penuh Pemegang Akaun:</label>
+                    <label id="lblAgentName">Nama Penuh Pemegang Akaun:</label>
                     <input type="text" id="agentFullName" placeholder="Masukkan nama penuh mengikut IC...">
                 </div>
                 <div class="form-group">
-                    <label>Pilihan Bank:</label>
+                    <label id="lblAgentBank">Pilihan Bank:</label>
                     <select id="agentBankName">
                         <option value="">-- Sila Pilih Bank --</option>
                         <option value="Maybank">Maybank (Malayan Banking Berhad)</option>
@@ -375,32 +412,32 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Nombor Akaun Bank / DuitNow:</label>
+                    <label id="lblAgentAccNo">Nombor Akaun Bank / DuitNow:</label>
                     <input type="text" id="agentAccountNo" placeholder="Contoh: 164123456789">
                 </div>
-                <button class="action-btn" onclick="submitAgentRegistration()" style="background: rgba(245,158,11,0.15); border-color: #f59e0b; color: #f59e0b;">
+                <button class="action-btn" onclick="submitAgentRegistration()" id="btnSubmitAgent" style="background: rgba(245,158,11,0.15); border-color: #f59e0b; color: #f59e0b;">
                     HANTAR PERMOHONAN AGEN (SEMAKAN ADMIN)
                 </button>
             </div>
 
             <!-- 3. STATUS PENDING MENUNGGU KELULUSAN ADMIN -->
             <div id="pendingAgentNotice" style="display: none; background: rgba(245,158,11,0.1); border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; text-align: center; color: #f59e0b; font-size: 11px; margin-bottom: 15px;">
-                ⏳ <strong>Permohonan Anda Sedang Disemak:</strong> Pihak Administrator sedang melakukan pengesahan nombor akaun bank anda. Pautan affiliate akan diaktifkan sebaik sahaja kelulusan diberikan.
+                ⏳ <strong id="txtPendingHeader">Permohonan Anda Sedang Disemak:</strong> <span id="txtPendingDesc">Pihak Administrator sedang melakukan pengesahan nombor akaun bank anda. Pautan affiliate akan diaktifkan sebaik sahaja kelulusan diberikan.</span>
             </div>
 
             <!-- 4. DASHBOARD AFFILIATE AKTIF (HANYA MUNCUL APABILA ADMIN SAHKAN) -->
             <div id="activeAgentDashboard" style="display: none;">
                 <div class="form-group">
-                    <label>Pautan Affiliate Khas Anda:</label>
+                    <label id="lblAffLink">Pautan Affiliate Khas Anda:</label>
                     <input type="text" id="affiliateLinkInput" readonly style="color: #34d399; background: rgba(16,185,129,0.05); font-weight: bold;">
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
                     <div style="background:#020617; border:1px solid #1e3a8a; padding:12px; border-radius:8px;">
-                        <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:5px;">Jumlah Rujukan (Clicks/Signups)</span>
+                        <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:5px;" id="txtTotalReferrals">Jumlah Rujukan (Clicks/Signups)</span>
                         <strong style="color: var(--accent); font-size:16px;" id="affiliateClicksCount">0 Pengguna</strong>
                     </div>
                     <div style="background:#020617; border:1px solid #1e3a8a; padding:12px; border-radius:8px;">
-                        <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:5px;">Jumlah Komisen Terkumpul</span>
+                        <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:5px;" id="txtTotalCommission">Jumlah Komisen Terkumpul</span>
                         <strong style="color: #34d399; font-size:16px;" id="affiliateWalletBalance">RM 0.00</strong>
                     </div>
                 </div>
@@ -412,22 +449,22 @@
     <div id="tabPembayaran" class="tab-content">
         <!-- TETAPAN GERBANG PEMBAYARAN & QR CODE -->
         <div class="card">
-            <h3>TETAPAN PEMBAYARAN & GERBANG TRANSAKSI</h3>
+            <h3 id="cardPaymentGatewayTitle">TETAPAN PEMBAYARAN & GERBANG TRANSAKSI</h3>
             <div class="form-group">
-                <label>Pautan Gerbang Pembayaran (paymentGatewayLink - ToyyibPay / Lain-lain):</label>
+                <label id="lblPaymentLink">Pautan Gerbang Pembayaran (paymentGatewayLink - ToyyibPay / Lain-lain):</label>
                 <input type="text" id="clientPaymentLink" placeholder="https://toyyibpay.com/...">
             </div>
             <div class="form-group">
-                <label>Muat Naik Kod QR Pembayaran (qrImageCode):</label>
+                <label id="lblQrUpload">Muat Naik Kod QR Pembayaran (qrImageCode):</label>
                 <input type="file" id="clientQrInput" accept="image/*" style="padding: 6px; background: #020617; color: var(--accent); border: 1px solid var(--border-color); border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 11px;">
             </div>
-            <button class="action-btn" onclick="saveClientPaymentSettings()">SIMPAN TETAPAN PEMBAYARAN</button>
+            <button class="action-btn" onclick="saveClientPaymentSettings()" id="btnSavePayment">SIMPAN TETAPAN PEMBAYARAN</button>
         </div>
 
         <!-- SENARAI LANGGANAN & RENEW (TERMASUK MODUL PEMASARAN) -->
         <div class="card">
-            <h3>BUTIRAN LANGGANAN & PEMBAHARUAN (RENEW) PERKHIDMATAN</h3>
-            <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 15px;">
+            <h3 id="cardSubscriptionTitle">BUTIRAN LANGGANAN & PEMBAHARUAN (RENEW) PERKHIDMATAN</h3>
+            <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 15px;" id="txtSubscriptionDesc">
                 Semak status langganan pelayan bot utama dan buat pembayaran pembaharuan (*renew*) untuk modul automasi pemasaran di bawah.
             </p>
 
@@ -435,10 +472,10 @@
                 <!-- Langganan 1: Pelayan Bot Utama (Leea AI Bot) -->
                 <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <strong style="color: #fff; font-size: 12px; display: block;">Pelayan Bot Utama (Leea AI & Memori V1)</strong>
-                        <span style="color: #f59e0b; font-size: 10px;">Tarikh Luput: 27/10/2026 • Status: <strong style="color: #10b981;">AKTIF 🟢</strong></span>
+                        <strong style="color: #fff; font-size: 12px; display: block;" id="sub1Title">Pelayan Bot Utama (Leea AI & Memori V1)</strong>
+                        <span style="color: #f59e0b; font-size: 10px;" id="sub1Expiry">Tarikh Luput: 27/10/2026 • Status: <strong style="color: #10b981;" id="sub1Status">AKTIF 🟢</strong></span>
                     </div>
-                    <button onclick="alert('Membuka pautan pembayaran ToyyibPay untuk pembaharuan Pelayan Bot Utama...')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(16,185,129,0.15); border-color: #10b981; color: #34d399; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;">
+                    <button onclick="alert('Membuka pautan ToyyibPay pembaharuan Pelayan Bot Utama...')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(16,185,129,0.15); border-color: #10b981; color: #34d399; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;" id="btnRenewSub1">
                         🔄 RENEW LANGGANAN
                     </button>
                 </div>
@@ -446,10 +483,10 @@
                 <!-- Langganan 2: Automasi Post FB Pages -->
                 <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <strong style="color: #38bdf8; font-size: 12px; display: block;">Modul Automasi Post FB Pages</strong>
-                        <span style="color: #64748b; font-size: 10px;">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
+                        <strong style="color: #38bdf8; font-size: 12px; display: block;" id="sub2Title">Modul Automasi Post FB Pages</strong>
+                        <span style="color: #64748b; font-size: 10px;" id="sub2Status">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
                     </div>
-                    <button onclick="alert('Modul Automasi Post FB Pages akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;">
+                    <button onclick="alert('Modul Automasi Post FB Pages akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;" id="btnSub2">
                         🛒 LANGGAN MODUL
                     </button>
                 </div>
@@ -457,10 +494,10 @@
                 <!-- Langganan 3: AI Call -->
                 <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <strong style="color: #38bdf8; font-size: 12px; display: block;">Modul AI Call (Panggilan Suara Pintar)</strong>
-                        <span style="color: #64748b; font-size: 10px;">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
+                        <strong style="color: #38bdf8; font-size: 12px; display: block;" id="sub3Title">Modul AI Call (Panggilan Suara Pintar)</strong>
+                        <span style="color: #64748b; font-size: 10px;" id="sub3Status">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
                     </div>
-                    <button onclick="alert('Modul AI Call akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;">
+                    <button onclick="alert('Modul AI Call akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;" id="btnSub3">
                         🛒 LANGGAN MODUL
                     </button>
                 </div>
@@ -468,10 +505,10 @@
                 <!-- Langganan 4: Leea Army -->
                 <div style="background: #020617; border: 1px solid #1e3a8a; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <strong style="color: #38bdf8; font-size: 12px; display: block;">Modul Leea Army (Kempen Pemasaran Berangkai)</strong>
-                        <span style="color: #64748b; font-size: 10px;">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
+                        <strong style="color: #38bdf8; font-size: 12px; display: block;" id="sub4Title">Modul Leea Army (Kempen Pemasaran Berangkai)</strong>
+                        <span style="color: #64748b; font-size: 10px;" id="sub4Status">Status: <strong style="color: #ef4444;">BELUM LANGGAN / COMING SOON</strong></span>
                     </div>
-                    <button onclick="alert('Modul Leea Army akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;">
+                    <button onclick="alert('Modul Leea Army akan dilancarkan tidak lama lagi!')" style="width: auto; padding: 6px 12px; font-size: 10px; background: rgba(239,68,68,0.15); border-color: #ef4444; color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top:0;" id="btnSub4">
                         🛒 LANGGAN MODUL
                     </button>
                 </div>
@@ -479,52 +516,437 @@
         </div>
     </div>
 
-    <!-- Skrip JavaScript -->
+    <!-- SKRIP KAWALAN LENGKAP JAVASCRIPT & DWI-BAHASA -->
     <script>
         let selectedActivePhone = null;
+        let isHumanManualMode = false;
+
+        const translations = {
+            BM: {
+                pageTitle: "Sistem Leea - Enterprise Client Portal & Live Control",
+                loginTitle: "SISTEM LEEA - LOG MASUK",
+                lblLanguage: "PILIH BAHASA / SELECT LANGUAGE:",
+                lblUsername: "Username / ID Klien:",
+                lblPassword: "Kata Laluan / Password:",
+                btnLogin: "LOG MASUK PORTAL",
+                brandTitle: "SISTEM LEEA",
+                txtEwallet: "E-Wallet:",
+                clientProfileBtn: "👤 Klien",
+                btnLogout: "LOG KELUAR",
+                tabBtnAnalysis: "📊 Analisis Chat",
+                tabBtnAutomation: "🤖 Bot Automasi",
+                tabBtnAffiliate: "🤝 Affiliate",
+                tabBtnPayment: "💳 Pembayaran & Langganan",
+                cardBotProfile: "PROFIL BOT AKTIF & SPESIFIKASI",
+                lblBotName: "Nama Bot (Default: bot-[username], Boleh Diedit):",
+                btnUpdateBot: "KEMASKINI NAMA",
+                lblModelBot: "Model Bot (Klien V1 - Upgrade ke V2 hanya oleh Admin)",
+                lblMemoryBot: "Memori Bot (Diguna / Pakej)",
+                lblExpiryBot: "Tarikh Luput Lesen",
+                lblStatusBot: "Status Bot",
+                txtRunningStatus: "Aktif 🟢 (Running)",
+                cardAnalyticsTitle: "STATISTIK & METRIK PRESTASI CHAT",
+                statDaily: "Chat Sehari (24 Jam)",
+                statDailySub: "▲ +12% berbanding semalam",
+                statWeekly: "Chat Seminggu (7 Hari)",
+                statWeeklySub: "▲ Trafik stabil",
+                statMonthly: "Chat Sebulan (30 Hari)",
+                statMonthlySub: "▲ Peningkatan aktif",
+                statLeads: "WhatsApp Lead Terkumpul",
+                statLeadsSub: "Kadar conversion ~6.7%",
+                statReturning: "Pelanggan Berulang (Returning)",
+                statReturningSub: "Chat berulang aktif",
+                statSpeed: "Purata Kelajuan Bot Reply",
+                statSpeedSub: "Respons neural pantas",
+                statIntervention: "Human Touch Interventions",
+                statInterventionSub: "Diambil alih agen manual",
+                statMemoryIndex: "Indeks Kesinambungan Chat",
+                statMemoryIndexSub: "Memori LLM stabil",
+                cardLiveChat: "REAL-TIME WHATSAPP LIVE CHAT & HUMAN TOUCH CONTROL",
+                btnExportLeads: "📥 EKSPORT LEADS",
+                txtLiveChatDesc: "Pantau senarai prospek WhatsApp, ambil alih perbualan bot secara manual (Human Touch), dan balas mesej secara langsung.",
+                txtLoadingLeads: "Memuatkan senarai prospek...",
+                activeChatTitle: "Sila pilih prospek di sebelah kiri",
+                takeoverBtn: "MOD BOT: AKTIF (AMBIL ALIH MANUAL)",
+                txtSelectChatPrompt: "[Sistem]: Sila pilih prospek WhatsApp untuk melihat perbualan.",
+                btnSendChat: "HANTAR",
+                cardBrainPromptTitle: "TETAPAN PROMPT MINDA BOT (BOT BRAIN PROMPT)",
+                lblBrainPrompt: "Ubah sifat, personaliti, gaya bahasa, atau SOP respons bot WhatsApp secara langsung:",
+                btnSaveBrain: "SIMPAN PROMPT MINDA BOT",
+                cardAdminNumberTitle: "KONFIGURASI NOMBOR TELEFON ADMIN BOT",
+                lblAdminNumber: "Nombor Telefon Admin (group_admin_number - Automatik kemas kini server & fail kod):",
+                btnSaveAdminNum: "SIMPAN & KEMASKINI NOMBOR ADMIN",
+                cardSopTitle: "PANDUAN & SOP PENGGUNAAN BOT AUTOMASI",
+                sop1Title: "1. Cara Kemaskini Prompt Minda Bot:",
+                sop1Desc: "Masukkan arahan atau personaliti pada ruangan Bot Brain Prompt di atas, dan klik Simpan.",
+                sop2Title: "2. Kawalan Human Touch:",
+                sop2Desc: "Jika pelanggan memerlukan perhatian manual, klik butang Ambil Alih Manual pada kotak chat untuk mula membalas mesej secara terus.",
+                sop3Title: "3. Penukaran Nombor Admin:",
+                sop3Desc: "Masukkan nombor telefon baru di bahagian tetapan admin di atas supaya sistem automatik mengemas kini pembolehubah pada server.",
+                cardAffiliateTitle: "PROGRAM AFFILIATE & KOMISEN (10%)",
+                txtAffiliateDesc: "Jana pendapatan pasif melalui rujukan pengguna baharu ke sistem Leea AI. Anda akan menikmati komisen sebanyak 10% daripada setiap langganan sub-affiliate yang berjaya, dikreditkan terus ke e-wallet klien setiap bulan.",
+                termsHeader: "📜 TERMA & SYARAT PROGRAM AGEN AFFILIATE LEEA AI",
+                termsTextContent: "1. Komisen sebanyak 10% dikira berdasarkan jumlah pembayaran langganan bulanan aktif oleh sub-affiliate rujukan.<br>2. Payout komisen akan dikreditkan ke e-wallet secara automatik setiap bulan setelah disahkan oleh pihak Administrator.<br>3. Klien wajib mendaftarkan nombor akaun bank yang sah atas nama sendiri untuk tujuan pengesahan dan pembayaran.<br>4. Sebarang aktiviti spam atau salah laku promosi akan menyebabkan akaun affiliate digantung serta-merta tanpa sebarang pampasan.",
+                lblAgreeTerms: "Saya telah membaca, memahami, dan bersetuju dengan Terma & Syarat di atas.",
+                formAgentHeader: "📝 BORANG PERMOHONAN AGEN AFFILIATE RASMI",
+                lblAgentName: "Nama Penuh Pemegang Akaun:",
+                lblAgentBank: "Pilihan Bank:",
+                lblAgentAccNo: "Nombor Akaun Bank / DuitNow:",
+                btnSubmitAgent: "HANTAR PERMOHONAN AGEN (SEMAKAN ADMIN)",
+                txtPendingHeader: "Permohonan Anda Sedang Disemak:",
+                txtPendingDesc: "Pihak Administrator sedang melakukan pengesahan nombor akaun bank anda. Pautan affiliate akan diaktifkan sebaik sahaja kelulusan diberikan.",
+                lblAffLink: "Pautan Affiliate Khas Anda:",
+                txtTotalReferrals: "Jumlah Rujukan (Clicks/Signups)",
+                txtTotalCommission: "Jumlah Komisen Terkumpul",
+                cardPaymentGatewayTitle: "TETAPAN PEMBAYARAN & GERBANG TRANSAKSI",
+                lblPaymentLink: "Pautan Gerbang Pembayaran (paymentGatewayLink - ToyyibPay / Lain-lain):",
+                lblQrUpload: "Muat Naik Kod QR Pembayaran (qrImageCode):",
+                btnSavePayment: "SIMPAN TETAPAN PEMBAYARAN",
+                cardSubscriptionTitle: "BUTIRAN LANGGANAN & PEMBAHARUAN (RENEW) PERKHIDMATAN",
+                txtSubscriptionDesc: "Semak status langganan pelayan bot utama dan buat pembayaran pembaharuan (*renew*) untuk modul automasi pemasaran di bawah.",
+                sub1Title: "Pelayan Bot Utama (Leea AI & Memori V1)",
+                sub1Expiry: "Tarikh Luput: 27/10/2026 • Status: ",
+                sub1Status: "AKTIF 🟢",
+                btnRenewSub1: "🔄 RENEW LANGGANAN",
+                sub2Title: "Modul Automasi Post FB Pages",
+                sub2Status: "Status: BELUM LANGGAN / COMING SOON",
+                btnSub2: "🛒 LANGGAN MODUL",
+                sub3Title: "Modul AI Call (Panggilan Suara Pintar)",
+                sub3Status: "Status: BELUM LANGGAN / COMING SOON",
+                btnSub3: "🛒 LANGGAN MODUL",
+                sub4Title: "Modul Leea Army (Kempen Pemasaran Berangkai)",
+                sub4Status: "Status: BELUM LANGGAN / COMING SOON",
+                btnSub4: "🛒 LANGGAN MODUL",
+                modalProfileTitle: "PROFIL SYARIKAT & TETAPAN AKAUN KLIEN",
+                lblModalUser: "USERNAME AKAUN (Tetap)",
+                lblModalEmail: "EMEL SYARIKAT (Didaftarkan Admin - Tetap)",
+                lblModalPhone: "NOMBOR TELEFON (Didaftarkan Admin - Tetap)",
+                lblModalRailway: "RAILWAY BOT URL (Didaftarkan Admin)",
+                lblModalLogo: "LOGO SYARIKAT (Muat Naik Fail Terus)",
+                lblModalFb: "PAUTAN LINK FACEBOOK SYARIKAT",
+                lblModalIg: "PAUTAN LINK INSTAGRAM SYARIKAT",
+                lblModalTiktok: "PAUTAN LINK TIKTOK SYARIKAT",
+                lblModalPass: "TUKAR PASSWORD BAHARU (Pilihan)",
+                btnSaveProfile: "SIMPAN PERUBAHAN PROFIL",
+                errorLogin: "ID atau Kata Laluan Salah!"
+            },
+            BI: {
+                pageTitle: "Leea System - Enterprise Client Portal & Live Control",
+                loginTitle: "LEEA SYSTEM - CLIENT LOGIN",
+                lblLanguage: "SELECT LANGUAGE / PILIH BAHASA:",
+                lblUsername: "Username / Client ID:",
+                lblPassword: "Password:",
+                btnLogin: "PORTAL LOGIN",
+                brandTitle: "LEEA SYSTEM",
+                txtEwallet: "E-Wallet:",
+                clientProfileBtn: "👤 Client",
+                btnLogout: "LOGOUT",
+                tabBtnAnalysis: "📊 Chat Analytics",
+                tabBtnAutomation: "🤖 Bot Automation",
+                tabBtnAffiliate: "🤝 Affiliate",
+                tabBtnPayment: "💳 Payment & Subscription",
+                cardBotProfile: "ACTIVE BOT PROFILE & SPECIFICATIONS",
+                lblBotName: "Bot Name (Default: bot-[username], Editable):",
+                btnUpdateBot: "UPDATE NAME",
+                lblModelBot: "Bot Model (Client V1 - Upgrade to V2 by Admin Only)",
+                lblMemoryBot: "Bot Memory (Used / Package)",
+                lblExpiryBot: "License Expiry Date",
+                lblStatusBot: "Bot Status",
+                txtRunningStatus: "Active 🟢 (Running)",
+                cardAnalyticsTitle: "CHAT PERFORMANCE METRICS & ANALYTICS",
+                statDaily: "Daily Chats (24 Hours)",
+                statDailySub: "▲ +12% compared to yesterday",
+                statWeekly: "Weekly Chats (7 Days)",
+                statWeeklySub: "▲ Stable traffic",
+                statMonthly: "Monthly Chats (30 Days)",
+                statMonthlySub: "▲ Active growth",
+                statLeads: "Accumulated WhatsApp Leads",
+                statLeadsSub: "Conversion rate ~6.7%",
+                statReturning: "Returning Customers",
+                statReturningSub: "Active returning conversations",
+                statSpeed: "Average Bot Reply Speed",
+                statSpeedSub: "Fast neural response",
+                statIntervention: "Human Touch Interventions",
+                statInterventionSub: "Handled by manual agents",
+                statMemoryIndex: "Chat Continuity Index",
+                statMemoryIndexSub: "Stable LLM memory",
+                cardLiveChat: "REAL-TIME WHATSAPP LIVE CHAT & HUMAN TOUCH CONTROL",
+                btnExportLeads: "📥 EXPORT LEADS",
+                txtLiveChatDesc: "Monitor WhatsApp prospects, manually take over bot conversations (Human Touch), and reply instantly.",
+                txtLoadingLeads: "Loading prospects list...",
+                activeChatTitle: "Please select a prospect on the left",
+                takeoverBtn: "BOT MODE: ACTIVE (TAKE OVER MANUALLY)",
+                txtSelectChatPrompt: "[System]: Please select a WhatsApp prospect to view chat history.",
+                btnSendChat: "SEND",
+                cardBrainPromptTitle: "BOT BRAIN PROMPT SETTINGS",
+                lblBrainPrompt: "Directly customize personality, language tone, or bot response SOPs:",
+                btnSaveBrain: "SAVE BOT BRAIN PROMPT",
+                cardAdminNumberTitle: "BOT ADMIN PHONE CONFIGURATION",
+                lblAdminNumber: "Admin Phone Number (group_admin_number - Automatically updates server & code):",
+                btnSaveAdminNum: "SAVE & UPDATE ADMIN NUMBER",
+                cardSopTitle: "BOT AUTOMATION USAGE GUIDE & SOP",
+                sop1Title: "1. How to Update Bot Brain Prompt:",
+                sop1Desc: "Enter instructions or personality under Bot Brain Prompt above and click Save.",
+                sop2Title: "2. Human Touch Control:",
+                sop2Desc: "If a prospect requires manual assistance, click Take Over Manually in the chat box to reply directly.",
+                sop3Title: "3. Changing Admin Number:",
+                sop3Desc: "Enter the new admin phone number above to update environment variables on the server automatically.",
+                cardAffiliateTitle: "AFFILIATE & COMMISSION PROGRAM (10%)",
+                txtAffiliateDesc: "Earn passive income by referring new users to the Leea AI system. Enjoy a 10% commission on every active sub-affiliate subscription, credited directly to your client e-wallet monthly.",
+                termsHeader: "📜 LEEA AI AFFILIATE AGENT TERMS & CONDITIONS",
+                termsTextContent: "1. A 10% commission is calculated based on active monthly subscription fees of referred sub-affiliates.<br>2. Commission payouts will be automatically credited to the e-wallet monthly upon Administrator verification.<br>3. Clients must register a valid bank account under their own name for verification and payouts.<br>4. Any spamming or misconduct will result in immediate suspension without compensation.",
+                lblAgreeTerms: "I have read, understood, and agree to the Terms & Conditions above.",
+                formAgentHeader: "📝 OFFICIAL AFFILIATE AGENT APPLICATION FORM",
+                lblAgentName: "Account Holder Full Name:",
+                lblAgentBank: "Select Bank:",
+                lblAgentAccNo: "Bank / DuitNow Account Number:",
+                btnSubmitAgent: "SUBMIT AGENT APPLICATION (ADMIN REVIEW)",
+                txtPendingHeader: "Your Application is Under Review:",
+                txtPendingDesc: "Administrator is verifying your bank account details. Your affiliate link will be unlocked once approved.",
+                lblAffLink: "Your Dedicated Affiliate Link:",
+                txtTotalReferrals: "Total Referrals (Clicks/Signups)",
+                txtTotalCommission: "Total Accumulated Commission",
+                cardPaymentGatewayTitle: "PAYMENT GATEWAY & TRANSACTION SETTINGS",
+                lblPaymentLink: "Payment Gateway Link (paymentGatewayLink - ToyyibPay / Others):",
+                lblQrUpload: "Upload QR Payment Code (qrImageCode):",
+                btnSavePayment: "SAVE PAYMENT SETTINGS",
+                cardSubscriptionTitle: "SUBSCRIPTION DETAILS & SERVICE RENEWALS",
+                txtSubscriptionDesc: "Review main bot server subscription status and process renewal payments for marketing automation modules below.",
+                sub1Title: "Main Bot Server (Leea AI & V1 Memory)",
+                sub1Expiry: "Expiry Date: 27/10/2026 • Status: ",
+                sub1Status: "ACTIVE 🟢",
+                btnRenewSub1: "🔄 RENEW SUBSCRIPTION",
+                sub2Title: "Facebook Pages Auto-Post Module",
+                sub2Status: "Status: NOT SUBSCRIBED / COMING SOON",
+                btnSub2: "🛒 SUBSCRIBE MODULE",
+                sub3Title: "AI Call Module (Smart Voice Agent)",
+                sub3Status: "Status: NOT SUBSCRIBED / COMING SOON",
+                btnSub3: "🛒 SUBSCRIBE MODULE",
+                sub4Title: "Leea Army Module (Affiliate Campaign Distribution)",
+                sub4Status: "Status: NOT SUBSCRIBED / COMING SOON",
+                btnSub4: "🛒 SUBSCRIBE MODULE",
+                modalProfileTitle: "COMPANY PROFILE & CLIENT ACCOUNT SETTINGS",
+                lblModalUser: "ACCOUNT USERNAME (Fixed)",
+                lblModalEmail: "COMPANY EMAIL (Registered by Admin - Fixed)",
+                lblModalPhone: "PHONE NUMBER (Registered by Admin - Fixed)",
+                lblModalRailway: "RAILWAY BOT URL (Registered by Admin)",
+                lblModalLogo: "COMPANY LOGO (Direct File Upload)",
+                lblModalFb: "COMPANY FACEBOOK LINK",
+                lblModalIg: "COMPANY INSTAGRAM LINK",
+                lblModalTiktok: "COMPANY TIKTOK LINK",
+                lblModalPass: "CHANGE NEW PASSWORD (Optional)",
+                btnSaveProfile: "SAVE PROFILE CHANGES",
+                errorLogin: "Invalid ID or Password!"
+            }
+        };
+
+        let currentLang = localStorage.getItem('leea_portal_lang') || 'BM';
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('leea_portal_lang', lang);
+            applyTranslations();
+        }
+
+        function applyTranslations() {
+            const t = translations[currentLang];
+            document.getElementById('selectLang').value = currentLang;
+            document.getElementById('pageTitle').innerText = t.pageTitle;
+            document.getElementById('loginTitle').innerText = t.loginTitle;
+            document.getElementById('lblLanguage').innerText = t.lblLanguage;
+            document.getElementById('lblUsername').innerText = t.lblUsername;
+            document.getElementById('lblPassword').innerText = t.lblPassword;
+            document.getElementById('btnLogin').innerText = t.btnLogin;
+            document.getElementById('brandTitle').innerText = t.brandTitle;
+            document.getElementById('txtEwallet').childNodes[0].nodeValue = t.txtEwallet + " ";
+            document.getElementById('clientProfileBtn').innerText = t.clientProfileBtn;
+            document.getElementById('btnLogout').innerText = t.btnLogout;
+            document.getElementById('tabBtnAnalysis').innerText = t.tabBtnAnalysis;
+            document.getElementById('tabBtnAutomation').innerText = t.tabBtnAutomation;
+            document.getElementById('tabBtnAffiliate').innerText = t.tabBtnAffiliate;
+            document.getElementById('tabBtnPayment').innerText = t.tabBtnPayment;
+            document.getElementById('cardBotProfile').childNodes[0].nodeValue = t.cardBotProfile + " ";
+            document.getElementById('lblBotName').innerText = t.lblBotName;
+            document.getElementById('btnUpdateBot').innerText = t.btnUpdateBot;
+            document.getElementById('lblModelBot').innerText = t.lblModelBot;
+            document.getElementById('lblMemoryBot').innerText = t.lblMemoryBot;
+            document.getElementById('lblExpiryBot').innerText = t.lblExpiryBot;
+            document.getElementById('lblStatusBot').innerText = t.lblStatusBot;
+            document.getElementById('txtRunningStatus').innerText = t.txtRunningStatus;
+            document.getElementById('cardAnalyticsTitle').innerText = t.cardAnalyticsTitle;
+            document.getElementById('statDaily').innerText = t.statDaily;
+            document.getElementById('statDailySub').innerText = t.statDailySub;
+            document.getElementById('statWeekly').innerText = t.statWeekly;
+            document.getElementById('statWeeklySub').innerText = t.statWeeklySub;
+            document.getElementById('statMonthly').innerText = t.statMonthly;
+            document.getElementById('statMonthlySub').innerText = t.statMonthlySub;
+            document.getElementById('statLeads').innerText = t.statLeads;
+            document.getElementById('statLeadsSub').innerText = t.statLeadsSub;
+            document.getElementById('statReturning').innerText = t.statReturning;
+            document.getElementById('statReturningSub').innerText = t.statReturningSub;
+            document.getElementById('statSpeed').innerText = t.statSpeed;
+            document.getElementById('statSpeedSub').innerText = t.statSpeedSub;
+            document.getElementById('statIntervention').innerText = t.statIntervention;
+            document.getElementById('statInterventionSub').innerText = t.statInterventionSub;
+            document.getElementById('statMemoryIndex').innerText = t.statMemoryIndex;
+            document.getElementById('statMemoryIndexSub').innerText = t.statMemoryIndexSub;
+            document.getElementById('cardLiveChat').childNodes[0].nodeValue = t.cardLiveChat + " ";
+            document.getElementById('btnExportLeads').innerText = t.btnExportLeads;
+            document.getElementById('txtLiveChatDesc').innerText = t.txtLiveChatDesc;
+            document.getElementById('txtLoadingLeads').innerText = t.txtLoadingLeads;
+            document.getElementById('activeChatTitle').innerText = t.activeChatTitle;
+            document.getElementById('takeoverBtn').innerText = t.takeoverBtn;
+            document.getElementById('txtSelectChatPrompt').innerText = t.txtSelectChatPrompt;
+            document.getElementById('btnSendChat').innerText = t.btnSendChat;
+            document.getElementById('cardBrainPromptTitle').innerText = t.cardBrainPromptTitle;
+            document.getElementById('lblBrainPrompt').innerText = t.lblBrainPrompt;
+            document.getElementById('btnSaveBrain').innerText = t.btnSaveBrain;
+            document.getElementById('cardAdminNumberTitle').innerText = t.cardAdminNumberTitle;
+            document.getElementById('lblAdminNumber').innerText = t.lblAdminNumber;
+            document.getElementById('btnSaveAdminNum').innerText = t.btnSaveAdminNum;
+            document.getElementById('cardSopTitle').innerText = t.cardSopTitle;
+            document.getElementById('sop1Title').innerText = t.sop1Title;
+            document.getElementById('sop1Desc').innerText = t.sop1Desc;
+            document.getElementById('sop2Title').innerText = t.sop2Title;
+            document.getElementById('sop2Desc').innerText = t.sop2Desc;
+            document.getElementById('sop3Title').innerText = t.sop3Title;
+            document.getElementById('sop3Desc').innerText = t.sop3Desc;
+            document.getElementById('cardAffiliateTitle').innerText = t.cardAffiliateTitle;
+            document.getElementById('txtAffiliateDesc').innerHTML = t.txtAffiliateDesc;
+            document.getElementById('termsHeader').innerText = t.termsHeader;
+            document.getElementById('termsTextContent').innerHTML = t.termsTextContent;
+            document.getElementById('lblAgreeTerms').innerText = t.lblAgreeTerms;
+            document.getElementById('formAgentHeader').innerText = t.formAgentHeader;
+            document.getElementById('lblAgentName').innerText = t.lblAgentName;
+            document.getElementById('lblAgentBank').innerText = t.lblAgentBank;
+            document.getElementById('lblAgentAccNo').innerText = t.lblAgentAccNo;
+            document.getElementById('btnSubmitAgent').innerText = t.btnSubmitAgent;
+            document.getElementById('txtPendingHeader').innerText = t.txtPendingHeader;
+            document.getElementById('txtPendingDesc').innerText = t.txtPendingDesc;
+            document.getElementById('lblAffLink').innerText = t.lblAffLink;
+            document.getElementById('txtTotalReferrals').innerText = t.txtTotalReferrals;
+            document.getElementById('txtTotalCommission').innerText = t.txtTotalCommission;
+            document.getElementById('cardPaymentGatewayTitle').innerText = t.cardPaymentGatewayTitle;
+            document.getElementById('lblPaymentLink').innerText = t.lblPaymentLink;
+            document.getElementById('lblQrUpload').innerText = t.lblQrUpload;
+            document.getElementById('btnSavePayment').innerText = t.btnSavePayment;
+            document.getElementById('cardSubscriptionTitle').innerText = t.cardSubscriptionTitle;
+            document.getElementById('txtSubscriptionDesc').innerText = t.txtSubscriptionDesc;
+            document.getElementById('sub1Title').innerText = t.sub1Title;
+            document.getElementById('sub1Expiry').childNodes[0].nodeValue = t.sub1Expiry;
+            document.getElementById('sub1Status').innerText = t.sub1Status;
+            document.getElementById('btnRenewSub1').innerText = t.btnRenewSub1;
+            document.getElementById('sub2Title').innerText = t.sub2Title;
+            document.getElementById('sub2Status').innerHTML = t.sub2Status;
+            document.getElementById('btnSub2').innerText = t.btnSub2;
+            document.getElementById('sub3Title').innerText = t.sub3Title;
+            document.getElementById('sub3Status').innerHTML = t.sub3Status;
+            document.getElementById('btnSub3').innerText = t.btnSub3;
+            document.getElementById('sub4Title').innerText = t.sub4Title;
+            document.getElementById('sub4Status').innerHTML = t.sub4Status;
+            document.getElementById('btnSub4').innerText = t.btnSub4;
+            document.getElementById('modalProfileTitle').childNodes[0].nodeValue = t.modalProfileTitle + " ";
+            document.getElementById('lblModalUser').innerText = t.lblModalUser;
+            document.getElementById('lblModalEmail').innerText = t.lblModalEmail;
+            document.getElementById('lblModalPhone').innerText = t.lblModalPhone;
+            document.getElementById('lblModalRailway').innerText = t.lblModalRailway;
+            document.getElementById('lblModalLogo').innerText = t.lblModalLogo;
+            document.getElementById('lblModalFb').innerText = t.lblModalFb;
+            document.getElementById('lblModalIg').innerText = t.lblModalIg;
+            document.getElementById('lblModalTiktok').innerText = t.lblModalTiktok;
+            document.getElementById('lblModalPass').innerText = t.lblModalPass;
+            document.getElementById('btnSaveProfile').innerText = t.btnSaveProfile;
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
+            applyTranslations();
+            const currentClient = localStorage.getItem('leea_current_client');
             
-            const profileBtn = document.getElementById('clientProfileBtn');
-            if (profileBtn) profileBtn.innerText = '👤 ' + currentClient;
+            if (currentClient) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                
+                const profileBtn = document.getElementById('clientProfileBtn');
+                if (profileBtn) profileBtn.innerText = '👤 ' + currentClient;
 
-            const botInput = document.getElementById('botNameInput');
-            if (botInput) botInput.value = 'bot-' + currentClient.toLowerCase();
+                const botInput = document.getElementById('botNameInput');
+                if (botInput) botInput.value = 'bot-' + currentClient.toLowerCase();
 
-            const adminEmail = localStorage.getItem('admin_email_' + currentClient) || (currentClient.toLowerCase() + '@adminportal.my');
-            const adminPhone = localStorage.getItem('admin_phone_' + currentClient) || '+60 19-000 0000';
-            const railwayUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
+                const affiliateInput = document.getElementById('affiliateLinkInput');
+                if (affiliateInput) affiliateInput.value = 'https://www.architechlaboratory.my/ref/' + currentClient.toLowerCase();
 
-            document.getElementById('modalAdminEmail').value = adminEmail;
-            document.getElementById('modalAdminPhone').value = adminPhone;
-            document.getElementById('modalRailwayUrl').value = railwayUrl;
+                const adminEmail = localStorage.getItem('admin_email_' + currentClient) || (currentClient.toLowerCase() + '@adminportal.my');
+                const adminPhone = localStorage.getItem('admin_phone_' + currentClient) || '+60 19-000 0000';
+                const railwayUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
 
-            const savedAdminNum = localStorage.getItem('client_admin_number_' + currentClient) || '';
-            if (savedAdminNum) document.getElementById('clientAdminNumber').value = savedAdminNum;
+                document.getElementById('modalUsername').value = currentClient;
+                document.getElementById('modalAdminEmail').value = adminEmail;
+                document.getElementById('modalAdminPhone').value = adminPhone;
+                document.getElementById('modalRailwayUrl').value = railwayUrl;
 
-            const savedLogo = localStorage.getItem('leea_logo_' + currentClient);
-            if (savedLogo) {
-                document.getElementById('headerLogoImg').src = savedLogo;
-                document.getElementById('modalLogoPreview').src = savedLogo;
+                const savedAdminNum = localStorage.getItem('client_admin_number_' + currentClient) || '';
+                if (savedAdminNum) document.getElementById('clientAdminNumber').value = savedAdminNum;
+
+                // Muat logo syarikat klien di penjuru kanan & di dalam popup modal
+                const savedLogo = localStorage.getItem('leea_logo_' + currentClient);
+                if (savedLogo) {
+                    document.getElementById('headerCompanyLogo').src = savedLogo;
+                    document.getElementById('modalLogoPreview').src = savedLogo;
+                }
+
+                const savedFb = localStorage.getItem('leea_fb_' + currentClient);
+                if (savedFb) document.getElementById('modalFbLink').value = savedFb;
+
+                const savedIg = localStorage.getItem('leea_ig_' + currentClient);
+                if (savedIg) document.getElementById('modalIgLink').value = savedIg;
+
+                const savedTiktok = localStorage.getItem('leea_tiktok_' + currentClient);
+                if (savedTiktok) document.getElementById('modalTiktokLink').value = savedTiktok;
+
+                checkAgentAffiliateStatus();
+
+                fetchLiveLeads(currentClient, railwayUrl);
+                setInterval(() => {
+                    fetchLiveLeads(currentClient, railwayUrl);
+                }, 3000);
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+            }
+        });
+
+        async function clientLogin() {
+            const user = document.getElementById('loginUsername').value.trim();
+            const pass = document.getElementById('loginPassword').value.trim();
+            const errBox = document.getElementById('loginErrorMsg');
+
+            if (!user || !pass) {
+                errBox.innerText = currentLang === 'BM' ? 'Sila masukkan username dan kata laluan.' : 'Please enter username and password.';
+                return;
             }
 
-            const savedFb = localStorage.getItem('leea_fb_' + currentClient);
-            if (savedFb) document.getElementById('modalFbLink').value = savedFb;
+            try {
+                const response = await fetch('/portal/api-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
 
-            const savedIg = localStorage.getItem('leea_ig_' + currentClient);
-            if (savedIg) document.getElementById('modalIgLink').value = savedIg;
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    localStorage.setItem('leea_current_client', result.client.username);
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    location.reload();
+                } else {
+                    errBox.innerText = translations[currentLang].errorLogin;
+                }
+            } catch (err) {
+                errBox.innerText = currentLang === 'BM' ? 'Ralat sambungan pelayan backend.' : 'Server connection error.';
+            }
+        }
 
-            const savedTiktok = localStorage.getItem('leea_tiktok_' + currentClient);
-            if (savedTiktok) document.getElementById('modalTiktokLink').value = savedTiktok;
-
-            checkAgentAffiliateStatus();
-
-            fetchLiveLeads(currentClient, railwayUrl);
-            setInterval(() => {
-                fetchLiveLeads(currentClient, railwayUrl);
-            }, 3000);
-        });
+        function clientLogout() {
+            localStorage.removeItem('leea_current_client');
+            location.reload();
+        }
 
         function submitAgentRegistration() {
             const isAgreed = document.getElementById('agreeTermsCheck').checked;
@@ -534,11 +956,11 @@
             const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
 
             if (!isAgreed) {
-                alert('Sila tandakan kotak persetujuan pada Terma & Syarat Affiliate terlebih dahulu.');
+                alert(currentLang === 'BM' ? 'Sila tandakan kotak persetujuan pada Terma & Syarat Affiliate terlebih dahulu.' : 'Please check the agreement box on Affiliate Terms & Conditions first.');
                 return;
             }
             if (!fullName || !bankName || !accountNo) {
-                alert('Sila lengkapkan nama penuh, jenis bank, dan nombor akaun bank.');
+                alert(currentLang === 'BM' ? 'Sila lengkapkan nama penuh, jenis bank, dan nombor akaun bank.' : 'Please fill in full name, bank name, and account number.');
                 return;
             }
 
@@ -548,8 +970,7 @@
             };
 
             localStorage.setItem('leea_affiliate_' + currentClient, JSON.stringify(affiliatePayload));
-            
-            alert('Permohonan pendaftaran agen affiliate berjaya dihantar kepada Administrator untuk pengesahan akaun!');
+            alert(currentLang === 'BM' ? 'Permohonan pendaftaran agen affiliate berjaya dihantar kepada Administrator untuk pengesahan akaun!' : 'Affiliate agent application successfully submitted to Administrator for review!');
             checkAgentAffiliateStatus();
         }
 
@@ -615,7 +1036,7 @@
                     }
                 }
             } catch (error) {
-                console.log("Mod menunggu sambungan aktif ke server enjin bot...");
+                console.log("Mod menunggu sambungan enjin bot...");
             }
         }
 
@@ -640,7 +1061,7 @@
                             } else if(m.sender === 'human') {
                                 borderColor = '#38bdf8';
                                 bgCol = 'rgba(56,189,248,0.08)';
-                                senderLabel = '[Agen Manusia - Anda]';
+                                senderLabel = currentLang === 'BM' ? '[Agen Manusia - Anda]' : '[Human Agent - You]';
                             }
 
                             chatBox.innerHTML += `
@@ -660,7 +1081,7 @@
 
         function selectLead(phone, name) {
             selectedActivePhone = phone;
-            document.getElementById('activeChatTitle').innerText = 'Prospek: ' + name + ' (' + phone + ')';
+            document.getElementById('activeChatTitle').innerText = (currentLang === 'BM' ? 'Prospek: ' : 'Lead: ') + name + ' (' + phone + ')';
             const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
             const railwayUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
             fetchChatHistory(currentClient, railwayUrl, phone);
@@ -696,7 +1117,7 @@
             const tiktokLink = document.getElementById('modalTiktokLink').value.trim();
             
             if(newPass && newPass.length < 6) {
-                alert('Kata laluan baharu mestilah sekurang-kurangnya 6 aksara.');
+                alert(currentLang === 'BM' ? 'Kata laluan baharu mestilah sekurang-kurangnya 6 aksara.' : 'New password must be at least 6 characters long.');
                 return;
             }
 
@@ -706,23 +1127,16 @@
             localStorage.setItem('leea_ig_' + currentClient, igLink);
             localStorage.setItem('leea_tiktok_' + currentClient, tiktokLink);
 
-            document.getElementById('headerLogoImg').src = logoSrc;
-            
-            alert('Profil syarikat, pautan sosial media, dan tetapan akaun berjaya disimpan!');
+            document.getElementById('headerCompanyLogo').src = logoSrc;
+            alert(currentLang === 'BM' ? 'Profil syarikat, pautan sosial media, dan tetapan akaun berjaya disimpan!' : 'Company profile, social links, and account settings saved successfully!');
             closeClientProfileModal();
         }
 
-        let isHumanManualMode = false;
-
         function switchTab(evt, tabName) {
             const contents = document.getElementsByClassName('tab-content');
-            for (let i = 0; i < contents.length; i++) {
-                contents[i].classList.remove('active');
-            }
+            for (let i = 0; i < contents.length; i++) contents[i].classList.remove('active');
             const btns = document.getElementsByClassName('tab-btn');
-            for (let i = 0; i < btns.length; i++) {
-                btns[i].classList.remove('active');
-            }
+            for (let i = 0; i < btns.length; i++) btns[i].classList.remove('active');
             document.getElementById(tabName).classList.add('active');
             evt.currentTarget.classList.add('active');
         }
@@ -730,10 +1144,10 @@
         function updateBotName() {
             const newName = document.getElementById('botNameInput').value;
             if(!newName.trim()) {
-                alert('Sila masukkan nama bot yang sah.');
+                alert(currentLang === 'BM' ? 'Sila masukkan nama bot yang sah.' : 'Please enter a valid bot name.');
                 return;
             }
-            alert('Nama bot berjaya dikemaskini kepada: ' + newName);
+            alert((currentLang === 'BM' ? 'Nama bot berjaya dikemaskini kepada: ' : 'Bot name updated to: ') + newName);
         }
 
         async function saveClientBrainPrompt() {
@@ -742,7 +1156,7 @@
             const serverUrl = localStorage.getItem('admin_railway_' + currentClient) || 'http://127.0.0.1:8000';
 
             if(!promptText) {
-                alert('Sila masukkan skrip prompt minda bot terlebih dahulu.');
+                alert(currentLang === 'BM' ? 'Sila masukkan skrip prompt minda bot terlebih dahulu.' : 'Please enter the bot brain prompt script first.');
                 return;
             }
 
@@ -754,17 +1168,17 @@
                 });
 
                 if(response.ok) {
-                    alert('Prompt minda bot berjaya dihantar dan dikemaskini terus pada enjin bot klien!');
+                    alert(currentLang === 'BM' ? 'Prompt minda bot berjaya dihantar dan dikemaskini terus pada enjin bot klien!' : 'Bot brain prompt successfully sent and updated on client engine!');
                 } else {
-                    alert('Gagal dikemaskini. Sila semak status server bot.');
+                    alert(currentLang === 'BM' ? 'Gagal dikemaskini. Sila semak status server bot.' : 'Failed to update. Please check bot server status.');
                 }
             } catch (err) {
-                alert('Amaran: Sambungan ke server bot tempatan/Railway tidak terhasil. Pastikan pelayan Python sedang aktif.');
+                alert(currentLang === 'BM' ? 'Amaran: Sambungan ke server bot tempatan/Railway tidak terhasil.' : 'Warning: Unable to connect to local bot/Railway server.');
             }
         }
 
         function saveClientPaymentSettings() {
-            alert('Tetapan pembayaran dan gateway affiliate berjaya disimpan.');
+            alert(currentLang === 'BM' ? 'Tetapan pembayaran dan gateway affiliate berjaya disimpan.' : 'Payment and gateway settings saved successfully.');
         }
 
         function saveClientSystemSettings() {
@@ -772,12 +1186,12 @@
             const currentClient = localStorage.getItem('leea_current_client') || 'Klien';
 
             if(!adminNum.trim()) {
-                alert('Sila masukkan nombor admin yang sah.');
+                alert(currentLang === 'BM' ? 'Sila masukkan nombor admin yang sah.' : 'Please enter a valid admin number.');
                 return;
             }
 
             localStorage.setItem('client_admin_number_' + currentClient, adminNum);
-            alert('Nombor telefon admin (group_admin_number) berjaya dikemaskini dan diselaraskan pada fail kod server secara automatik!');
+            alert(currentLang === 'BM' ? 'Nombor telefon admin (group_admin_number) berjaya dikemaskini dan diselaraskan pada fail kod server secara automatik!' : 'Admin phone number (group_admin_number) successfully updated and synchronized with the server automatically!');
         }
 
         function toggleHumanTakeover() {
@@ -787,12 +1201,12 @@
                 btn.style.background = 'rgba(16,185,129,0.2)';
                 btn.style.borderColor = '#10b981';
                 btn.style.color = '#34d399';
-                btn.innerText = 'MOD MANUAL: AKTIF (AGEN MANUSIA)';
+                btn.innerText = currentLang === 'BM' ? 'MOD MANUAL: AKTIF (AGEN MANUSIA)' : 'MANUAL MODE: ACTIVE (HUMAN AGENT)';
             } else {
                 btn.style.background = 'rgba(245,158,11,0.2)';
                 btn.style.borderColor = '#f59e0b';
                 btn.style.color = '#f59e0b';
-                btn.innerText = 'MOD BOT: AKTIF (AMBIL ALIH MANUAL)';
+                btn.innerText = currentLang === 'BM' ? 'MOD BOT: AKTIF (AMBIL ALIH MANUAL)' : 'BOT MODE: ACTIVE (MANUAL TAKEOVER)';
             }
         }
 
@@ -800,7 +1214,7 @@
             const input = document.getElementById('liveChatInput');
             const msg = input.value.trim();
             if(!msg || !selectedActivePhone) {
-                alert('Sila pilih prospek dan masukkan mesej.');
+                alert(currentLang === 'BM' ? 'Sila pilih prospek dan masukkan mesej.' : 'Please select a prospect and enter a message.');
                 return;
             }
 
@@ -818,16 +1232,15 @@
                     input.value = '';
                     fetchChatHistory(currentClient, serverUrl, selectedActivePhone);
                 } else {
-                    alert('Gagal menghantar mesej WhatsApp.');
+                    alert(currentLang === 'BM' ? 'Gagal menghantar mesej WhatsApp.' : 'Failed to send WhatsApp message.');
                 }
             } catch(e) {
-                console.error("Gagal menghantar mesej ke pelayan bot:", e);
-                alert('Ralat sambungan ke pelayan bot.');
+                alert(currentLang === 'BM' ? 'Ralat sambungan ke pelayan bot.' : 'Bot server connection error.');
             }
         }
 
         function exportLeadsCsv() {
-            alert('Fail senarai prospek (Leads) berjaya dieksport dalam format CSV.');
+            alert(currentLang === 'BM' ? 'Fail senarai prospek (Leads) berjaya dieksport dalam format CSV.' : 'Leads list successfully exported as CSV.');
         }
     </script>
 </body>
