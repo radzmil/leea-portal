@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papan Pemuka Admin • SISTEM LEEA</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85); 
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); 
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .brand-logo-container {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            overflow: hidden;
+        }
+        .brand-logo-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+        .brand-title { 
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .brand-subtitle {
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            font-size: 18px;
+            color: #e2e8f0;
+            margin-bottom: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+        
+        .form-group { margin-bottom: 15px; }
+        
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            color: #cbd5e1; 
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        input[type="text"], input[type="password"], input[type="number"], input[type="date"] { 
+            width: 100%; 
+            padding: 13px 16px; 
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155; 
+            border-radius: 10px; 
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+        
+        input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, input[type="date"]:focus { 
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+        
+        ::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 14px; 
+            font-weight: 600;
+            cursor: pointer; 
+            transition: all 0.25s ease;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626 100%, #b91c1c 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+        .btn-small:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-1px);
+        }
+
+        .alert { 
+            padding: 14px 20px; 
+            margin-bottom: 25px; 
+            border-radius: 12px; 
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .alert-success { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .alert-danger { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .table-responsive { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+        th {
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background-color: rgba(30, 41, 59, 0.5);
+            white-space: nowrap;
+        }
+        td {
+            font-size: 13px;
+            color: #e2e8f0;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .system-footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <!-- Header -->
+        <div class="glass-card">
+            <div class="dashboard-header">
+                <div class="brand-section">
+                    <div class="brand-logo-container">
+                        <img src="{{ url_for('static', filename='leea_logo.png') }}" alt="Logo SISTEM LEEA" class="brand-logo-img">
+                    </div>
+                    <div>
+                        <div class="brand-title">Papan Pemuka Admin</div>
+                        <div class="brand-subtitle">Sistem LEEA &bull; Pengurusan Berpusat</div>
+                    </div>
+                </div>
+                <div>
+                    <a href="{{ url_for('admin_logout') }}" class="btn btn-danger">Log Keluar</a>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Borang Pendaftaran Klien Baru -->
+        <div class="glass-card">
+            <h2>Daftar Akaun Klien Baru</h2>
+            <form action="{{ url_for('register_client') }}" method="POST">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nama_syarikat">Nama Syarikat</label>
+                        <input type="text" id="nama_syarikat" name="nama_syarikat" placeholder="Contoh: Perusahaan ABC" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="username">ID Log Masuk (Username)</label>
+                        <input type="text" id="username" name="username" placeholder="Contoh: klien_abc atau nama bebas" required autocomplete="off">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email_pengguna">Email Pengguna</label>
+                        <input type="text" id="email_pengguna" name="email_pengguna" placeholder="Contoh: klien@email.com" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="no_telefon">Nombor Telefon Pengguna</label>
+                        <input type="text" id="no_telefon" name="no_telefon" placeholder="Contoh: 0123456789" required autocomplete="off">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="no_wa_bot">Nombor WhatsApp Bot</label>
+                        <input type="text" id="no_wa_bot" name="no_wa_bot" placeholder="Contoh: 0198765432" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="url_server">URL Server</label>
+                        <input type="text" id="url_server" name="url_server" placeholder="Contoh: https://server.klien.com" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jumlah_token">Jumlah Token Permulaan</label>
+                        <input type="number" id="jumlah_token" name="jumlah_token" placeholder="Contoh: 1000" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tarikh_luput">Tarikh Luput Akaun</label>
+                        <input type="date" id="tarikh_luput" name="tarikh_luput" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Kata Laluan Klien (Tetap)</label>
+                        <input type="text" value="defaultpass123" disabled style="background: rgba(30, 41, 59, 0.3); color: #64748b; border: 1px solid rgba(255, 255, 255, 0.05); cursor: not-allowed;">
+                        <input type="hidden" name="password" value="defaultpass123">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Daftar Klien Baru</button>
+            </form>
+        </div>
+
+        <!-- Senarai Klien & Pengurusan Token & Sambungan Bot -->
+        <div class="glass-card">
+            <h2>Senarai Klien, Pengurusan Token & Sambungan Zulfa-Bot</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Klien</th>
+                            <th>ID Log Masuk</th>
+                            <th>Syarikat</th>
+                            <th>Kata Sandi</th>
+                            <th>Token</th>
+                            <th>Tarikh Luput</th>
+                            <th>Sambungan Zulfa-Bot (Auto-Generated Token)</th>
+                            <th>Tambah Token</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if clients %}
+                            {% for client in clients %}
+                            <tr>
+                                <td><strong style="color: #38bdf8;">{{ client.format_id }}</strong></td>
+                                <td><span style="color: #e2e8f0; font-weight: 500;">{{ client.username }}</span></td>
+                                <td><strong>{{ client.nama_syarikat }}</strong></td>
+                                <td>
+                                    <!-- Kotak intip password klien -->
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <input type="password" value="{{ client.plain_password if client.plain_password else 'defaultpass123' }}" readonly style="width: 95px; padding: 5px; font-size: 12px; background: rgba(30, 41, 59, 0.3); border: 1px solid #334155; border-radius: 6px; color: #fff;" id="pwd-{{ client.id }}">
+                                        <button type="button" onclick="togglePwd('pwd-{{ client.id }}', this)" style="background: none; border: none; cursor: pointer; font-size: 13px;" title="Lihat Kata Sandi">👁️</button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <!-- Box Token Terkini -->
+                                    <span style="color: #34d399; font-weight: 600; background: rgba(52, 211, 153, 0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(52, 211, 153, 0.2);">
+                                        {{ client.token_balance }}
+                                    </span>
+                                </td>
+                                <td><span style="font-size: 12px;">{{ client.tarikh_luput }}</span></td>
+                                <td>
+                                    <!-- Kotak Token Bot Auto-Generated & Kemaskini -->
+                                    <form action="{{ url_for('admin_update_bot') }}" method="POST" style="display: flex; gap: 5px; align-items: center;">
+                                        <input type="hidden" name="client_id" value="{{ client.id }}">
+                                        <input type="text" name="bot_id_token" placeholder="Auto token..." value="{{ client.bot_token if client.bot_token else '' }}" style="width: 155px; padding: 6px; font-size: 12px; font-family: monospace; color: #38bdf8;" required>
+                                        <button type="submit" class="btn btn-small" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);">Simpan</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form action="{{ url_for('topup_client_tokens') }}" method="POST" style="display: flex; gap: 5px;">
+                                        <input type="hidden" name="client_id" value="{{ client.id }}">
+                                        <input type="number" name="tokens" placeholder="Jumlah..." style="width: 75px; padding: 6px; font-size: 12px;" required>
+                                        <button type="submit" class="btn btn-small">Tambah</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="empty-state">Tiada akaun klien berdaftar seketika ini.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="system-footer">
+            Architech Laboratory &bull; Integriti Sistem & Keselamatan Data Terjamin
+        </div>
+
+    </div>
+
+    <script>
+        // Fungsi untuk melihat/menyembunyikan kata sandi klien pada tabel
+        function togglePwd(id, btn) {
+            const input = document.getElementById(id);
+            if (input.type === "password") {
+                input.type = "text";
+                btn.textContent = "🔒";
+            } else {
+                input.type = "password";
+                btn.textContent = "👁️";
+            }
+        }
+    </script>
+
+</body>
+</html>

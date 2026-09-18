@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Masuk • SISTEM LEEA</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 100%);
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            color: #f8fafc;
+        }
+        .login-card { 
+            background: rgba(15, 23, 42, 0.85); 
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 40px 35px; 
+            border-radius: 20px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); 
+            width: 100%; 
+            max-width: 440px; 
+        }
+        .brand-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .brand-logo-container {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 15px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+        }
+        .brand-logo-img {
+            width: 105px;
+            height: 105px;
+            object-fit: contain;
+            transform: scale(1.15);
+        }
+        .brand-title { 
+            color: #ffffff; 
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .brand-subtitle {
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-group { 
+            margin-bottom: 18px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            color: #cbd5e1; 
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        input[type="text"], input[type="password"] { 
+            width: 100%; 
+            padding: 13px 45px 13px 16px; 
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155; 
+            border-radius: 10px; 
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+        input[type="text"]:focus, input[type="password"]:focus { 
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 16px;
+            padding: 0;
+            box-shadow: none !important;
+            width: auto;
+            margin-top: 0;
+        }
+        .toggle-password:hover {
+            color: #38bdf8;
+            transform: none;
+            box-shadow: none !important;
+            background: none;
+        }
+        button[type="submit"] { 
+            width: 100%; 
+            padding: 14px; 
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 15px; 
+            font-weight: 600;
+            cursor: pointer; 
+            transition: all 0.25s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+        button[type="submit"]:hover { 
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+            transform: translateY(-1px);
+        }
+        .alert { 
+            padding: 12px 16px; 
+            margin-bottom: 20px; 
+            border-radius: 10px; 
+            font-size: 13px; 
+        }
+        .alert-danger { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .alert-success { background-color: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .system-footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 11px;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="brand-header">
+            <div class="brand-logo-container">
+                <img src="{{ url_for('static', filename='leea_logo.png') }}" alt="Logo SISTEM LEEA" class="brand-logo-img">
+            </div>
+            <div class="brand-title">SISTEM LEEA</div>
+            <div class="brand-subtitle">Intelligent Automation Systems</div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('admin_login') }}">
+            <div class="form-group">
+                <label for="username">ID Pengguna</label>
+                <input type="text" id="username" name="username" placeholder="Masukkan ID akses anda" required autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Kata Laluan</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="••••••••••••" required>
+                    <button type="button" class="toggle-password" id="togglePassword" title="Papar/Sembunyi Kata Laluan">
+                        👁️
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit">Log Masuk Sistem</button>
+        </form>
+
+        <div class="system-footer">
+            Architech Laboratory &bull; Secure Authentication Gateway
+        </div>
+    </div>
+
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️' : '🔒';
+        });
+    </script>
+
+</body>
+</html>
