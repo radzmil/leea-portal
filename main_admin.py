@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import os
 import json
 import requests
@@ -13,6 +15,14 @@ from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+
+# Inisialisasi Flask-Limiter untuk perlindungan dari serangan Brute Force (Rate Limiting)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 UPLOAD_FOLDER = 'static/uploads'
 try:
@@ -28,6 +38,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/admin/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")  # Sekatan maksimum 5 percubaan log masuk seminit untuk Admin
 def admin_login():
     """Proses log masuk admin menggunakan Password + YubiKey"""
     if request.method == 'POST':
@@ -185,6 +196,7 @@ def admin_logout():
 # --- LALUAN PORTAL KLIEN ---
 
 @app.route('/client/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")  # Sekatan maksimum 5 percubaan log masuk seminit untuk Klien
 def client_login():
     """Proses log masuk khusus untuk klien menggunakan Username & Password"""
     if request.method == 'POST':
