@@ -15,7 +15,10 @@ app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
 UPLOAD_FOLDER = 'static/uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+try:
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+except OSError:
+    pass  # Abaikan ralat sistem fail baca-sahaja di Vercel
 
 CHAT_LOGS_FILE = "chat_history_logs.json"
 
