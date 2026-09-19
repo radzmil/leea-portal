@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pusat Kawalan AI • SISTEM LEEA</title>
+    <title>Pusat Kawalan AI & CRM • SISTEM LEEA</title>
     <!-- Memuat Chart.js untuk grafik analisis -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -18,7 +18,7 @@
             min-height: 100vh;
             padding: 30px 20px;
         }
-        .dashboard-container { max-width: 1200px; margin: 0 auto; }
+        .dashboard-container { max-width: 1350px; margin: 0 auto; }
         
         /* Kad Gaya Kaca Digital / AI Glassmorphism */
         .glass-card {
@@ -144,11 +144,11 @@
             position: relative; height: 270px;
         }
 
-        /* Realtime Chat Box */
-        .chat-box-wrapper {
-            display: grid; grid-template-columns: 280px 1fr; gap: 15px; height: 440px;
+        /* Profesional CRM 3-Column Layout */
+        .crm-workspace {
+            display: grid; grid-template-columns: 280px 1fr 310px; gap: 15px; height: 560px;
         }
-        @media(max-width: 768px) { .chat-box-wrapper { grid-template-columns: 1fr; height: auto; } }
+        @media(max-width: 1024px) { .crm-workspace { grid-template-columns: 260px 1fr; height: auto; } .crm-right-panel { display: none; } }
         
         .chat-list { background: rgba(15, 23, 42, 0.5); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.04); overflow-y: auto; padding: 8px; }
         
@@ -177,13 +177,23 @@
         .chat-room { background: rgba(15, 23, 42, 0.5); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.04); display: flex; flex-direction: column; padding: 15px; }
         
         .chat-messages { 
-            flex: 1; max-height: 270px; overflow-y: auto; padding: 10px; 
+            flex: 1; max-height: 330px; overflow-y: auto; padding: 10px; 
             display: flex; flex-direction: column; gap: 8px; 
         }
         
         .message { padding: 9px 12px; border-radius: 8px; max-width: 80%; font-size: 12px; line-height: 1.4; }
         .message.incoming { background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.05); align-self: flex-start; color: #cbd5e1; }
         .message.outgoing { background: linear-gradient(135deg, #0284c7, #2563eb); align-self: flex-end; color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235,.2); }
+
+        /* Panel Kanan CRM Lengkap (Simpan Nama, Status Funnel, Nilai Jualan, Nota Klien) */
+        .crm-right-panel { background: rgba(15, 23, 42, 0.7); border-left: 1px solid rgba(255, 255, 255, 0.06); padding: 15px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); }
+        .crm-panel-title { font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; }
+        .crm-field-group { display: flex; flex-direction: column; gap: 4px; }
+        .crm-select, .crm-textarea {
+            width: 100%; background: rgba(9, 13, 22, 0.8); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px; color: #fff; font-size: 12px; padding: 8px; outline: none;
+        }
+        .crm-textarea { resize: none; height: 60px; }
 
         .toggle-container { display: flex; align-items: center; gap: 8px; }
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
@@ -355,15 +365,17 @@
 
             </div>
 
-            <!-- TAB 2: SEMBANG LANGSUNG AI -->
+            <!-- TAB 2: SEMBANG LANGSUNG AI (3 Lajur Lengkap Berserta Panel Nama & Funnel Status) -->
             <div id="tab-chat" class="tab-content">
-                <div class="info-label" style="margin-bottom: 12px;">Pemantauan Sembang Langsung & Sentuhan Manual (Enterprise Cloud Link - ID: {{ client.id }})</div>
-                <div class="chat-box-wrapper">
-                    <!-- Senarai Nombor Pengirim Unik -->
+                <div class="info-label" style="margin-bottom: 12px;">Pemantauan Sembang Langsung & Pengurusan Nama Leads</div>
+                <div class="crm-workspace">
+                    
+                    <!-- Lajur 1: Senarai Leads -->
                     <div class="chat-list" id="chatListContainer">
                         <div class="empty-state" style="padding: 20px; font-size: 11px; color: #64748b; text-align: center;">Memuat senarai pelanggan...</div>
                     </div>
-                    <!-- Ruang Perbualan Chat & Human Touch -->
+                    
+                    <!-- Lajur 2: Ruang Sembang -->
                     <div class="chat-room">
                         <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
                             <div id="chatRoomHeader" style="font-size: 12px; font-weight: 600; color: #38bdf8; font-family: monospace;">
@@ -381,10 +393,47 @@
                             <div class="message incoming" style="background: rgba(15,23,42,0.4); color: #64748b;">Tiada perbualan aktif dipilih.</div>
                         </div>
                         <div style="display: flex; gap: 8px; margin-top: 8px;">
-                            <input type="text" id="manualMsgInput" class="form-input" placeholder="Ketik balasan manual (Mod Sentuhan Manusia)..." style="margin-top: 0; margin-bottom: 0;">
+                            <input type="text" id="manualMsgInput" class="form-input" placeholder="Ketik balasan manual..." style="margin-top: 0; margin-bottom: 0;">
                             <button type="button" onclick="sendManualMessage()" class="btn-save" style="margin-top: 0; padding: 0 14px;">Kirim</button>
                         </div>
                     </div>
+
+                    <!-- Lajur 3: Panel Sisi CRM Lengkap (Nama, Status Funnel, Nilai Jualan, Nota) -->
+                    <div class="crm-right-panel" id="crmRightPanel" style="opacity: 0.4; pointer-events: none;">
+                        <div>
+                            <div class="crm-panel-title">Profil & Nama Pelanggan</div>
+                            <div style="font-size: 11px; font-family: monospace; color: #38bdf8; margin-top: 3px;" id="panelPhoneDisplay">-</div>
+                        </div>
+
+                        <div class="crm-field-group">
+                            <label class="info-label">Nama Pelanggan (Simpan Manual)</label>
+                            <input type="text" id="clientNameInput" class="form-input" placeholder="Cth: Encik Ahmad" style="margin-bottom: 0;">
+                        </div>
+
+                        <div class="crm-field-group">
+                            <label class="info-label">Status Funnel Semasa</label>
+                            <select id="crmStatusSelect" class="crm-select">
+                                <option value="tag-baru">🟢 Prospek Baru</option>
+                                <option value="tag-nego">🟡 Sedang Nego</option>
+                                <option value="tag-pending">🟠 Pending Payment</option>
+                                <option value="tag-selesai">🔵 Closed Sale</option>
+                                <option value="tag-kiv">🔴 KIV / Senyap</option>
+                            </select>
+                        </div>
+
+                        <div class="crm-field-group">
+                            <label class="info-label">Anggaran Nilai Jualan (RM)</label>
+                            <input type="text" id="crmValueInput" class="form-input" value="RM 0.00" placeholder="RM 0.00" style="margin-bottom: 0; font-family: monospace;">
+                        </div>
+
+                        <div class="crm-field-group" style="flex: 1;">
+                            <label class="info-label">Nota Peribadi Klien</label>
+                            <textarea id="crmNotesInput" class="crm-textarea" placeholder="Tulis nota penting..."></textarea>
+                        </div>
+
+                        <button type="button" onclick="saveClientProfileData()" class="btn-save" style="width:100%;">Simpan Maklumat Lead</button>
+                    </div>
+
                 </div>
             </div>
 
@@ -429,6 +478,7 @@
         let readSenders = new Set();
         let myMsgChart = null;
         let myLeadChart = null;
+        let clientNamesMap = JSON.parse(localStorage.getItem('client_names_' + clientId) || '{}');
 
         // Mengambil data Live dari DB melalui API backend
         function fetchLiveDashboardData() {
@@ -572,6 +622,7 @@
                         const item = document.createElement('div');
                         const isActive = phone === activePhone;
                         const isUnread = !isActive && !readSenders.has(phone);
+                        const savedName = clientNamesMap[phone] || '';
 
                         let tagClass = "tag-baru";
                         let tagText = "🟢 Prospek Baru";
@@ -580,33 +631,52 @@
 
                         item.className = isActive ? 'chat-item active' : 'chat-item';
                         item.innerHTML = `
-                            <div style="font-weight: 600; font-size: 12px; color: #38bdf8; font-family: monospace;">📱 ${phone}</div>
+                            <div style="font-weight: 600; font-size: 12px; color: #38bdf8; font-family: monospace;">
+                                ${savedName ? '👤 ' + savedName : '📱 ' + phone}
+                            </div>
+                            <div style="font-size: 10px; color: #94a3b8; font-family: monospace;">${phone}</div>
                             <div class="funnel-tag ${tagClass}">${tagText}</div>${isUnread ? '<span class="unread-badge">BARU</span>' : ''}
                         `;
                         
                         item.onclick = () => {
                             readSenders.add(phone);
-                            selectSender(phone);
+                            selectSender(phone, savedName);
                         };
                         chatList.appendChild(item);
                     });
 
                     if (!activePhone && senders.length > 0) {
-                        selectSender(senders[0]);
+                        selectSender(senders[0], clientNamesMap[senders[0]] || '');
                         readSenders.add(senders[0]);
                     }
                 })
                 .catch(err => console.error("Ralat memuat senarai pengirim:", err));
         }
 
-        function selectSender(phone) {
+        function selectSender(phone, savedName) {
             activePhone = phone;
             readSenders.add(phone);
-            document.getElementById('chatRoomHeader').innerText = `Perbualan Aktif: ${phone}`;
+            document.getElementById('chatRoomHeader').innerText = `Perbualan Aktif: ${savedName ? savedName + ' (' + phone + ')' : phone}`;
             document.getElementById('modeToggleWrapper').style.display = 'flex';
+            
+            const rightPanel = document.getElementById('crmRightPanel');
+            rightPanel.style.opacity = '1';
+            rightPanel.style.pointerEvents = 'auto';
+            document.getElementById('panelPhoneDisplay').innerText = phone;
+            document.getElementById('clientNameInput').value = savedName || '';
             
             loadSendersList();
             fetchChatHistory(phone);
+        }
+
+        function saveClientProfileData() {
+            if (!activePhone) return;
+            const newName = document.getElementById('clientNameInput').value.trim();
+            clientNamesMap[activePhone] = newName;
+            localStorage.setItem('client_names_' + clientId, JSON.stringify(clientNamesMap));
+            alert('Maklumat lead dan nama pelanggan berjaya disimpan!');
+            loadSendersList();
+            selectSender(activePhone, newName);
         }
 
         function toggleChatMode(checkbox) {
