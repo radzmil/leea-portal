@@ -102,7 +102,25 @@ def register_client():
     
     if success:
         log_admin_activity(session['admin_username'], f"Mendaftarkan klien baru: {nama_syarikat} ({username})")
-        flash(message, "success")
+        
+        # Automasi Google Drive (Sheet pecahan klien) guna Webhook BARU
+        try:
+            gas_webhook_url = "https://script.google.com/macros/s/AKfycbwKUDjft8PtsHNityg8M3o9CTkdt_DKX4LC6f60TxKih9TSPC94Ic8t6uJw_tlgSeqTsw/exec"
+            
+            payload = {
+                "action": "CREATE_CLIENT_DB",
+                "client_name": nama_syarikat.replace(" ", "_")
+            }
+            res = requests.post(gas_webhook_url, json=payload, timeout=20)
+            res_data = res.json()
+            
+            if res_data.get("success"):
+                flash(f"{message} (Folder & DB Sheet berjaya dicipta di Google Drive!)", "success")
+            else:
+                flash(f"{message} (Akaun berjaya didaftarkan, tapi DB Sheet gagal dicipta: {res_data.get('error')})", "warning")
+        except Exception as e:
+            flash(f"{message} (Ralat sambungan ke automasi Google Drive)", "warning")
+            
     else:
         flash(f"Ralat pendaftaran: {message}", "danger")
         
