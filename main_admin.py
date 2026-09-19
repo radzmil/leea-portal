@@ -335,18 +335,13 @@ def api_client_manual_reply():
         return jsonify({"success": False, "error": "Maklumat tidak lengkap"}), 400
         
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO messages (client_id, sender, message, timestamp)
-            VALUES (%s, 'Admin', %s, NOW());
-        """, (client_id, message_text))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        
+        # 1. Tarik token dari persekitaran Vercel
         token = os.getenv("WHATSAPP_TOKEN")
         phone_number_id = os.getenv("PHONE_NUMBER_ID", "1274341599093050")
+        
+        if not token:
+            return jsonify({"success": False, "error": "WHATSAPP_TOKEN tidak dijumpai dalam Vercel Env."}), 400
+
         clean_phone = recipient_phone.replace("+", "").strip()
         
         url = f"https://graph.facebook.com/v19.0/{phone_number_id}/messages"
@@ -361,9 +356,27 @@ def api_client_manual_reply():
             "text": {"body": message_text},
         }
         
-        requests.post(url, json=payload, headers=headers, timeout=10)
+        # 2. Hantar mesej ke WhatsApp Meta API DAHULU
+        meta_res = requests.post(url, json=payload, headers=headers, timeout=10)
+        
+        # 3. Semak jika Meta tolak mesej tersebut
+        if meta_res.status_code not in [200, 201]:
+            # Jika gagal, ia akan popup amaran merah di dashboard mendedahkan punca ralat Meta
+            return jsonify({"success": False, "error": f"Ditolak oleh Meta: {meta_res.text}"}), 400
+            
+        # 4. Jika berjaya hantar ke WhatsApp, baru simpan rekod ke dalam Supabase
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO messages (client_id, sender, message, timestamp)
+            VALUES (%s, 'Admin', %s, NOW());
+        """, (client_id, message_text))
+        conn.commit()
+        cursor.close()
+        conn.close()
         
         return jsonify({"success": True, "message": "Balasan berjaya dihantar!"}), 200
+        
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
