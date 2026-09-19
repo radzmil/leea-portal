@@ -4,7 +4,6 @@ from werkzeug.utils import secure_filename
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import os
-import json
 import requests
 from config import SECRET_KEY, PORT, YUBIKEY_EXPECTED_ID
 from core.auth_admin import verify_admin_login
@@ -29,8 +28,6 @@ try:
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 except OSError:
     pass  # Abaikan ralat sistem fail baca-sahaja di Vercel
-
-CHAT_LOGS_FILE = "chat_history_logs.json"
 
 @app.route('/')
 def index():
@@ -270,8 +267,8 @@ def api_get_client_messages(client_id):
         conn.close()
         return jsonify(messages)
     except Exception as e:
-        cursor.close()
-        conn.close()
+        if cursor: cursor.close()
+        if conn: conn.close()
         return jsonify([])
 
 @app.route('/api/client/senders/<int:client_id>')
@@ -294,8 +291,8 @@ def api_get_client_senders(client_id):
         conn.close()
         return jsonify(senders)
     except Exception as e:
-        cursor.close()
-        conn.close()
+        if cursor: cursor.close()
+        if conn: conn.close()
         return jsonify([])
 
 @app.route('/api/client/chat/<int:client_id>', methods=['GET'])
@@ -319,8 +316,8 @@ def api_get_chat_by_sender(client_id):
         conn.close()
         return jsonify(messages)
     except Exception as e:
-        cursor.close()
-        conn.close()
+        if cursor: cursor.close()
+        if conn: conn.close()
         return jsonify([])
 
 @app.route('/api/client/reply', methods=['POST'])
@@ -372,45 +369,46 @@ def api_client_manual_reply():
 
 @app.route('/api/client/toggle-mode', methods=['POST'])
 def api_toggle_client_mode():
-    """API untuk menukar mod perbualan antara AI dan Human Touch bagi nombor tertentu"""
+    """API untuk menukar mod perbualan antara AI dan Human Touch menggunakan Supabase (Bebas Ralat Read-Only Vercel)"""
     if not session.get('client_logged_in'):
         return jsonify({"error": "Unauthorized"}), 401
         
     data = request.json or {}
     phone = data.get('phone', '').strip()
     mode = data.get('mode', 'ai').strip()
+    client_id = session.get('client_id')
     
     if not phone:
         return jsonify({"success": False, "error": "Nombor telefon tidak sah"}), 400
         
     try:
-        if os.path.exists(CHAT_LOGS_FILE):
-            with open(CHAT_LOGS_FILE, "r", encoding="utf-8") as f:
-                content = f.read().strip()
-                chats = json.loads(content) if content else []
-        else:
-            chats = []
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({"success": False, "error": "Gagal menyambung ke pangkalan data"}), 500
             
-        found = False
-        for chat in chats:
-            db_phone = str(chat.get("phone", "")).replace("+", "").strip()
-            clean_target = phone.replace("+", "").strip()
-            if db_phone == clean_target:
-                chat["mode"] = mode
-                found = True
-                break
-                
-        if not found:
-            chats.append({
-                "id": phone.replace("+", ""),
-                "customerName": f"Pelanggan ({phone})",
-                "phone": f"+{phone}",
-                "mode": mode,
-                "messages": []
-            })
-            
-        with open(CHAT_LOGS_FILE, "w", encoding="utf-8") as f:
-            json.dump(chats, f, indent=4, ensure_ascii=False)
+        cursor = conn.cursor()
+        
+        # Cipta jadual storan mod jika belum wujud untuk elak ralat
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS chat_modes (
+                client_id INT,
+                phone VARCHAR(50),
+                mode VARCHAR(20),
+                PRIMARY KEY (client_id, phone)
+            );
+        """)
+        
+        # Simpan status mod ke Supabase untuk mengelakkan penggunaan fail fizikal
+        cursor.execute("""
+            INSERT INTO chat_modes (client_id, phone, mode)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (client_id, phone) 
+            DO UPDATE SET mode = EXCLUDED.mode;
+        """, (client_id, phone.replace("+", "").strip(), mode))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
             
         return jsonify({"success": True, "message": f"Mod berjaya ditukar kepada {mode.upper()}!"}), 200
     except Exception as e:
