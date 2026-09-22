@@ -31,8 +31,8 @@ except OSError:
 
 @app.route('/')
 def index():
-    """Halaman utama pintu masuk Admin Panel"""
-    return render_template('index.html')
+    """Halaman utama pintu masuk - Terus arahkan ke Portal Client Login"""
+    return redirect(url_for('client_login'))
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")  # Sekatan maksimum 5 percubaan log masuk seminit untuk Admin
@@ -111,7 +111,6 @@ def register_client():
             cursor.close()
             conn.close()
         except Exception:
-            # Jika kolum belum wujud, kita alter table automatik
             try:
                 conn = get_db_connection()
                 cursor = conn.cursor()
@@ -125,7 +124,6 @@ def register_client():
 
         log_admin_activity(session['admin_username'], f"Mendaftarkan klien baru: {nama_syarikat} ({username}) - Bisnes: {business_type}")
         
-        # Automasi Google Drive (Sheet pecahan klien) guna Webhook BARU
         try:
             gas_webhook_url = "https://script.google.com/macros/s/AKfycbwKUDjft8PtsHNityg8M3o9CTkdt_DKX4LC6f60TxKih9TSPC94Ic8t6uJw_tlgSeqTsw/exec"
             
@@ -403,7 +401,6 @@ def api_client_manual_reply():
         return jsonify({"success": False, "error": "Maklumat tidak lengkap"}), 400
         
     try:
-        # 1. Tarik token dari persekitaran Vercel
         token = os.getenv("WHATSAPP_TOKEN")
         phone_number_id = os.getenv("PHONE_NUMBER_ID", "1274341599093050")
         
@@ -424,15 +421,11 @@ def api_client_manual_reply():
             "text": {"body": message_text},
         }
         
-        # 2. Hantar mesej ke WhatsApp Meta API DAHULU
         meta_res = requests.post(url, json=payload, headers=headers, timeout=10)
         
-        # 3. Semak jika Meta tolak mesej tersebut
         if meta_res.status_code not in [200, 201]:
-            # Jika gagal, ia akan popup amaran merah di dashboard mendedahkan punca ralat Meta
             return jsonify({"success": False, "error": f"Ditolak oleh Meta: {meta_res.text}"}), 400
             
-        # 4. Jika berjaya hantar ke WhatsApp, baru simpan rekod ke dalam Supabase
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
@@ -450,7 +443,7 @@ def api_client_manual_reply():
 
 @app.route('/api/client/toggle-mode', methods=['POST'])
 def api_toggle_client_mode():
-    """API untuk menukar mod perbualan antara AI dan Human Touch menggunakan Supabase (Bebas Ralat Read-Only Vercel)"""
+    """API untuk menukar mod perbualan antara AI dan Human Touch menggunakan Supabase"""
     if not session.get('client_logged_in'):
         return jsonify({"error": "Unauthorized"}), 401
         
@@ -469,7 +462,6 @@ def api_toggle_client_mode():
             
         cursor = conn.cursor()
         
-        # Cipta jadual storan mod jika belum wujud untuk elak ralat
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS chat_modes (
                 client_id INT,
@@ -479,7 +471,6 @@ def api_toggle_client_mode():
             );
         """)
         
-        # Simpan status mod ke Supabase untuk mengelakkan penggunaan fail fizikal
         cursor.execute("""
             INSERT INTO chat_modes (client_id, phone, mode)
             VALUES (%s, %s, %s)
