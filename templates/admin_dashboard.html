@@ -177,7 +177,6 @@
         .alert-success { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
         .alert-danger { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
 
-        /* KELAS BARU: Widget Mockup Preview Kerangka */
         .widget-preview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -312,7 +311,7 @@
                     </div>
                 </div>
 
-                <!-- SEKSYEN BARU: PILIHAN SKOP PERNIAGAAN & WIDGET PREVIEW -->
+                <!-- PILIHAN SKOP PERNIAGAAN & WIDGET PREVIEW -->
                 <div class="form-row">
                     <div class="form-group">
                         <label for="business_type">Skop / Jenis Perniagaan Klien</label>
@@ -329,7 +328,7 @@
                     </div>
                 </div>
 
-                <!-- KOTAK KERANGKA WIDGET PREVIEW (Akan bertukar ikut pilihan di atas) -->
+                <!-- KOTAK KERANGKA WIDGET PREVIEW -->
                 <div class="form-group">
                     <label>Kerangka Widget Analisis Yang Akan Dipaparkan Pada Dashboard Klien:</label>
                     <div class="widget-preview-grid" id="widgetPreviewBox">
@@ -452,7 +451,7 @@
                 widgetsHTML = `
                     <div class="widget-box"><h4>🚚 Trip Penghantaran Aktif</h4><div class="value">14 Trip</div></div>
                     <div class="widget-box"><h4>📍 Destinasi Utama</h4><div class="value">Klang Valley</div></div>
-                    <div class="widget-box"><h4>⛽ Anggaran Kos Minyak</h4><div class="value">RM 1,850</div></div>
+                    <div class="widget-box"><h4>📅 Tarikh Puncak Tempahan</h4><div class="value">28hb Setiap Bulan</div></div>
                 `;
             } else if (type === 'booking') {
                 widgetsHTML = `
