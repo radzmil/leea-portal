@@ -79,6 +79,7 @@ def register_client():
     no_telefon = request.form.get('no_telefon')
     no_wa_bot = request.form.get('no_wa_bot')
     url_server = request.form.get('url_server')
+    business_type = request.form.get('business_type', 'ecommerce')
     
     try:
         jumlah_token = int(request.form.get('jumlah_token', 1000))
@@ -101,7 +102,28 @@ def register_client():
     )
     
     if success:
-        log_admin_activity(session['admin_username'], f"Mendaftarkan klien baru: {nama_syarikat} ({username})")
+        # Simpan business_type ke dalam database klien secara langsung
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE clients SET business_type = %s WHERE username = %s", (business_type, username))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception:
+            # Jika kolum belum wujud, kita alter table automatik
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS business_type VARCHAR(50) DEFAULT 'ecommerce';")
+                cursor.execute("UPDATE clients SET business_type = %s WHERE username = %s", (business_type, username))
+                conn.commit()
+                cursor.close()
+                conn.close()
+            except Exception:
+                pass
+
+        log_admin_activity(session['admin_username'], f"Mendaftarkan klien baru: {nama_syarikat} ({username}) - Bisnes: {business_type}")
         
         # Automasi Google Drive (Sheet pecahan klien) guna Webhook BARU
         try:
@@ -195,6 +217,34 @@ def admin_update_bot():
     
     log_admin_activity(session['admin_username'], f"Menyambungkan bot ({bot_id_token}) untuk ID klien: {client_id}")
     flash("Sambungan Zulfa-Bot ke klien berjaya ditetapkan oleh Admin!", "success")
+    
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/client/update_business', methods=['POST'])
+def admin_update_business():
+    """Tindakan admin menukar skop perniagaan klien sedia ada secara manual"""
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+        
+    client_id = request.form.get('client_id')
+    business_type = request.form.get('business_type')
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE clients SET business_type = %s WHERE id = %s", (business_type, client_id))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS business_type VARCHAR(50) DEFAULT 'ecommerce';")
+        cursor.execute("UPDATE clients SET business_type = %s WHERE id = %s", (business_type, client_id))
+        conn.commit()
+        
+    cursor.close()
+    conn.close()
+    
+    log_admin_activity(session['admin_username'], f"Mengemas kini skop perniagaan kepada '{business_type}' untuk ID klien: {client_id}")
+    flash("Skop perniagaan klien berjaya dikemaskini!", "success")
     
     return redirect(url_for('admin_dashboard'))
 
