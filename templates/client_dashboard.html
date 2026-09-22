@@ -283,11 +283,11 @@
                 </div>
             </div>
 
-            <!-- TAB NAVIGASI LENGKAP -->
+            <!-- TAB NAVIGASI DIGITAL (Diperbaiki dengan onclick event yang sahih) -->
             <div class="tab-nav">
-                <button class="tab-btn active" onclick="switchTab(event, 'tab-analisis')">📊 Analisis & Automasi</button>
-                <button class="tab-btn" onclick="switchTab(event, 'tab-chat')">💬 Sembang Langsung AI</button>
-                <button class="tab-btn" onclick="switchTab(event, 'tab-profil')">⚙️ Profil & Penjenamaan</button>
+                <button type="button" class="tab-btn active" id="btn-tab-analisis" onclick="switchTab(event, 'tab-analisis')">📊 Analisis & Automasi</button>
+                <button type="button" class="tab-btn" id="btn-tab-chat" onclick="switchTab(event, 'tab-chat')">💬 Sembang Langsung AI</button>
+                <button type="button" class="tab-btn" id="btn-tab-profil" onclick="switchTab(event, 'tab-profil')">⚙️ Profil & Penjenamaan</button>
             </div>
 
             <!-- TAB 1: ANALISIS & AUTOMASI -->
@@ -379,7 +379,7 @@
 
             </div>
 
-            <!-- TAB 2: SEMBANG LANGSUNG AI (Diletakkan Widget Box Analisis Dinamik Di Atas) -->
+            <!-- TAB 2: SEMBANG LANGSUNG AI (Dilengkapi Widget Box Analisis Dinamik) -->
             <div id="tab-chat" class="tab-content">
                 <div class="info-label" style="margin-bottom: 12px;">Pemantauan Sembang Langsung & Analisis Bisnes Semasa</div>
                 
@@ -501,7 +501,7 @@
         let myLeadChart = null;
         let clientNamesMap = JSON.parse(localStorage.getItem('client_names_' + clientId) || '{}');
 
-        // Render Widget Box Analisis Dinamik Mengikut Skop Perniagaan Klien (Di Tab Sembang Langsung)
+        // Render Widget Box Analisis Dinamik Mengikut Skop Perniagaan Klien
         function renderDynamicWidgets(type) {
             const container = document.getElementById('dynamicWidgetBoxContainer');
             if (!container) return;
@@ -687,15 +687,26 @@
 
         setInterval(checkServerHealth, 5000);
 
+        // Fungsi Penukaran Tab yang Dioptimumkan & Kebal Ralat
         function switchTab(evt, tabId) {
+            evt.preventDefault();
+            
+            // Sembunyikan semua kandungan tab
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(c => c.classList.remove('active'));
             
+            // Buang class active dari semua butang tab
             const buttons = document.querySelectorAll('.tab-btn');
             buttons.forEach(b => b.classList.remove('active'));
             
-            document.getElementById(tabId).classList.add('active');
-            evt.currentTarget.classList.add('active');
+            // Paparkan tab yang dipilih dan aktifkan butang berkaitan
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            if (evt.currentTarget) {
+                evt.currentTarget.classList.add('active');
+            }
             
             if (tabId === 'tab-chat') {
                 loadSendersList();
@@ -714,6 +725,7 @@
                 .then(res => res.json())
                 .then(senders => {
                     const chatList = document.getElementById('chatListContainer');
+                    if (!chatList) return;
                     chatList.innerHTML = '';
                     
                     if (!senders || senders.length === 0) {
@@ -774,7 +786,7 @@
 
         function saveClientProfileData() {
             if (!activePhone) return;
-            const newName = document.getElementById('clientNameInput'].value.trim();
+            const newName = document.getElementById('clientNameInput').value.trim();
             clientNamesMap[activePhone] = newName;
             localStorage.setItem('client_names_' + clientId, JSON.stringify(clientNamesMap));
             alert('Maklumat lead dan nama pelanggan berjaya disimpan!');
@@ -813,6 +825,7 @@
                 .then(res => res.json())
                 .then(data => {
                     const chatMsgs = document.getElementById('chatMessagesContainer');
+                    if (!chatMsgs) return;
                     chatMsgs.innerHTML = '';
                     
                     if (!data || data.length === 0) {
