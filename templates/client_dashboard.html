@@ -113,16 +113,16 @@
 
         /* WIDGET BOX ANALISIS DINAMIK MENGIKUT SKOP PERNIAGAAN KLIEN */
         .dynamic-widget-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px;
         }
         .widget-box-card {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.65) 100%);
-            border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 18px;
+            border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 16px;
             display: flex; flex-direction: column; justify-content: space-between; position: relative;
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
         }
-        .widget-box-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; }
-        .widget-box-value { font-size: 20px; font-weight: 800; color: #38bdf8; margin: 8px 0 2px 0; font-family: monospace; }
+        .widget-box-title { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; }
+        .widget-box-value { font-size: 18px; font-weight: 800; color: #38bdf8; margin: 6px 0 2px 0; font-family: monospace; }
         .widget-box-sub { font-size: 11px; color: #34d399; font-weight: 600; }
 
         /* Kotak Analisis Peratusan % */
@@ -299,11 +299,6 @@
                     <div><strong>STATUS NEURAL AKTIF:</strong> <span id="liveTerminalText">Bot AI sedang memantau pelayan dan menjawab mesej masuk secara autonomi...</span></div>
                 </div>
 
-                <!-- WIDGET BOX ANALISIS DINAMIK MENGIKUT SKOP PERNIAGAAN KLIEN -->
-                <div class="dynamic-widget-grid" id="dynamicWidgetBoxContainer">
-                    <!-- Kandungan dirender oleh Javascript berdasarkan business_type -->
-                </div>
-
                 <!-- 4 KOTAK ANALISIS PERATUS (%) & NOMBOR LIVE -->
                 <div class="analytics-percentage-grid">
                     <div class="metric-card">
@@ -384,9 +379,15 @@
 
             </div>
 
-            <!-- TAB 2: SEMBANG LANGSUNG AI -->
+            <!-- TAB 2: SEMBANG LANGSUNG AI (Diletakkan Widget Box Analisis Dinamik Di Atas) -->
             <div id="tab-chat" class="tab-content">
-                <div class="info-label" style="margin-bottom: 12px;">Pemantauan Sembang Langsung & Pengurusan Nama Leads</div>
+                <div class="info-label" style="margin-bottom: 12px;">Pemantauan Sembang Langsung & Analisis Bisnes Semasa</div>
+                
+                <!-- WIDGET BOX ANALISIS DINAMIK DI TAB SEMBANG LANGSUNG -->
+                <div class="dynamic-widget-grid" id="dynamicWidgetBoxContainer" style="margin-bottom: 15px;">
+                    <!-- Kandungan dirender oleh Javascript berdasarkan business_type -->
+                </div>
+
                 <div class="crm-workspace">
                     
                     <!-- Lajur 1: Senarai Leads -->
@@ -500,7 +501,7 @@
         let myLeadChart = null;
         let clientNamesMap = JSON.parse(localStorage.getItem('client_names_' + clientId) || '{}');
 
-        // Render Widget Box Analisis Dinamik Mengikut Skop Perniagaan Klien
+        // Render Widget Box Analisis Dinamik Mengikut Skop Perniagaan Klien (Di Tab Sembang Langsung)
         function renderDynamicWidgets(type) {
             const container = document.getElementById('dynamicWidgetBoxContainer');
             if (!container) return;
@@ -773,7 +774,7 @@
 
         function saveClientProfileData() {
             if (!activePhone) return;
-            const newName = document.getElementById('clientNameInput').value.trim();
+            const newName = document.getElementById('clientNameInput'].value.trim();
             clientNamesMap[activePhone] = newName;
             localStorage.setItem('client_names_' + clientId, JSON.stringify(clientNamesMap));
             alert('Maklumat lead dan nama pelanggan berjaya disimpan!');
