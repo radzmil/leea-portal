@@ -146,7 +146,7 @@
 
         /* Profesional CRM 3-Column Layout */
         .crm-workspace {
-            display: grid; grid-template-columns: 280px 1fr 310px; gap: 15px; height: 500px;
+            display: grid; grid-template-columns: 280px 1fr 310px; gap: 15px; height: 560px;
         }
         @media(max-width: 1024px) { .crm-workspace { grid-template-columns: 260px 1fr; height: auto; } .crm-right-panel { display: none; } }
         
@@ -177,7 +177,7 @@
         .chat-room { background: rgba(15, 23, 42, 0.5); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.04); display: flex; flex-direction: column; padding: 15px; }
         
         .chat-messages { 
-            flex: 1; max-height: 270px; overflow-y: auto; padding: 10px; 
+            flex: 1; max-height: 330px; overflow-y: auto; padding: 10px; 
             display: flex; flex-direction: column; gap: 8px; 
         }
         
@@ -185,10 +185,15 @@
         .message.incoming { background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.05); align-self: flex-start; color: #cbd5e1; }
         .message.outgoing { background: linear-gradient(135deg, #0284c7, #2563eb); align-self: flex-end; color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235,.2); }
 
-        /* Panel Kanan CRM (Simpan Nama) */
+        /* Panel Kanan CRM Lengkap (Simpan Nama, Status Funnel, Nilai Jualan, Nota Klien) */
         .crm-right-panel { background: rgba(15, 23, 42, 0.7); border-left: 1px solid rgba(255, 255, 255, 0.06); padding: 15px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); }
         .crm-panel-title { font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; }
         .crm-field-group { display: flex; flex-direction: column; gap: 4px; }
+        .crm-select, .crm-textarea {
+            width: 100%; background: rgba(9, 13, 22, 0.8); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px; color: #fff; font-size: 12px; padding: 8px; outline: none;
+        }
+        .crm-textarea { resize: none; height: 60px; }
 
         .toggle-container { display: flex; align-items: center; gap: 8px; }
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
@@ -360,17 +365,17 @@
 
             </div>
 
-            <!-- TAB 2: SEMBANG LANGSUNG AI (3 Lajur Profesional dengan Simpan Nama Manual) -->
+            <!-- TAB 2: SEMBANG LANGSUNG AI (3 Lajur Lengkap Berserta Panel Nama & Funnel Status) -->
             <div id="tab-chat" class="tab-content">
                 <div class="info-label" style="margin-bottom: 12px;">Pemantauan Sembang Langsung & Pengurusan Nama Leads</div>
                 <div class="crm-workspace">
                     
-                    <!-- Senarai Leads (Lajur Kiri) -->
+                    <!-- Lajur 1: Senarai Leads -->
                     <div class="chat-list" id="chatListContainer">
                         <div class="empty-state" style="padding: 20px; font-size: 11px; color: #64748b; text-align: center;">Memuat senarai pelanggan...</div>
                     </div>
                     
-                    <!-- Ruang Sembang (Lajur Tengah) -->
+                    <!-- Lajur 2: Ruang Sembang -->
                     <div class="chat-room">
                         <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
                             <div id="chatRoomHeader" style="font-size: 12px; font-weight: 600; color: #38bdf8; font-family: monospace;">
@@ -393,7 +398,7 @@
                         </div>
                     </div>
 
-                    <!-- Panel Sisi Kanan: Simpan Nama Pelanggan Manual -->
+                    <!-- Lajur 3: Panel Sisi CRM Lengkap (Nama, Status Funnel, Nilai Jualan, Nota) -->
                     <div class="crm-right-panel" id="crmRightPanel" style="opacity: 0.4; pointer-events: none;">
                         <div>
                             <div class="crm-panel-title">Profil & Nama Pelanggan</div>
@@ -402,10 +407,31 @@
 
                         <div class="crm-field-group">
                             <label class="info-label">Nama Pelanggan (Simpan Manual)</label>
-                            <input type="text" id="clientNameInput" class="form-input" placeholder="Cth: Encik Ahmad" style="margin-bottom: 8px;">
+                            <input type="text" id="clientNameInput" class="form-input" placeholder="Cth: Encik Ahmad" style="margin-bottom: 0;">
                         </div>
 
-                        <button type="button" onclick="saveClientProfileData()" class="btn-save" style="width:100%;">Simpan Nama Prospek</button>
+                        <div class="crm-field-group">
+                            <label class="info-label">Status Funnel Semasa</label>
+                            <select id="crmStatusSelect" class="crm-select">
+                                <option value="tag-baru">🟢 Prospek Baru</option>
+                                <option value="tag-nego">🟡 Sedang Nego</option>
+                                <option value="tag-pending">🟠 Pending Payment</option>
+                                <option value="tag-selesai">🔵 Closed Sale</option>
+                                <option value="tag-kiv">🔴 KIV / Senyap</option>
+                            </select>
+                        </div>
+
+                        <div class="crm-field-group">
+                            <label class="info-label">Anggaran Nilai Jualan (RM)</label>
+                            <input type="text" id="crmValueInput" class="form-input" value="RM 0.00" placeholder="RM 0.00" style="margin-bottom: 0; font-family: monospace;">
+                        </div>
+
+                        <div class="crm-field-group" style="flex: 1;">
+                            <label class="info-label">Nota Peribadi Klien</label>
+                            <textarea id="crmNotesInput" class="crm-textarea" placeholder="Tulis nota penting..."></textarea>
+                        </div>
+
+                        <button type="button" onclick="saveClientProfileData()" class="btn-save" style="width:100%;">Simpan Maklumat Lead</button>
                     </div>
 
                 </div>
@@ -648,7 +674,7 @@
             const newName = document.getElementById('clientNameInput').value.trim();
             clientNamesMap[activePhone] = newName;
             localStorage.setItem('client_names_' + clientId, JSON.stringify(clientNamesMap));
-            alert('Nama pelanggan berjaya disimpan!');
+            alert('Maklumat lead dan nama pelanggan berjaya disimpan!');
             loadSendersList();
             selectSender(activePhone, newName);
         }

@@ -102,7 +102,7 @@
             letter-spacing: 0.8px;
         }
         
-        input[type="text"], input[type="password"], input[type="number"], input[type="date"] { 
+        input[type="text"], input[type="password"], input[type="number"], input[type="date"], select { 
             width: 100%; 
             padding: 13px 16px; 
             background: rgba(30, 41, 59, 0.5);
@@ -113,11 +113,16 @@
             transition: all 0.25s ease;
         }
         
-        input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, input[type="date"]:focus { 
+        input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus { 
             outline: none;
             border-color: #3b82f6;
             background: rgba(30, 41, 59, 0.8);
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        select option {
+            background: #0f172a;
+            color: #ffffff;
         }
         
         ::-webkit-calendar-picker-indicator {
@@ -146,7 +151,6 @@
         }
         .btn-primary:hover {
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
             transform: translateY(-1px);
         }
 
@@ -154,20 +158,12 @@
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
         }
-        .btn-danger:hover {
-            background: linear-gradient(135deg, #dc2626 100%, #b91c1c 100%);
-            transform: translateY(-1px);
-        }
 
         .btn-small {
             padding: 8px 12px;
             font-size: 12px;
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-        }
-        .btn-small:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            transform: translateY(-1px);
         }
 
         .alert { 
@@ -180,6 +176,37 @@
         }
         .alert-success { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
         .alert-danger { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        /* KELAS BARU: Widget Mockup Preview Kerangka */
+        .widget-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        .widget-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .widget-box h4 {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+        .widget-box .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #38bdf8;
+        }
 
         .table-responsive { overflow-x: auto; }
         table {
@@ -202,19 +229,9 @@
             background-color: rgba(30, 41, 59, 0.5);
             white-space: nowrap;
         }
-        td {
-            font-size: 13px;
-            color: #e2e8f0;
-        }
-        tr:last-child td { border-bottom: none; }
+        td { font-size: 13px; color: #e2e8f0; }
         tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
-        .empty-state {
-            text-align: center;
-            padding: 30px;
-            color: #64748b;
-            font-style: italic;
-            font-size: 14px;
-        }
+        .empty-state { text-align: center; padding: 30px; color: #64748b; font-style: italic; font-size: 14px; }
 
         .system-footer {
             text-align: center;
@@ -257,19 +274,19 @@
             {% endwith %}
         </div>
 
-        <!-- Borang Pendaftaran Klien Baru -->
+        <!-- Borang Pendaftaran Klien Baru + Pilihan Business Type & Widget Preview -->
         <div class="glass-card">
-            <h2>Daftar Akaun Klien Baru</h2>
+            <h2>Daftar Akaun Klien Baru & Tetapan Widget Analisis</h2>
             <form action="{{ url_for('register_client') }}" method="POST">
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="nama_syarikat">Nama Syarikat</label>
-                        <input type="text" id="nama_syarikat" name="nama_syarikat" placeholder="Contoh: Perusahaan ABC" required autocomplete="off">
+                        <input type="text" id="nama_syarikat" name="nama_syarikat" placeholder="Contoh: SBL Transport" required autocomplete="off">
                     </div>
                     <div class="form-group">
                         <label for="username">ID Log Masuk (Username)</label>
-                        <input type="text" id="username" name="username" placeholder="Contoh: klien_abc atau nama bebas" required autocomplete="off">
+                        <input type="text" id="username" name="username" placeholder="Contoh: sbltransport" required autocomplete="off">
                     </div>
                 </div>
                 
@@ -295,18 +312,36 @@
                     </div>
                 </div>
 
+                <!-- SEKSYEN BARU: PILIHAN SKOP PERNIAGAAN & WIDGET PREVIEW -->
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="jumlah_token">Jumlah Token Permulaan</label>
-                        <input type="number" id="jumlah_token" name="jumlah_token" placeholder="Contoh: 1000" min="0" required>
+                        <label for="business_type">Skop / Jenis Perniagaan Klien</label>
+                        <select id="business_type" name="business_type" onchange="updateWidgetPreview(this.value)">
+                            <option value="ecommerce">🛒 E-Commerce / Jualan Produk Fizikal</option>
+                            <option value="transport">🚚 Transport / Logistik / Penghantaran</option>
+                            <option value="booking">📅 Servis / Temujanji / Spa / Klinik</option>
+                            <option value="agency">💼 Agen / Hartanah / Servis Profesional</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label for="tarikh_luput">Tarikh Luput Akaun</label>
-                        <input type="date" id="tarikh_luput" name="tarikh_luput" required>
+                        <label for="jumlah_token">Jumlah Token Permulaan</label>
+                        <input type="number" id="jumlah_token" name="jumlah_token" placeholder="Contoh: 1000" min="0" required value="1000">
+                    </div>
+                </div>
+
+                <!-- KOTAK KERANGKA WIDGET PREVIEW (Akan bertukar ikut pilihan di atas) -->
+                <div class="form-group">
+                    <label>Kerangka Widget Analisis Yang Akan Dipaparkan Pada Dashboard Klien:</label>
+                    <div class="widget-preview-grid" id="widgetPreviewBox">
+                        <!-- Kandungan dinamik oleh Javascript -->
                     </div>
                 </div>
 
                 <div class="form-row">
+                    <div class="form-group">
+                        <label for="tarikh_luput">Tarikh Luput Akaun</label>
+                        <input type="date" id="tarikh_luput" name="tarikh_luput" required>
+                    </div>
                     <div class="form-group">
                         <label>Kata Laluan Klien (Tetap)</label>
                         <input type="text" value="defaultpass123" disabled style="background: rgba(30, 41, 59, 0.3); color: #64748b; border: 1px solid rgba(255, 255, 255, 0.05); cursor: not-allowed;">
@@ -314,11 +349,11 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="btn btn-primary">Daftar Klien Baru</button>
+                <button type="submit" class="btn btn-primary">Daftar Klien Baru & Tetapkan Widget</button>
             </form>
         </div>
 
-        <!-- Senarai Klien & Pengurusan Token & Sambungan Bot -->
+        <!-- Senarai Klien & Pengurusan Token -->
         <div class="glass-card">
             <h2>Senarai Klien, Pengurusan Token & Sambungan Zulfa-Bot</h2>
             <div class="table-responsive">
@@ -327,11 +362,11 @@
                         <tr>
                             <th>ID Klien</th>
                             <th>ID Log Masuk</th>
-                            <th>Syarikat</th>
+                            <th>Syarikat & Bisnes</th>
                             <th>Kata Sandi</th>
                             <th>Token</th>
                             <th>Tarikh Luput</th>
-                            <th>Sambungan Zulfa-Bot (Auto-Generated Token)</th>
+                            <th>Sambungan Zulfa-Bot</th>
                             <th>Tambah Token</th>
                         </tr>
                     </thead>
@@ -341,33 +376,33 @@
                             <tr>
                                 <td><strong style="color: #38bdf8;">{{ client.format_id }}</strong></td>
                                 <td><span style="color: #e2e8f0; font-weight: 500;">{{ client.username }}</span></td>
-                                <td><strong>{{ client.nama_syarikat }}</strong></td>
                                 <td>
-                                    <!-- Kotak intip password klien -->
+                                    <strong>{{ client.nama_syarikat }}</strong><br>
+                                    <span style="font-size: 10px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px;">{{ client.business_type if client.business_type else 'ecommerce' }}</span>
+                                </td>
+                                <td>
                                     <div style="display: flex; align-items: center; gap: 5px;">
                                         <input type="password" value="{{ client.plain_password if client.plain_password else 'defaultpass123' }}" readonly style="width: 95px; padding: 5px; font-size: 12px; background: rgba(30, 41, 59, 0.3); border: 1px solid #334155; border-radius: 6px; color: #fff;" id="pwd-{{ client.id }}">
                                         <button type="button" onclick="togglePwd('pwd-{{ client.id }}', this)" style="background: none; border: none; cursor: pointer; font-size: 13px;" title="Lihat Kata Sandi">👁️</button>
                                     </div>
                                 </td>
                                 <td>
-                                    <!-- Box Token Terkini -->
                                     <span style="color: #34d399; font-weight: 600; background: rgba(52, 211, 153, 0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(52, 211, 153, 0.2);">
                                         {{ client.token_balance }}
                                     </span>
                                 </td>
                                 <td><span style="font-size: 12px;">{{ client.tarikh_luput }}</span></td>
                                 <td>
-                                    <!-- Kotak Token Bot Auto-Generated & Kemaskini -->
                                     <form action="{{ url_for('admin_update_bot') }}" method="POST" style="display: flex; gap: 5px; align-items: center;">
                                         <input type="hidden" name="client_id" value="{{ client.id }}">
-                                        <input type="text" name="bot_id_token" placeholder="Auto token..." value="{{ client.bot_token if client.bot_token else '' }}" style="width: 155px; padding: 6px; font-size: 12px; font-family: monospace; color: #38bdf8;" required>
+                                        <input type="text" name="bot_id_token" placeholder="Auto token..." value="{{ client.bot_token if client.bot_token else '' }}" style="width: 135px; padding: 6px; font-size: 12px; font-family: monospace; color: #38bdf8;" required>
                                         <button type="submit" class="btn btn-small" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);">Simpan</button>
                                     </form>
                                 </td>
                                 <td>
                                     <form action="{{ url_for('topup_client_tokens') }}" method="POST" style="display: flex; gap: 5px;">
                                         <input type="hidden" name="client_id" value="{{ client.id }}">
-                                        <input type="number" name="tokens" placeholder="Jumlah..." style="width: 75px; padding: 6px; font-size: 12px;" required>
+                                        <input type="number" name="tokens" placeholder="Jumlah..." style="width: 70px; padding: 6px; font-size: 12px;" required>
                                         <button type="submit" class="btn btn-small">Tambah</button>
                                     </form>
                                 </td>
@@ -401,6 +436,44 @@
                 btn.textContent = "👁️";
             }
         }
+
+        // Fungsi Dinamik Menukar Rupa Widget Preview Mengikut Skop Perniagaan
+        function updateWidgetPreview(type) {
+            const previewBox = document.getElementById('widgetPreviewBox');
+            let widgetsHTML = '';
+
+            if (type === 'ecommerce') {
+                widgetsHTML = `
+                    <div class="widget-box"><h4>📦 Jumlah Produk Terjual</h4><div class="value">1,240 Unit</div></div>
+                    <div class="widget-box"><h4>💰 Jumlah Pendapatan</h4><div class="value">RM 45,200</div></div>
+                    <div class="widget-box"><h4>🛒 Troli Ditinggalkan</h4><div class="value">38 Klien</div></div>
+                `;
+            } else if (type === 'transport') {
+                widgetsHTML = `
+                    <div class="widget-box"><h4>🚚 Trip Penghantaran Aktif</h4><div class="value">14 Trip</div></div>
+                    <div class="widget-box"><h4>📍 Destinasi Utama</h4><div class="value">Klang Valley</div></div>
+                    <div class="widget-box"><h4>⛽ Anggaran Kos Minyak</h4><div class="value">RM 1,850</div></div>
+                `;
+            } else if (type === 'booking') {
+                widgetsHTML = `
+                    <div class="widget-box"><h4>📅 Temujanji Hari Ini</h4><div class="value">8 Sesi</div></div>
+                    <div class="widget-box"><h4>⭐ Slot Kosong</h4><div class="value">3 Slot Lagi</div></div>
+                    <div class="widget-box"><h4>👥 Jumlah Klien Berdaftar</h4><div class="value">320 Orang</div></div>
+                `;
+            } else if (type === 'agency') {
+                widgetsHTML = `
+                    <div class="widget-box"><h4>💼 Leads Masuk (Prospek)</h4><div class="value">64 Leads</div></div>
+                    <div class="widget-box"><h4>🤝 Deal Berjaya (Closed)</h4><div class="value">12 Klien</div></div>
+                    <div class="widget-box"><h4>📈 Kadar Penukaran (CR)</h4><div class="value">18.5%</div></div>
+                `;
+            }
+            previewBox.innerHTML = widgetsHTML;
+        }
+
+        // Jalankan sekali semasa muat turun halaman untuk set default e-commerce
+        window.onload = function() {
+            updateWidgetPreview('ecommerce');
+        };
     </script>
 
 </body>
