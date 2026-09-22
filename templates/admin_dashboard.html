@@ -361,7 +361,7 @@
                         <tr>
                             <th>ID Klien</th>
                             <th>ID Log Masuk</th>
-                            <th>Syarikat & Bisnes</th>
+                            <th>Syarikat & Skop Bisnes (Edit)</th>
                             <th>Kata Sandi</th>
                             <th>Token</th>
                             <th>Tarikh Luput</th>
@@ -376,8 +376,18 @@
                                 <td><strong style="color: #38bdf8;">{{ client.format_id }}</strong></td>
                                 <td><span style="color: #e2e8f0; font-weight: 500;">{{ client.username }}</span></td>
                                 <td>
-                                    <strong>{{ client.nama_syarikat }}</strong><br>
-                                    <span style="font-size: 10px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px;">{{ client.business_type if client.business_type else 'ecommerce' }}</span>
+                                    <!-- Kotak Edit Skop Perniagaan Klien Sedia Ada -->
+                                    <strong>{{ client.nama_syarikat }}</strong>
+                                    <form action="{{ url_for('admin_update_business') }}" method="POST" style="display: flex; gap: 5px; margin-top: 6px; align-items: center;">
+                                        <input type="hidden" name="client_id" value="{{ client.id }}">
+                                        <select name="business_type" style="padding: 4px 8px; font-size: 11px; width: 140px; background: rgba(30, 41, 59, 0.8);">
+                                            <option value="ecommerce" {% if client.business_type == 'ecommerce' %}selected{% endif %}>🛒 E-Commerce</option>
+                                            <option value="transport" {% if client.business_type == 'transport' %}selected{% endif %}>🚚 Transport</option>
+                                            <option value="booking" {% if client.business_type == 'booking' %}selected{% endif %}>📅 Booking</option>
+                                            <option value="agency" {% if client.business_type == 'agency' %}selected{% endif %}>💼 Agency</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-small" style="padding: 4px 8px; font-size: 10px;">Tukar</button>
+                                    </form>
                                 </td>
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 5px;">
