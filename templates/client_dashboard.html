@@ -111,6 +111,20 @@
         .info-label { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 6px; letter-spacing: 1px; }
         .info-value { font-size: 17px; color: #f8fafc; font-weight: 700; word-break: break-all; }
 
+        /* WIDGET BOX ANALISIS DINAMIK MENGIKUT SKOP PERNIAGAAN KLIEN */
+        .dynamic-widget-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 20px;
+        }
+        .widget-box-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.65) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 18px;
+            display: flex; flex-direction: column; justify-content: space-between; position: relative;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+        }
+        .widget-box-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; }
+        .widget-box-value { font-size: 20px; font-weight: 800; color: #38bdf8; margin: 8px 0 2px 0; font-family: monospace; }
+        .widget-box-sub { font-size: 11px; color: #34d399; font-weight: 600; }
+
         /* Kotak Analisis Peratusan % */
         .analytics-percentage-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px;
@@ -185,7 +199,7 @@
         .message.incoming { background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.05); align-self: flex-start; color: #cbd5e1; }
         .message.outgoing { background: linear-gradient(135deg, #0284c7, #2563eb); align-self: flex-end; color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235,.2); }
 
-        /* Panel Kanan CRM Lengkap (Simpan Nama, Status Funnel, Nilai Jualan, Nota Klien) */
+        /* Panel Kanan CRM Lengkap */
         .crm-right-panel { background: rgba(15, 23, 42, 0.7); border-left: 1px solid rgba(255, 255, 255, 0.06); padding: 15px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); }
         .crm-panel-title { font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; }
         .crm-field-group { display: flex; flex-direction: column; gap: 4px; }
@@ -254,7 +268,7 @@
                     {% endif %}
                     <div>
                         <div class="brand-title">{{ client.nama_syarikat }}</div>
-                        <div class="brand-subtitle">ID Pengguna: {{ client.username }} • ID Sistem: {{ client.id }}</div>
+                        <div class="brand-subtitle">ID Pengguna: {{ client.username }} • Skop: <span style="color: #38bdf8; text-transform: uppercase;" id="clientBusinessTypeLabel">{{ client.business_type if client.business_type else 'ecommerce' }}</span></div>
                     </div>
                 </div>
                 <div class="header-right">
@@ -283,6 +297,11 @@
                 <div class="live-terminal">
                     <div class="terminal-pulse"></div>
                     <div><strong>STATUS NEURAL AKTIF:</strong> <span id="liveTerminalText">Bot AI sedang memantau pelayan dan menjawab mesej masuk secara autonomi...</span></div>
+                </div>
+
+                <!-- WIDGET BOX ANALISIS DINAMIK MENGIKUT SKOP PERNIAGAAN KLIEN -->
+                <div class="dynamic-widget-grid" id="dynamicWidgetBoxContainer">
+                    <!-- Kandungan dirender oleh Javascript berdasarkan business_type -->
                 </div>
 
                 <!-- 4 KOTAK ANALISIS PERATUS (%) & NOMBOR LIVE -->
@@ -365,7 +384,7 @@
 
             </div>
 
-            <!-- TAB 2: SEMBANG LANGSUNG AI (3 Lajur Lengkap Berserta Panel Nama & Funnel Status) -->
+            <!-- TAB 2: SEMBANG LANGSUNG AI -->
             <div id="tab-chat" class="tab-content">
                 <div class="info-label" style="margin-bottom: 12px;">Pemantauan Sembang Langsung & Pengurusan Nama Leads</div>
                 <div class="crm-workspace">
@@ -398,7 +417,7 @@
                         </div>
                     </div>
 
-                    <!-- Lajur 3: Panel Sisi CRM Lengkap (Nama, Status Funnel, Nilai Jualan, Nota) -->
+                    <!-- Lajur 3: Panel Sisi CRM Lengkap -->
                     <div class="crm-right-panel" id="crmRightPanel" style="opacity: 0.4; pointer-events: none;">
                         <div>
                             <div class="crm-panel-title">Profil & Nama Pelanggan</div>
@@ -474,11 +493,94 @@
 
     <script>
         const clientId = "{{ client.id }}";
+        const clientBusinessType = "{{ client.business_type if client.business_type else 'ecommerce' }}";
         let activePhone = null;
         let readSenders = new Set();
         let myMsgChart = null;
         let myLeadChart = null;
         let clientNamesMap = JSON.parse(localStorage.getItem('client_names_' + clientId) || '{}');
+
+        // Render Widget Box Analisis Dinamik Mengikut Skop Perniagaan Klien
+        function renderDynamicWidgets(type) {
+            const container = document.getElementById('dynamicWidgetBoxContainer');
+            if (!container) return;
+            let html = '';
+
+            if (type === 'ecommerce') {
+                html = `
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">📦 Jumlah Produk Terjual</div>
+                        <div class="widget-box-value">1,240 Unit</div>
+                        <div class="widget-box-sub">📈 Prestasi Tinggi</div>
+                    </div>
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">💰 Jumlah Pendapatan</div>
+                        <div class="widget-box-value" style="color: #34d399;">RM 45,200</div>
+                        <div class="widget-box-sub" style="color: #34d399;">🚀 Keuntungan Bersih</div>
+                    </div>
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">🛒 Troli Ditinggalkan</div>
+                        <div class="widget-box-value" style="color: #f59e0b;">38 Klien</div>
+                        <div class="widget-box-sub" style="color: #f59e0b;">⚡ Perlu Follow-up</div>
+                    </div>
+                `;
+            } else if (type === 'transport') {
+                html = `
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">🚚 Trip Penghantaran Aktif</div>
+                        <div class="widget-box-value">14 Trip</div>
+                        <div class="widget-box-sub">📍 Operasi Semasa</div>
+                    </div>
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">📍 Destinasi Utama</div>
+                        <div class="widget-box-value" style="color: #38bdf8;">Klang Valley</div>
+                        <div class="widget-box-sub">🌐 Liputan Luas</div>
+                    </div>
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">📅 Tarikh Puncak Tempahan</div>
+                        <div class="widget-box-value" style="color: #f59e0b;">28hb Bulan Ini</div>
+                        <div class="widget-box-sub" style="color: #f59e0b;">🔥 Peak Season</div>
+                    </div>
+                `;
+            } else if (type === 'booking') {
+                html = `
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">📅 Temujanji Hari Ini</div>
+                        <div class="widget-box-value">8 Sesi</div>
+                        <div class="widget-box-sub">⭐ Jadual Penuh</div>
+                    </div>
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">⭐ Slot Kosong Tersedia</div>
+                        <div class="widget-box-value" style="color: #34d399;">3 Slot Lagi</div>
+                        <div class="widget-box-sub" style="color: #34d399;">🟢 Boleh Tempah</div>
+                    </div>
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">👥 Jumlah Klien Berdaftar</div>
+                        <div class="widget-box-value" style="color: #38bdf8;">320 Orang</div>
+                        <div class="widget-box-sub">📈 Pangkalan Klien</div>
+                    </div>
+                `;
+            } else if (type === 'agency') {
+                html = `
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">💼 Leads Masuk (Prospek)</div>
+                        <div class="widget-box-value">64 Leads</div>
+                        <div class="widget-box-sub">🚀 Potensi Tinggi</div>
+                    </div>
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">🤝 Deal Berjaya (Closed)</div>
+                        <div class="widget-box-value" style="color: #34d399;">12 Klien</div>
+                        <div class="widget-box-sub" style="color: #34d399;">💰 Sasaran Tercapai</div>
+                    </div>
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">📈 Kadar Penukaran (CR)</div>
+                        <div class="widget-box-value" style="color: #f59e0b;">18.5%</div>
+                        <div class="widget-box-sub" style="color: #f59e0b;">⚡ Prestasi CRM</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
 
         // Mengambil data Live dari DB melalui API backend
         function fetchLiveDashboardData() {
@@ -770,6 +872,7 @@
             checkServerHealth();
             fetchLiveDashboardData();
             loadSendersList();
+            renderDynamicWidgets(clientBusinessType);
         };
     </script>
 </body>
