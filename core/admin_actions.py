@@ -7,13 +7,14 @@ from database import get_db_connection
 from utils.drive_backup import setup_new_client_drive
 
 def create_client_account(nama_syarikat, username, email_pengguna, no_telefon, no_wa_bot, url_server, jumlah_token, tarikh_luput, raw_password):
+    """Fungsi mendaftarkan akaun klien baru, auto-jana bot_token unik, simpan DB, dan auto-bina folder Drive & Sheet"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         
         cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS bot_token VARCHAR(100);")
         cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS business_type VARCHAR(50) DEFAULT 'ecommerce';")
-        cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS plain_password VARCHAR(255);")
+        cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS plain_password VARCHAR(255) DEFAULT 'defaultpass123';")
         conn.commit()
         
         cursor.execute("SELECT id FROM clients WHERE username = %s OR email_pengguna = %s", (username, email_pengguna))
@@ -60,10 +61,11 @@ def create_client_account(nama_syarikat, username, email_pengguna, no_telefon, n
         return False, str(e)
 
 def get_all_clients():
-    """Mendapatkan senarai semua klien berdaftar termasuk plain_password dan business_type untuk Admin Dashboard"""
+    """Mendapatkan senarai semua klien berdaftar termasuk plain_password dan business_type untuk dipaparkan di Admin Dashboard"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
+        # Menambah plain_password dan business_type ke dalam senarai SELECT supaya paparan admin mengemas kini data sebenar
         cursor.execute("""
             SELECT id, username, nama_syarikat, email_pengguna, no_telefon, no_wa_bot, url_server, token_balance, tarikh_luput, plain_password, bot_token, business_type 
             FROM clients 
@@ -91,6 +93,7 @@ def get_all_clients():
         return []
 
 def update_client_tokens(client_id, tokens_to_add):
+    """Fungsi menambah baki token klien secara manual oleh admin"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -107,6 +110,7 @@ def update_client_tokens(client_id, tokens_to_add):
         return False, str(e)
 
 def update_client_bot_token(client_id, new_bot_token):
+    """Fungsi mengemaskini token bot klien sekiranya perlu diubah secara manual"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
