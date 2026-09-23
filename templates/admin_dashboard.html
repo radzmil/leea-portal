@@ -102,7 +102,7 @@
             letter-spacing: 0.8px;
         }
         
-        input[type="text"], input[type="password"], input[type="number"], input[type="date"], select { 
+        input[type="text"], input[type="password"], input[type="number"], input[type="date"], select, textarea { 
             width: 100%; 
             padding: 13px 16px; 
             background: rgba(30, 41, 59, 0.5);
@@ -112,8 +112,10 @@
             font-size: 14px;
             transition: all 0.25s ease;
         }
+
+        textarea { resize: vertical; height: 90px; }
         
-        input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus { 
+        input:focus, select:focus, textarea:focus { 
             outline: none;
             border-color: #3b82f6;
             background: rgba(30, 41, 59, 0.8);
@@ -271,6 +273,39 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}
+        </div>
+
+        <!-- PANEL SIARAN MESEJ ADMIN KEPADA KLIEN (CLI-1000 hingga CLI-1200) -->
+        <div class="glass-card">
+            <h2>📢 Pusat Siaran Mesej & Notifikasi Admin (Inbox Klien)</h2>
+            <div style="margin-bottom: 15px;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="broadcastTarget">Sasaran Penghantaran</label>
+                        <select id="broadcastTarget" onchange="toggleClientSelect(this.value)">
+                            <option value="all">🌐 Semua Klien (Serentak / Broadcast)</option>
+                            <option value="specific">🎯 Pilih Klien Tertentu (CLI-1000 hingga CLI-1200)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="specificClientGroup" style="display: none;">
+                        <label for="targetClientId">Pilih ID Klien</label>
+                        <select id="targetClientId">
+                            {% for client in clients %}
+                            <option value="{{ client.id }}">{{ client.format_id }} - {{ client.nama_syarikat }} ({{ client.username }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="broadcastTitle">Tajuk Notifikasi</label>
+                    <input type="text" id="broadcastTitle" placeholder="Contoh: Pengumuman Sistem & Kemaskini">
+                </div>
+                <div class="form-group">
+                    <label for="broadcastMessage">Mesej / Kandungan Notifikasi</label>
+                    <textarea id="broadcastMessage" placeholder="Tulis mesej pengumuman di sini..."></textarea>
+                </div>
+                <button type="button" onclick="sendAdminBroadcast()" class="btn btn-primary" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">Kirim Mesej ke Inbox Klien</button>
+            </div>
         </div>
 
         <!-- Borang Pendaftaran Klien Baru + Pilihan Business Type & Widget Preview -->
@@ -434,6 +469,49 @@
     </div>
 
     <script>
+        // Fungsi Toggle Pilihan Klien Spesifik
+        function toggleClientSelect(val) {
+            const specificGroup = document.getElementById('specificClientGroup');
+            if (val === 'specific') {
+                specificGroup.style.display = 'block';
+            } else {
+                specificGroup.style.display = 'none';
+            }
+        }
+
+        // Fungsi Menghantar Broadcast / Mesej kepada Klien
+        function sendAdminBroadcast() {
+            const targetType = document.getElementById('broadcastTarget').value;
+            const clientId = document.getElementById('targetClientId').value;
+            const title = document.getElementById('broadcastTitle').value.trim();
+            const message = document.getElementById('broadcastMessage').value.trim();
+
+            if (!message) {
+                alert('Sila tulis mesej pengumuman terlebih dahulu!');
+                return;
+            }
+
+            fetch('/admin/send-announcement', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target_type: targetType, client_id: clientId, title: title, message: message })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    alert('Pengumuman berjaya dihantar ke inbox klien!');
+                    document.getElementById('broadcastTitle').value = '';
+                    document.getElementById('broadcastMessage').value = '';
+                } else {
+                    alert('Gagal hantar: ' + (response.error || 'Ralat pelayan'));
+                }
+            })
+            .catch(err => {
+                console.error("Ralat broadcast:", err);
+                alert('Ralat sambungan rangkaian.');
+            });
+        }
+
         // Fungsi untuk melihat/menyembunyikan kata sandi klien pada tabel
         function togglePwd(id, btn) {
             const input = document.getElementById(id);

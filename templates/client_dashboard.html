@@ -72,7 +72,45 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
-        .header-right { display: flex; align-items: center; gap: 15px; }
+        .header-right { display: flex; align-items: center; gap: 15px; position: relative; }
+
+        /* GAYA ICON LOCENG NOTIFIKASI */
+        .notification-bell-btn {
+            background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(56, 189, 248, 0.3);
+            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; position: relative; transition: 0.2s; font-size: 16px;
+        }
+        .notification-bell-btn:hover { background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; }
+        
+        .notification-dot {
+            position: absolute; top: 8px; right: 8px; width: 8px; height: 8px;
+            background-color: #ef4444; border-radius: 50%; box-shadow: 0 0 8px #ef4444;
+            display: none; animation: pulse-green 1.5s infinite;
+        }
+        .notification-dot.active { display: block; }
+
+        /* POPUP NOTIFIKASI INBOX ADMIN */
+        .notification-dropdown {
+            display: none; position: absolute; top: 50px; right: 0; width: 340px;
+            background: rgba(13, 20, 38, 0.98); border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); z-index: 1000;
+            padding: 15px; backdrop-filter: blur(15px);
+        }
+        .notification-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 10px;
+            font-size: 12px; font-weight: 700; color: #38bdf8; text-transform: uppercase;
+        }
+        .notification-list { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .notif-item {
+            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 8px; padding: 10px; font-size: 11px; position: relative;
+        }
+        .notif-item.unread { border-left: 3px solid #38bdf8; background: rgba(56, 189, 248, 0.05); }
+        .notif-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+        .btn-notif-action {
+            background: none; border: none; font-size: 10px; cursor: pointer; font-weight: 600;
+        }
 
         .btn-danger {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.3) 100%);
@@ -282,7 +320,27 @@
                         <div class="brand-subtitle">ID Pengguna: {{ client.username }} • Skop: <span style="color: #38bdf8; text-transform: uppercase;" id="clientBusinessTypeLabel">{{ client.business_type if client.business_type else 'ecommerce' }}</span></div>
                     </div>
                 </div>
+                
                 <div class="header-right">
+                    <!-- ICON LOCENG NOTIFIKASI INBOX ADMIN -->
+                    <div style="position: relative;">
+                        <button type="button" class="notification-bell-btn" onclick="toggleAdminNotifDropdown()" title="Inbox Mesej & Notifikasi Admin">
+                            🔔
+                            <div class="notification-dot" id="notifRedDot"></div>
+                        </button>
+                        
+                        <!-- POPUP INBOX NOTIFIKASI (Maksimum 15 Mesej) -->
+                        <div class="notification-dropdown" id="adminNotifDropdown">
+                            <div class="notification-header">
+                                <span>📥 Inbox Notifikasi Admin</span>
+                                <span id="notifCountText" style="color: #94a3b8; font-size: 10px;">0 / 15 Mesej</span>
+                            </div>
+                            <div class="notification-list" id="adminNotifListContainer">
+                                <div style="color: #64748b; font-size: 11px; text-align: center; padding: 15px;">Tiada notifikasi baharu.</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="server-status-wrapper" title="Status Live Server Enterprise">
                         <div class="status-dot" id="serverStatusDot"></div>
                         <span id="serverStatusText" style="color: #64748b;">Enterprise Core: Menyemak...</span>
@@ -457,10 +515,8 @@
 
                 </div>
 
-                <!-- RUANG BAWAH: 4 ELEMEN TELEMETRI & KAWALAN BOT -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
                     
-                    <!-- 1. Status Sambungan Meta Cloud API -->
                     <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
                         <div class="info-label" style="color: #38bdf8;">🌐 Meta Cloud API</div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
@@ -470,7 +526,6 @@
                         <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Penerimaan mesej masuk aktif.</div>
                     </div>
 
-                    <!-- 2. Log Pintar Tindakan AI Terkini -->
                     <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
                         <div class="info-label" style="color: #38bdf8;">🤖 Log AI Terkini</div>
                         <div style="font-family: monospace; font-size: 10px; color: #38bdf8; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;" id="latestAiActionLog">
@@ -479,14 +534,12 @@
                         <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Autonomi enjin aktif.</div>
                     </div>
 
-                    <!-- 3. Statistik Penggunaan Enjin Sembang (Latency) -->
                     <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
                         <div class="info-label" style="color: #38bdf8;">⚡ Latensi Enjin</div>
                         <div style="font-family: monospace; font-size: 14px; font-weight: bold; color: #f8fafc; margin-top: 6px;" id="engineLatencyDisplay">~245 ms</div>
                         <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Kelajuan tindak balas pelayan.</div>
                     </div>
 
-                    <!-- 4. Kotak Nombor Admin yang Boleh Diubah Klien -->
                     <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
                         <div class="info-label" style="color: #f59e0b; margin-bottom: 4px;">📞 Nombor Admin Bot</div>
                         <div style="display: flex; gap: 6px;">
@@ -502,7 +555,6 @@
 
         </div>
 
-        <!-- POPUP MODAL TETAPAN PROFIL & PENJENAMAAN -->
         <div id="profileModal" class="modal-overlay">
             <div class="modal-card">
                 <button type="button" class="modal-close" onclick="closeProfileModal()">✕</button>
@@ -548,6 +600,81 @@
         let myLeadChart = null;
         let clientNamesMap = JSON.parse(localStorage.getItem('client_names_' + clientId) || '{}');
 
+        // PENGURUSAN NOTIFIKASI INBOX ADMIN (MAKSIMUM 15 MESEJ)
+        let adminNotifsArray = JSON.parse(localStorage.getItem('admin_notifs_' + clientId) || '[]');
+
+        function toggleAdminNotifDropdown() {
+            const dropdown = document.getElementById('adminNotifDropdown');
+            if (dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+            } else {
+                dropdown.style.display = 'block';
+                renderAdminNotifs();
+            }
+        }
+
+        function renderAdminNotifs() {
+            const listContainer = document.getElementById('adminNotifListContainer');
+            const countText = document.getElementById('notifCountText');
+            const redDot = document.getElementById('notifRedDot');
+            
+            countText.innerText = `${adminNotifsArray.length} / 15 Mesej`;
+            
+            if (adminNotifsArray.length === 0) {
+                listContainer.innerHTML = `<div style="color: #64748b; font-size: 11px; text-align: center; padding: 15px;">Tiada notifikasi baharu.</div>`;
+                redDot.classList.remove('active');
+                return;
+            }
+
+            let hasUnread = false;
+            listContainer.innerHTML = '';
+
+            adminNotifsArray.forEach((notif, idx) => {
+                if (!notif.read) hasUnread = true;
+                const item = document.createElement('div');
+                item.className = notif.read ? 'notif-item' : 'notif-item unread';
+                item.innerHTML = `
+                    <div style="font-weight: 600; color: #38bdf8; margin-bottom: 2px;">📌 ${notif.title || 'Notifikasi Admin'}</div>
+                    <div style="color: #cbd5e1; line-height: 1.3;">${notif.message}</div>
+                    <div style="font-size: 9px; color: #64748b; margin-top: 4px; font-family: monospace;">${notif.time || ''}</div>
+                    <div class="notif-actions">
+                        ${!notif.read ? `<button class="btn-notif-action" style="color: #34d399;" onclick="markNotifRead(${idx})">Tanda Dibaca</button>` : ''}
+                        <button class="btn-notif-action" style="color: #f87171;" onclick="deleteNotif(${idx})">Padam</button>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+
+            if (hasUnread) {
+                redDot.classList.add('active');
+            } else {
+                redDot.classList.remove('active');
+            }
+        }
+
+        function markNotifRead(index) {
+            if (adminNotifsArray[index]) {
+                adminNotifsArray[index].read = true;
+                localStorage.setItem('admin_notifs_' + clientId, JSON.stringify(adminNotifsArray));
+                renderAdminNotifs();
+            }
+        }
+
+        function deleteNotif(index) {
+            adminNotifsArray.splice(index, 1);
+            localStorage.setItem('admin_notifs_' + clientId, JSON.stringify(adminNotifsArray));
+            renderAdminNotifs();
+        }
+
+        // Fungsi Simulasi Mesej Masuk dari Admin (Had 15 Mesej)
+        function checkIncomingAdminNotifs() {
+            // Contoh simulasi automasi apabila mesej admin diterima
+            // Klien kene padam mesej lama jika sudah cecah 15 notifikasi
+            if (adminNotifsArray.length >= 15) {
+                return; // Had maksimum tercapai, tunggu klien padam
+            }
+        }
+
         function openProfileModal() {
             document.getElementById('profileModal').style.display = 'flex';
         }
@@ -555,7 +682,6 @@
             document.getElementById('profileModal').style.display = 'none';
         }
 
-        // Fungsi menyimpan nombor admin bot baharu
         function updateAdminPhoneTarget() {
             const newPhone = document.getElementById('adminPhoneInputBox').value.trim();
             if (!newPhone) {
@@ -901,6 +1027,7 @@
             checkServerHealth();
             fetchLiveDashboardData();
             loadSendersList();
+            renderAdminNotifs();
         };
     </script>
 </body>
