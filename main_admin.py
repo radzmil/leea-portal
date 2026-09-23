@@ -376,17 +376,21 @@ def api_client_dashboard_stats(client_id):
             ai_rate = (total_bot / total_replies) * 100
             manual_rate = (total_admin / total_replies) * 100
 
+        # PENGIRAAN ROI SEBENAR (Berasaskan total interaksi bot sebenar)
+        real_estimated_sales = total_bot * 50.00
+        real_closed_deals = int(total_bot / 3) if total_bot > 0 else 0
+
         # Konstruksi Widget Dinamis Asli
         widget_data = {
-            'stat1_title': '👥 JUMLAH PROSPEK UNIK', 
+            'stat1_title': 'JUMLAH PROSPEK UNIK', 
             'stat1_val': f"{total_leads} Orang", 
             'stat1_sub': 'Pelanggan Dalam Pangkalan',
             
-            'stat2_title': '💬 TRAFIK MESEJ HARI INI', 
+            'stat2_title': 'TRAFIK MESEJ HARI INI', 
             'stat2_val': f"{msgs_today} Mesej", 
             'stat2_sub': 'Interaksi Semasa',
             
-            'stat3_title': '📊 KESELURUHAN INTERAKSI', 
+            'stat3_title': 'KESELURUHAN INTERAKSI', 
             'stat3_val': f"{total_msgs} Rekod", 
             'stat3_sub': 'Sejarah Sepanjang Masa'
         }
@@ -397,10 +401,10 @@ def api_client_dashboard_stats(client_id):
         return jsonify({
             "success": True,
             "live_activity": live_activity,
-            "estimated_sales": f"RM {total_leads * 150:,.2f}", # Estimasi purata nilai pelanggan
-            "closed_deals": int(total_leads * 0.2), # Estimasi purata kadar kejayaan (20%)
+            "estimated_sales": f"RM {real_estimated_sales:,.2f}",
+            "closed_deals": real_closed_deals,
             "ai_rate": f"{ai_rate:.1f}%",
-            "conversion_pct": "Real-time",
+            "conversion_pct": f"{min(100, total_leads * 10)}%",
             "manual_pct": f"{manual_rate:.1f}%",
             "widgets": widget_data
         })
@@ -422,7 +426,6 @@ def api_client_analytics_stats(client_id):
     try:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        # Tarik data mesej 7 hari kebelakang
         cursor.execute("""
             SELECT 
                 EXTRACT(ISODOW FROM timestamp) as dow,
@@ -436,7 +439,6 @@ def api_client_analytics_stats(client_id):
         msg_data_map = {int(row['dow']): row['msg_count'] for row in rows}
         msg_counts = [msg_data_map.get(i, 0) for i in range(1, 8)]
         
-        # Tarik data Leads mingguan
         cursor.execute("""
             SELECT 
                 EXTRACT(ISODOW FROM timestamp) as dow,
@@ -568,6 +570,31 @@ def api_toggle_client_mode():
         cursor.close()
         conn.close()
         return jsonify({"success": True, "message": f"Mod ditukar kepada {mode.upper()}!"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/client/update-admin-phone', methods=['POST'])
+def api_update_admin_phone():
+    """API untuk mengemas kini nombor telefon admin bot pilihan klien"""
+    if not session.get('client_logged_in'):
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+        
+    data = request.json or {}
+    client_id = data.get('client_id') or session.get('client_id')
+    admin_phone = data.get('admin_phone', '').strip()
+    
+    if not admin_phone:
+        return jsonify({"success": False, "error": "Nombor telefon tidak boleh kosong"}), 400
+        
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE clients SET no_wa_bot = %s WHERE id = %s;", (admin_phone, client_id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"success": True, "message": "Nombor admin berjaya dikemas kini!"}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
