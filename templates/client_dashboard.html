@@ -43,7 +43,11 @@
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
-        .brand-section { display: flex; align-items: center; gap: 18px; }
+        .brand-section { 
+            display: flex; align-items: center; gap: 18px; cursor: pointer; 
+            padding: 5px 10px; border-radius: 10px; transition: background 0.2s;
+        }
+        .brand-section:hover { background: rgba(56, 189, 248, 0.05); }
         .client-logo { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; border: 1px solid rgba(56,189,248,0.3); background: rgba(15,23,42,0.8); }
         .brand-title { font-size: 18px; font-weight: 700; color: #38bdf8; letter-spacing: 0.5px; text-transform: uppercase; }
         .brand-subtitle { font-size: 11px; color: #64748b; margin-top: 4px; font-family: monospace; }
@@ -242,6 +246,23 @@
         .alert-success { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
         .alert-danger { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
 
+        /* Gaya Modal Popup Profil */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 8, 17, 0.85); backdrop-filter: blur(8px); z-index: 9999;
+            justify-content: center; align-items: center;
+        }
+        .modal-card {
+            background: rgba(13, 20, 38, 0.95); border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 16px; padding: 25px; width: 100%; max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9); position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 15px; right: 20px; background: none; border: none;
+            color: #94a3b8; font-size: 18px; cursor: pointer; font-weight: bold;
+        }
+        .modal-close:hover { color: #fff; }
+
         .system-footer { text-align: center; margin-top: 25px; font-size: 11px; color: #475569; font-family: monospace; letter-spacing: 0.5px; }
     </style>
 </head>
@@ -258,9 +279,9 @@
                 {% endif %}
             {% endwith %}
 
-            <!-- Header Atas -->
+            <!-- Header Atas (Klik bahagian brand-section akan buka popup setting) -->
             <div class="header">
-                <div class="brand-section">
+                <div class="brand-section" onclick="openProfileModal()" title="Klik untuk tetapan profil & penjenamaan">
                     {% if client.logo_path %}
                         {% if client.logo_path.startswith('data:image') %}
                             <img src="{{ client.logo_path }}" alt="Logo Syarikat" class="client-logo">
@@ -271,7 +292,7 @@
                         <div class="client-logo" style="display: flex; align-items: center; justify-content: center; font-size: 18px;">⚡</div>
                     {% endif %}
                     <div>
-                        <div class="brand-title">{{ client.nama_syarikat }}</div>
+                        <div class="brand-title">{{ client.nama_syarikat }} ⚙️</div>
                         <div class="brand-subtitle">ID Pengguna: {{ client.username }} • Skop: <span style="color: #38bdf8; text-transform: uppercase;" id="clientBusinessTypeLabel">{{ client.business_type if client.business_type else 'ecommerce' }}</span></div>
                     </div>
                 </div>
@@ -287,11 +308,10 @@
                 </div>
             </div>
 
-            <!-- TAB NAVIGASI DIGITAL -->
+            <!-- TAB NAVIGASI DIGITAL (Tab Profil Dibuang) -->
             <div class="tab-nav">
                 <button type="button" class="tab-btn active" id="btn-tab-analisis" onclick="switchTab(event, 'tab-analisis')">📊 Analisis & Automasi</button>
                 <button type="button" class="tab-btn" id="btn-tab-chat" onclick="switchTab(event, 'tab-chat')">💬 Sembang Langsung AI</button>
-                <button type="button" class="tab-btn" id="btn-tab-profil" onclick="switchTab(event, 'tab-profil')">⚙️ Profil & Penjenamaan</button>
             </div>
 
             <!-- TAB 1: ANALISIS & AUTOMASI -->
@@ -465,34 +485,38 @@
                 </div>
             </div>
 
-            <!-- TAB 3: PROFIL & PENJENAMAAN -->
-            <div id="tab-profil" class="tab-content">
-                <div class="glass-card" style="background: rgba(15, 23, 42, 0.4); max-width: 550px; margin: 0 auto;">
-                    <h3 style="font-size: 14px; margin-bottom: 15px; color: #38bdf8; text-transform: uppercase;">Kemas Kini Profil & Penjenamaan Korporat</h3>
-                    
-                    <form action="{{ url_for('client_update_profile') }}" method="POST" enctype="multipart/form-data">
-                        <div style="margin-bottom: 15px;">
-                            <label class="info-label">Muat Naik Logo Korporat Baru (PNG/JPG)</label>
-                            <input type="file" name="logo_file" accept="image/*" class="form-input" style="padding: 8px;">
-                        </div>
+        </div>
 
-                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.06); margin: 15px 0;">
+        <!-- POPUP MODAL TETAPAN PROFIL & PENJENAMAAN -->
+        <div id="profileModal" class="modal-overlay">
+            <div class="modal-card">
+                <button type="button" class="modal-close" onclick="closeProfileModal()">✕</button>
+                <h3 style="font-size: 14px; margin-bottom: 15px; color: #38bdf8; text-transform: uppercase;">Tetapan Profil & Penjenamaan Korporat</h3>
+                
+                <form action="{{ url_for('client_update_profile') }}" method="POST" enctype="multipart/form-data">
+                    <div style="margin-bottom: 15px;">
+                        <label class="info-label">Muat Naik Logo Korporat Baru (PNG/JPG)</label>
+                        <input type="file" name="logo_file" accept="image/*" class="form-input" style="padding: 8px;">
+                    </div>
 
-                        <div style="margin-bottom: 12px;">
-                            <label class="info-label">Kata Laluan Semasa (Diperlukan untuk tukar kata laluan)</label>
-                            <input type="password" name="current_password" placeholder="••••••••••••" class="form-input">
-                        </div>
+                    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.06); margin: 15px 0;">
 
-                        <div style="margin-bottom: 18px;">
-                            <label class="info-label">Kata Laluan Baru</label>
-                            <input type="password" name="new_password" placeholder="••••••••••••" class="form-input">
-                        </div>
+                    <div style="margin-bottom: 12px;">
+                        <label class="info-label">Kata Laluan Semasa (Diperlukan untuk tukar kata laluan)</label>
+                        <input type="password" name="current_password" placeholder="••••••••••••" class="form-input">
+                    </div>
 
-                        <button type="submit" class="btn-save">Simpan Perubahan Profil</button>
-                    </form>
-                </div>
+                    <div style="margin-bottom: 18px;">
+                        <label class="info-label">Kata Laluan Baru</label>
+                        <input type="password" name="new_password" placeholder="••••••••••••" class="form-input">
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                        <button type="button" onclick="closeProfileModal()" class="btn-action" style="padding: 9px 16px;">Batal</button>
+                        <button type="submit" class="btn-save">Simpan Perubahan</button>
+                    </div>
+                </form>
             </div>
-
         </div>
 
         <div class="system-footer">
@@ -508,6 +532,14 @@
         let myMsgChart = null;
         let myLeadChart = null;
         let clientNamesMap = JSON.parse(localStorage.getItem('client_names_' + clientId) || '{}');
+
+        // Fungsi Membuka & Menutup Popup Modal Profil
+        function openProfileModal() {
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
 
         // Fungsi Render Widget Dinamik Mengikut Real Data Backend
         function renderRealWidgets(w) {
@@ -552,7 +584,6 @@
                         document.getElementById('valConversionPct').innerText = data.conversion_pct;
                         document.getElementById('valManualPct').innerText = data.manual_pct;
 
-                        // Paparkan widget berasaskan real data dari backend
                         if (data.widgets) {
                             renderRealWidgets(data.widgets);
                         }
