@@ -7,6 +7,7 @@ import os
 import requests
 import json
 import logging
+import base64
 from config import SECRET_KEY, PORT, YUBIKEY_EXPECTED_ID
 from core.auth_admin import verify_admin_login
 from core.admin_actions import create_client_account, get_all_clients, update_client_tokens
@@ -597,13 +598,17 @@ def client_update_profile():
             flash("Kata laluan semasa salah!", "danger")
             
     if logo_file and logo_file.filename:
-        filename = secure_filename(f"logo_client_{client_id}_{logo_file.filename}")
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        logo_file.save(filepath)
-        logo_url = f"uploads/{filename}"
-        cursor.execute("UPDATE clients SET logo_path = %s WHERE id = %s", (logo_url, client_id))
-        conn.commit()
-        flash("Logo berjaya dimuat naik!", "success")
+        try:
+            file_data = logo_file.read()
+            base64_encoded = base64.b64encode(file_data).decode('utf-8')
+            mime_type = logo_file.content_type
+            logo_base64_url = f"data:{mime_type};base64,{base64_encoded}"
+            
+            cursor.execute("UPDATE clients SET logo_path = %s WHERE id = %s", (logo_base64_url, client_id))
+            conn.commit()
+            flash("Logo berjaya dimuat naik!", "success")
+        except Exception as e:
+            flash(f"Ralat memproses gambar: {str(e)}", "danger")
         
     cursor.close()
     conn.close()
