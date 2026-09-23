@@ -36,7 +36,7 @@ except OSError:
 def index():
     return redirect(url_for('client_login'))
 
-@app.route('/admin/login', methods=['GET', 'POST'])
+@app.route('/99redballon/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
 def admin_login():
     if request.method == 'POST':
@@ -224,7 +224,7 @@ def admin_update_business():
 
 @app.route('/admin/send-announcement', methods=['POST'])
 def admin_send_announcement():
-    """Admin menghantar pengumuman/mesej kepada semua client atau client tertentu (CLI-1000 hingga CLI-1200)"""
+    """Admin menghantar pengumuman/mesej kepada semua client atau client tertentu (CLI-1000 hingga CLI-1200)[cite: 15]"""
     if not session.get('admin_logged_in'):
         return jsonify({"success": False, "error": "Unauthorized"}), 401
         
@@ -558,7 +558,6 @@ def api_update_admin_phone():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-# ENDPOINT API NOTIFIKASI INBOX ADMIN UNTUK KLIEN
 @app.route('/api/client/notifications/<int:client_id>', methods=['GET'])
 def api_get_client_notifications(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
