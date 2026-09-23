@@ -6,6 +6,7 @@ from flask_limiter.util import get_remote_address
 import os
 import requests
 import json
+import logging
 from config import SECRET_KEY, PORT, YUBIKEY_EXPECTED_ID
 from core.auth_admin import verify_admin_login
 from core.admin_actions import create_client_account, get_all_clients, update_client_tokens
@@ -15,6 +16,7 @@ from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+logging.basicConfig(level=logging.INFO)
 
 # Inisialisasi Flask-Limiter untuk perlindungan dari serangan Brute Force (Rate Limiting)
 limiter = Limiter(
@@ -313,82 +315,152 @@ def client_dashboard():
     return render_template('client_dashboard.html', client=client)
 
 
-# --- TAMBAHAN ENDPOINT API UNTUK REAL DATA WIDGET ANALISIS & SEMBANG ---
+# --- API REAL-DATA DARI PANGKALAN DATA (DATABASE) ---
 
 @app.route('/api/client/dashboard-stats/<int:client_id>', methods=['GET'])
 def api_client_dashboard_stats(client_id):
-    """API untuk memaparkan Pemantauan Analisis Bisnes Semasa berdasarkan data sebenar"""
+    """Mengekstrak data dan statistik asli murni dari rekod interaksi WhatsApp klien"""
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
         
     conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    if not conn:
+        return jsonify({"success": False, "error": "Database tidak tersambung"}), 500
+        
     try:
-        cursor.execute("SELECT business_type FROM clients WHERE id = %s", (client_id,))
-        res = cursor.fetchone()
-        b_type = res['business_type'] if res and res.get('business_type') else 'ecommerce'
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # 1. Dapatkan Aktiviti Terkini (Mesej terakhir yang masuk)
+        cursor.execute("""
+            SELECT sender, message, TO_CHAR(timestamp, 'HH24:MI:SS') as time_str
+            FROM messages 
+            WHERE client_id = %s 
+            ORDER BY timestamp DESC LIMIT 1;
+        """, (client_id,))
+        latest_msg = cursor.fetchone()
+        
+        live_activity = "Menunggu interaksi pelanggan masuk..."
+        if latest_msg:
+            sender_display = latest_msg['sender'].replace("+", "")
+            msg_preview = latest_msg['message'][:40] + ("..." if len(latest_msg['message']) > 40 else "")
+            live_activity = f"Log Terkini [{latest_msg['time_str']}]: {sender_display} - {msg_preview}"
 
-        # Kira jumlah mesej sebenar dalam database untuk klien ini
-        cursor.execute("SELECT COUNT(*) as total FROM messages WHERE client_id = %s", (client_id,))
-        msg_res = cursor.fetchone()
-        total_msgs = msg_res['total'] if msg_res else 0
+        # 2. Kira Keseluruhan Mesej
+        cursor.execute("SELECT COUNT(*) as total FROM messages WHERE client_id = %s;", (client_id,))
+        total_msgs = cursor.fetchone()['total'] or 0
+
+        # 3. Kira Jumlah Pelanggan Unik (Leads)
+        cursor.execute("""
+            SELECT COUNT(DISTINCT sender) as leads 
+            FROM messages 
+            WHERE client_id = %s AND sender NOT ILIKE '%%Admin%%' AND sender NOT ILIKE '%%Zulfa%%';
+        """, (client_id,))
+        total_leads = cursor.fetchone()['leads'] or 0
+
+        # 4. Kira Mesej Hari Ini
+        cursor.execute("SELECT COUNT(*) as today FROM messages WHERE client_id = %s AND DATE(timestamp) = CURRENT_DATE;", (client_id,))
+        msgs_today = cursor.fetchone()['today'] or 0
+
+        # 5. Kira Nisbah AI vs Manual
+        cursor.execute("SELECT COUNT(*) as bot_total FROM messages WHERE client_id = %s AND sender ILIKE '%%Zulfa%%';", (client_id,))
+        total_bot = cursor.fetchone()['bot_total'] or 0
+        
+        cursor.execute("SELECT COUNT(*) as admin_total FROM messages WHERE client_id = %s AND sender ILIKE '%%Admin%%';", (client_id,))
+        total_admin = cursor.fetchone()['admin_total'] or 0
+
+        total_replies = total_bot + total_admin
+        ai_rate = 0.0
+        manual_rate = 0.0
+        if total_replies > 0:
+            ai_rate = (total_bot / total_replies) * 100
+            manual_rate = (total_admin / total_replies) * 100
+
+        # Konstruksi Widget Dinamis Asli
+        widget_data = {
+            'stat1_title': '👥 JUMLAH PROSPEK UNIK', 
+            'stat1_val': f"{total_leads} Orang", 
+            'stat1_sub': 'Pelanggan Dalam Pangkalan',
+            
+            'stat2_title': '💬 TRAFIK MESEJ HARI INI', 
+            'stat2_val': f"{msgs_today} Mesej", 
+            'stat2_sub': 'Interaksi Semasa',
+            
+            'stat3_title': '📊 KESELURUHAN INTERAKSI', 
+            'stat3_val': f"{total_msgs} Rekod", 
+            'stat3_sub': 'Sejarah Sepanjang Masa'
+        }
 
         cursor.close()
         conn.close()
 
-        widget_data = {}
-        if b_type == 'ecommerce':
-            widget_data = {
-                'stat1_title': '📦 Jumlah Produk Terjual', 'stat1_val': f"{max(12, total_msgs * 3)} Unit", 'stat1_sub': '📈 Prestasi Tinggi',
-                'stat2_title': '💰 Jumlah Pendapatan', 'stat2_val': f"RM {max(1500, total_msgs * 180):,.2f}", 'stat2_sub': '🚀 Keuntungan Bersih',
-                'stat3_title': '🛒 Troli Ditinggalkan', 'stat3_val': f"{max(3, total_msgs)} Klien", 'stat3_sub': '⚡ Perlu Follow-up'
-            }
-        elif b_type == 'transport':
-            widget_data = {
-                'stat1_title': '🚚 Trip Penghantaran Aktif', 'stat1_val': f"{max(5, total_msgs * 2)} Trip", 'stat1_sub': '📍 Operasi Semasa',
-                'stat2_title': '📍 Destinasi Utama', 'stat2_val': 'Klang Valley', 'stat2_sub': '🌐 Liputan Luas',
-                'stat3_title': '📅 Tarikh Puncak Tempahan', 'stat3_val': '28hb Bulan Ini', 'stat3_sub': '🔥 Peak Season'
-            }
-        elif b_type == 'booking':
-            widget_data = {
-                'stat1_title': '📅 Temujanji Hari Ini', 'stat1_val': f"{max(4, total_msgs)} Sesi", 'stat1_sub': '⭐ Jadual Penuh',
-                'stat2_title': '⭐ Slot Kosong Tersedia', 'stat2_val': '3 Slot Lagi', 'stat2_sub': '🟢 Boleh Tempah',
-                'stat3_title': '👥 Jumlah Klien Berdaftar', 'stat3_val': f"{total_msgs * 10 + 45} Orang", 'stat3_sub': '📈 Pangkalan Klien'
-            }
-        else:
-            widget_data = {
-                'stat1_title': '💼 Leads Masuk (Prospek)', 'stat1_val': f"{max(10, total_msgs * 4)} Leads", 'stat1_sub': '🚀 Potensi Tinggi',
-                'stat2_title': '🤝 Deal Berjaya (Closed)', 'stat2_val': f"{max(2, total_msgs)} Klien", 'stat2_sub': '💰 Sasaran Tercapai',
-                'stat3_title': '📈 Kadar Penukaran (CR)', 'stat3_val': '18.5%', 'stat3_sub': '⚡ Prestasi CRM'
-            }
-
         return jsonify({
-            'success': True,
-            'live_activity': f"Bot AI aktif memantau pelayan. Jumlah interaksi: {total_msgs} mesej.",
-            'ai_rate': '99.4%',
-            'conversion_pct': '+24.8%',
-            'manual_pct': '0.6%',
-            'closed_deals': max(2, total_msgs),
-            'estimated_sales': f"RM {max(1200, total_msgs * 250):,.2f}",
-            'widgets': widget_data
+            "success": True,
+            "live_activity": live_activity,
+            "estimated_sales": f"RM {total_leads * 150:,.2f}", # Estimasi purata nilai pelanggan
+            "closed_deals": int(total_leads * 0.2), # Estimasi purata kadar kejayaan (20%)
+            "ai_rate": f"{ai_rate:.1f}%",
+            "conversion_pct": "Real-time",
+            "manual_pct": f"{manual_rate:.1f}%",
+            "widgets": widget_data
         })
     except Exception as e:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        logging.error(f"Ralat statistik real-data: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route('/api/client/analytics-stats/<int:client_id>', methods=['GET'])
 def api_client_analytics_stats(client_id):
-    """API untuk carta statistik mingguan"""
+    """API untuk menarik data asli carta graf mingguan"""
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
     
-    return jsonify({
-        'success': True,
-        'msg_counts': [45, 62, 88, 74, 95, 120, 110],
-        'lead_counts': [12, 18, 25, 22, 30, 42, 38]
-    })
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "error": "DB disconnected"}), 500
+        
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Tarik data mesej 7 hari kebelakang
+        cursor.execute("""
+            SELECT 
+                EXTRACT(ISODOW FROM timestamp) as dow,
+                COUNT(*) as msg_count
+            FROM messages
+            WHERE client_id = %s AND timestamp >= NOW() - INTERVAL '7 days'
+            GROUP BY dow
+            ORDER BY dow;
+        """, (client_id,))
+        rows = cursor.fetchall()
+        msg_data_map = {int(row['dow']): row['msg_count'] for row in rows}
+        msg_counts = [msg_data_map.get(i, 0) for i in range(1, 8)]
+        
+        # Tarik data Leads mingguan
+        cursor.execute("""
+            SELECT 
+                EXTRACT(ISODOW FROM timestamp) as dow,
+                COUNT(DISTINCT sender) as lead_count
+            FROM messages
+            WHERE client_id = %s AND timestamp >= NOW() - INTERVAL '7 days'
+              AND sender NOT ILIKE '%%Admin%%' AND sender NOT ILIKE '%%Zulfa%%'
+            GROUP BY dow
+            ORDER BY dow;
+        """, (client_id,))
+        lead_rows = cursor.fetchall()
+        lead_data_map = {int(row['dow']): row['lead_count'] for row in lead_rows}
+        lead_counts = [lead_data_map.get(i, 0) for i in range(1, 8)]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'msg_counts': msg_counts,
+            'lead_counts': lead_counts
+        })
+    except Exception as e:
+        logging.error(f"Ralat graf carta: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route('/api/client/senders/<int:client_id>')
@@ -402,7 +474,7 @@ def api_get_client_senders(client_id):
         cursor.execute("""
             SELECT DISTINCT sender 
             FROM messages 
-            WHERE client_id = %s AND sender NOT IN ('Admin', 'Zulfa (Bot)')
+            WHERE client_id = %s AND sender NOT ILIKE '%%Admin%%' AND sender NOT ILIKE '%%Zulfa%%'
             ORDER BY sender DESC;
         """, (client_id,))
         senders = [row['sender'] for row in cursor.fetchall()]
@@ -425,10 +497,10 @@ def api_get_chat_by_sender(client_id):
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
         cursor.execute("""
-            SELECT sender, message, timestamp 
+            SELECT sender, message, TO_CHAR(timestamp, 'DD-MM-YYYY HH24:MI:SS') as timestamp 
             FROM messages 
             WHERE client_id = %s AND (sender = %s OR sender LIKE 'Zulfa%%' OR sender = 'Admin')
-            ORDER BY timestamp ASC;
+            ORDER BY id ASC;
         """, (client_id, phone))
         messages = cursor.fetchall()
         cursor.close()
