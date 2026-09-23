@@ -283,7 +283,7 @@
                 </div>
             </div>
 
-            <!-- TAB NAVIGASI DIGITAL (Diperbaiki dengan onclick event yang sahih) -->
+            <!-- TAB NAVIGASI DIGITAL -->
             <div class="tab-nav">
                 <button type="button" class="tab-btn active" id="btn-tab-analisis" onclick="switchTab(event, 'tab-analisis')">📊 Analisis & Automasi</button>
                 <button type="button" class="tab-btn" id="btn-tab-chat" onclick="switchTab(event, 'tab-chat')">💬 Sembang Langsung AI</button>
@@ -379,14 +379,12 @@
 
             </div>
 
-            <!-- TAB 2: SEMBANG LANGSUNG AI (Dilengkapi Widget Box Analisis Dinamik) -->
+            <!-- TAB 2: SEMBANG LANGSUNG AI -->
             <div id="tab-chat" class="tab-content">
                 <div class="info-label" style="margin-bottom: 12px;">Pemantauan Sembang Langsung & Analisis Bisnes Semasa</div>
                 
-                <!-- WIDGET BOX ANALISIS DINAMIK DI TAB SEMBANG LANGSUNG -->
-                <div class="dynamic-widget-grid" id="dynamicWidgetBoxContainer" style="margin-bottom: 15px;">
-                    <!-- Kandungan dirender oleh Javascript berdasarkan business_type -->
-                </div>
+                <!-- WIDGET BOX ANALISIS DINAMIK -->
+                <div class="dynamic-widget-grid" id="dynamicWidgetBoxContainer" style="margin-bottom: 15px;"></div>
 
                 <div class="crm-workspace">
                     
@@ -501,7 +499,6 @@
         let myLeadChart = null;
         let clientNamesMap = JSON.parse(localStorage.getItem('client_names_' + clientId) || '{}');
 
-        // Render Widget Box Analisis Dinamik Mengikut Skop Perniagaan Klien
         function renderDynamicWidgets(type) {
             const container = document.getElementById('dynamicWidgetBoxContainer');
             if (!container) return;
@@ -583,7 +580,6 @@
             container.innerHTML = html;
         }
 
-        // Mengambil data Live dari DB melalui API backend
         function fetchLiveDashboardData() {
             if (!clientId) return;
             
@@ -687,30 +683,18 @@
 
         setInterval(checkServerHealth, 5000);
 
-        // Fungsi Penukaran Tab yang Dioptimumkan & Kebal Ralat
         function switchTab(evt, tabId) {
             evt.preventDefault();
-            
-            // Sembunyikan semua kandungan tab
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(c => c.classList.remove('active'));
-            
-            // Buang class active dari semua butang tab
             const buttons = document.querySelectorAll('.tab-btn');
             buttons.forEach(b => b.classList.remove('active'));
             
-            // Paparkan tab yang dipilih dan aktifkan butang berkaitan
             const targetTab = document.getElementById(tabId);
-            if (targetTab) {
-                targetTab.classList.add('active');
-            }
-            if (evt.currentTarget) {
-                evt.currentTarget.classList.add('active');
-            }
+            if (targetTab) targetTab.classList.add('active');
+            if (evt.currentTarget) evt.currentTarget.classList.add('active');
             
-            if (tabId === 'tab-chat') {
-                loadSendersList();
-            }
+            if (tabId === 'tab-chat') loadSendersList();
         }
 
         function saveBotProfile(e) {
@@ -876,9 +860,7 @@
             const chatTab = document.getElementById('tab-chat');
             if (chatTab && chatTab.classList.contains('active')) {
                 loadSendersList();
-                if (activePhone) {
-                    fetchChatHistory(activePhone);
-                }
+                if (activePhone) fetchChatHistory(activePhone);
             }
         }, 4000);
 
