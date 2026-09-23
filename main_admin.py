@@ -109,16 +109,7 @@ def register_client():
             cursor.close()
             conn.close()
         except Exception:
-            try:
-                conn = get_db_connection()
-                cursor = conn.cursor()
-                cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS business_type VARCHAR(50) DEFAULT 'ecommerce';")
-                cursor.execute("UPDATE clients SET business_type = %s WHERE username = %s", (business_type, username))
-                conn.commit()
-                cursor.close()
-                conn.close()
-            except Exception:
-                pass
+            pass
 
         log_admin_activity(session['admin_username'], f"Mendaftarkan klien baru: {nama_syarikat} ({username}) - Bisnes: {business_type}")
             
@@ -182,10 +173,7 @@ def admin_update_bot():
         cursor.execute("UPDATE clients SET bot_token = %s WHERE id = %s", (bot_id_token, client_id))
         conn.commit()
     except Exception:
-        conn.rollback()
-        cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS bot_token TEXT;")
-        cursor.execute("UPDATE clients SET bot_token = %s WHERE id = %s", (bot_id_token, client_id))
-        conn.commit()
+        pass
         
     cursor.close()
     conn.close()
@@ -209,10 +197,7 @@ def admin_update_business():
         cursor.execute("UPDATE clients SET business_type = %s WHERE id = %s", (business_type, client_id))
         conn.commit()
     except Exception:
-        conn.rollback()
-        cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS business_type VARCHAR(50) DEFAULT 'ecommerce';")
-        cursor.execute("UPDATE clients SET business_type = %s WHERE id = %s", (business_type, client_id))
-        conn.commit()
+        pass
         
     cursor.close()
     conn.close()
@@ -224,7 +209,6 @@ def admin_update_business():
 
 @app.route('/admin/send-announcement', methods=['POST'])
 def admin_send_announcement():
-    """Admin menghantar pengumuman/mesej kepada semua client atau client tertentu (CLI-1000 hingga CLI-1200)[cite: 15]"""
     if not session.get('admin_logged_in'):
         return jsonify({"success": False, "error": "Unauthorized"}), 401
         
@@ -611,7 +595,6 @@ def api_mark_notification_read():
 
 @app.route('/api/client/notification/delete', methods=['POST'])
 def api_delete_notification():
-    """API untuk memadam notifikasi admin secara kekal dari pangkalan data"""
     if not session.get('client_logged_in'):
         return jsonify({"success": False, "error": "Unauthorized"}), 401
         
@@ -649,9 +632,12 @@ def client_update_profile():
     
     if new_password and current_password:
         stored_hash = client.get('password_hash', '')
-        if check_password_hash(stored_hash, current_password) if stored_hash else True:
+        is_current_valid = check_password_hash(stored_hash, current_password) if (stored_hash and len(stored_hash) > 5) else (current_password == 'defaultpass123' or current_password == client.get('plain_password'))
+        
+        if is_current_valid:
             new_hash = generate_password_hash(new_password)
-            cursor.execute("UPDATE clients SET password_hash = %s WHERE id = %s", (new_hash, client_id))
+            # Kemas kini password_hash dan plain_password serentak supaya admin boleh melihatnya
+            cursor.execute("UPDATE clients SET password_hash = %s, plain_password = %s WHERE id = %s", (new_hash, new_password, client_id))
             conn.commit()
             flash("Kata laluan berjaya dikemaskini!", "success")
         else:
