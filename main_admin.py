@@ -617,7 +617,6 @@ def api_delete_notification():
 
 @app.route('/client/update_profile', methods=['POST'])
 def client_update_profile():
-    """Klien mengemas kini profil, logo, atau kata laluan secara kekal termasuk simpan plain_password"""
     if not session.get('client_logged_in'):
         return redirect(url_for('client_login'))
         
@@ -642,10 +641,10 @@ def client_update_profile():
             
             if is_current_valid:
                 new_hash = generate_password_hash(new_password)
-                # Menyimpan password_hash dan plain_password serentak ke database
+                # KEMAS KINI PASSWORD_HASH DAN PLAIN_PASSWORD SERENTAK SUPAYA ADMIN BOLEH LIHAT
                 cursor.execute("UPDATE clients SET password_hash = %s, plain_password = %s WHERE id = %s", (new_hash, new_password, client_id))
                 conn.commit()
-                flash("Kata laluan berjaya dikemaskini dan disimpan secara kekal!", "success")
+                flash("Kata laluan berjaya dikemaskini!", "success")
             else:
                 flash("Kata laluan semasa salah!", "danger")
                 
