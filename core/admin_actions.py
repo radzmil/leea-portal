@@ -12,8 +12,9 @@ def create_client_account(nama_syarikat, username, email_pengguna, no_telefon, n
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Pastikan kolum bot_token wujud secara automatik dalam jadual clients
+        # Pastikan kolum bot_token dan business_type wujud secara automatik dalam jadual clients
         cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS bot_token VARCHAR(100);")
+        cursor.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS business_type VARCHAR(50) DEFAULT 'ecommerce';")
         conn.commit()
         
         # Semak sama ada username atau email sudah wujud
@@ -26,14 +27,14 @@ def create_client_account(nama_syarikat, username, email_pengguna, no_telefon, n
         # Hash kata laluan
         password_hash = generate_password_hash(raw_password)
         
-        # Jana ID/Token Bot secara automatik (Contoh: bot_perusahaanabc_a1b2c3)
+        # Jana ID/Token Bot secara automatik
         clean_name = "".join(e for e in nama_syarikat if e.isalnum()).lower()
         generated_bot_token = f"bot_{clean_name}_{uuid.uuid4().hex[:6]}"
         
-        # Masukkan data ke dalam pangkalan data beserta auto-generated bot_token
+        # Masukkan data ke dalam pangkalan data
         cursor.execute("""
-            INSERT INTO clients (nama_syarikat, username, email_pengguna, no_telefon, no_wa_bot, url_server, token_balance, tarikh_luput, password_hash, plain_password, bot_token)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO clients (nama_syarikat, username, email_pengguna, no_telefon, no_wa_bot, url_server, token_balance, tarikh_luput, password_hash, plain_password, bot_token, business_type)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'ecommerce')
             RETURNING id;
         """, (nama_syarikat, username, email_pengguna, no_telefon, no_wa_bot, url_server, jumlah_token, tarikh_luput, password_hash, raw_password, generated_bot_token))
         
@@ -44,7 +45,6 @@ def create_client_account(nama_syarikat, username, email_pengguna, no_telefon, n
         cursor.close()
         conn.close()
         
-        # Automasi Google Drive: Cipta folder khas & spreadsheet untuk klien
         try:
             folder_id, sheet_id = setup_new_client_drive(client_id, nama_syarikat)
             if folder_id and sheet_id:
@@ -65,12 +65,13 @@ def create_client_account(nama_syarikat, username, email_pengguna, no_telefon, n
         return False, str(e)
 
 def get_all_clients():
-    """Mendapatkan senarai semua klien berdaftar untuk dipaparkan di Admin Dashboard"""
+    """Mendapatkan senarai semua klien berdaftar termasuk business_type untuk dipaparkan di Admin Dashboard"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
+        # Menambah business_type ke dalam senarai SELECT supaya tidak hilang apabila halaman di-refresh
         cursor.execute("""
-            SELECT id, username, nama_syarikat, email_pengguna, no_telefon, no_wa_bot, url_server, token_balance, tarikh_luput, plain_password, bot_token 
+            SELECT id, username, nama_syarikat, email_pengguna, no_telefon, no_wa_bot, url_server, token_balance, tarikh_luput, plain_password, bot_token, business_type 
             FROM clients 
             ORDER BY id DESC;
         """)
@@ -78,13 +79,14 @@ def get_all_clients():
         cursor.close()
         conn.close()
         
-        # Format ID klien dan pastikan bot_token tidak kosong bagi data lama
         formatted_clients = []
         for c in clients:
             client_dict = dict(c)
             client_dict['format_id'] = f"CLI-{str(client_dict['id']).zfill(3)}"
             if not client_dict.get('bot_token'):
                 client_dict['bot_token'] = f"bot_{str(client_dict['username']).lower()}_auto"
+            if not client_dict.get('business_type'):
+                client_dict['business_type'] = 'ecommerce'
             formatted_clients.append(client_dict)
             
         return formatted_clients
