@@ -91,7 +91,7 @@
 
         /* POPUP NOTIFIKASI INBOX ADMIN */
         .notification-dropdown {
-            display: none; position: absolute; top: 50px; right: 0; width: 340px;
+            display: none; position: absolute; top: 50px; right: 0; width: 360px;
             background: rgba(13, 20, 38, 0.98); border: 1px solid rgba(56, 189, 248, 0.3);
             border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); z-index: 1000;
             padding: 15px; backdrop-filter: blur(15px);
@@ -101,16 +101,34 @@
             border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 10px;
             font-size: 12px; font-weight: 700; color: #38bdf8; text-transform: uppercase;
         }
-        .notification-list { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .notification-list { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .notif-item {
             background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.04);
-            border-radius: 8px; padding: 10px; font-size: 11px; position: relative;
+            border-radius: 8px; padding: 12px; font-size: 11px; position: relative; cursor: pointer; transition: 0.2s;
         }
+        .notif-item:hover { background: rgba(56, 189, 248, 0.08); }
         .notif-item.unread { border-left: 3px solid #38bdf8; background: rgba(56, 189, 248, 0.05); }
-        .notif-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+        .notif-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
         .btn-notif-action {
-            background: none; border: none; font-size: 10px; cursor: pointer; font-weight: 600;
+            background: none; border: none; font-size: 10px; cursor: pointer; font-weight: 600; padding: 2px 6px; border-radius: 4px;
         }
+
+        /* MODAL BACA PENUH MESEJ ADMIN */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 8, 17, 0.85); backdrop-filter: blur(8px); z-index: 9999;
+            justify-content: center; align-items: center;
+        }
+        .modal-card {
+            background: rgba(13, 20, 38, 0.95); border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 16px; padding: 25px; width: 100%; max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9); position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 15px; right: 20px; background: none; border: none;
+            color: #94a3b8; font-size: 18px; cursor: pointer; font-weight: bold;
+        }
+        .modal-close:hover { color: #fff; }
 
         .btn-danger {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.3) 100%);
@@ -272,22 +290,6 @@
         .alert { padding: 10px 14px; margin-bottom: 15px; border-radius: 8px; font-size: 12px; }
         .alert-success { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
         .alert-danger { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
-
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 8, 17, 0.85); backdrop-filter: blur(8px); z-index: 9999;
-            justify-content: center; align-items: center;
-        }
-        .modal-card {
-            background: rgba(13, 20, 38, 0.95); border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 16px; padding: 25px; width: 100%; max-width: 500px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9); position: relative;
-        }
-        .modal-close {
-            position: absolute; top: 15px; right: 20px; background: none; border: none;
-            color: #94a3b8; font-size: 18px; cursor: pointer; font-weight: bold;
-        }
-        .modal-close:hover { color: #fff; }
 
         .system-footer { text-align: center; margin-top: 25px; font-size: 11px; color: #475569; font-family: monospace; letter-spacing: 0.5px; }
     </style>
@@ -555,6 +557,19 @@
 
         </div>
 
+        <!-- MODAL BACA PENUH MESEJ ADMIN -->
+        <div id="readNotifModal" class="modal-overlay">
+            <div class="modal-card">
+                <button type="button" class="modal-close" onclick="closeReadModal()">✕</button>
+                <h3 id="modalNotifTitle" style="font-size: 14px; margin-bottom: 12px; color: #38bdf8; text-transform: uppercase;">Tajuk Notifikasi</h3>
+                <div id="modalNotifTime" style="font-size: 10px; color: #64748b; font-family: monospace; margin-bottom: 12px;">Tarikh/Masa</div>
+                <div id="modalNotifBody" style="font-size: 13px; color: #cbd5e1; line-height: 1.5; background: rgba(15,23,42,0.6); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); max-height: 250px; overflow-y: auto; margin-bottom: 20px;">Kandungan mesej penuh...</div>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button type="button" onclick="closeReadModal()" class="btn-save" style="padding: 8px 16px;">Tutup</button>
+                </div>
+            </div>
+        </div>
+
         <div id="profileModal" class="modal-overlay">
             <div class="modal-card">
                 <button type="button" class="modal-close" onclick="closeProfileModal()">✕</button>
@@ -600,7 +615,7 @@
         let myLeadChart = null;
         let clientNamesMap = JSON.parse(localStorage.getItem('client_names_' + clientId) || '{}');
 
-        // PENGURUSAN NOTIFIKASI INBOX ADMIN TERUS DARI DATABASE (MAKSIMUM 15 MESEJ)
+        // PENGURUSAN NOTIFIKASI INBOX ADMIN (DATABASE SYNC)
         let adminNotifsArray = [];
 
         function toggleAdminNotifDropdown() {
@@ -646,9 +661,18 @@
                 if (!notif.read) hasUnread = true;
                 const item = document.createElement('div');
                 item.className = notif.read ? 'notif-item' : 'notif-item unread';
+                
+                // Klik pada kad mesej akan buka popup baca penuh
+                item.onclick = (e) => {
+                    if(e.target.tagName !== 'BUTTON') {
+                        openReadModal(notif);
+                        markNotifRead(notif.id);
+                    }
+                };
+
                 item.innerHTML = `
                     <div style="font-weight: 600; color: #38bdf8; margin-bottom: 2px;">📌 ${notif.title || 'Notifikasi Admin'}</div>
-                    <div style="color: #cbd5e1; line-height: 1.3;">${notif.message}</div>
+                    <div style="color: #cbd5e1; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${notif.message}</div>
                     <div style="font-size: 9px; color: #64748b; margin-top: 4px; font-family: monospace;">${notif.time || ''}</div>
                     <div class="notif-actions">
                         ${!notif.read ? `<button class="btn-notif-action" style="color: #34d399;" onclick="markNotifRead(${notif.id})">Tanda Dibaca</button>` : ''}
@@ -663,6 +687,17 @@
             } else {
                 redDot.classList.remove('active');
             }
+        }
+
+        function openReadModal(notif) {
+            document.getElementById('modalNotifTitle').innerText = notif.title || 'Notifikasi Admin';
+            document.getElementById('modalNotifTime').innerText = notif.time || '';
+            document.getElementById('modalNotifBody').innerText = notif.message || '';
+            document.getElementById('readNotifModal').style.display = 'flex';
+        }
+
+        function closeReadModal() {
+            document.getElementById('readNotifModal').style.display = 'none';
         }
 
         function markNotifRead(notifId) {
@@ -681,8 +716,20 @@
         }
 
         function deleteNotif(notifId) {
-            adminNotifsArray = adminNotifsArray.filter(n => n.id !== notifId);
-            renderAdminNotifs();
+            fetch('/api/client/notification/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: notifId })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    fetchClientNotifications();
+                } else {
+                    alert('Gagal memadam notifikasi.');
+                }
+            })
+            .catch(err => console.error("Ralat padam notifikasi:", err));
         }
 
         function openProfileModal() {

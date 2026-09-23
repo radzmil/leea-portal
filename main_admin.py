@@ -609,6 +609,29 @@ def api_mark_notification_read():
             pass
     return jsonify({"success": False}), 400
 
+@app.route('/api/client/notification/delete', methods=['POST'])
+def api_delete_notification():
+    """API untuk memadam notifikasi admin secara kekal dari pangkalan data"""
+    if not session.get('client_logged_in'):
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+        
+    data = request.json or {}
+    notif_id = data.get('id')
+    
+    conn = get_db_connection()
+    if conn and notif_id:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM admin_notifications WHERE id = %s;", (notif_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return jsonify({"success": True}), 200
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+            
+    return jsonify({"success": False, "error": "ID tidak sah"}), 400
+
 @app.route('/client/update_profile', methods=['POST'])
 def client_update_profile():
     if not session.get('client_logged_in'):
