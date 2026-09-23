@@ -19,7 +19,6 @@ app = Flask(__name__)
 app.secret_key = SECRET_KEY
 logging.basicConfig(level=logging.INFO)
 
-# Inisialisasi Flask-Limiter untuk perlindungan dari serangan Brute Force (Rate Limiting)
 limiter = Limiter(
     get_remote_address,
     app=app,
@@ -31,17 +30,15 @@ UPLOAD_FOLDER = 'static/uploads'
 try:
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 except OSError:
-    pass  # Abaikan ralat sistem fail baca-sahaja di Vercel
+    pass
 
 @app.route('/')
 def index():
-    """Halaman utama pintu masuk - Terus arahkan ke Portal Client Login"""
     return redirect(url_for('client_login'))
 
 @app.route('/admin/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")  # Sekatan maksimum 5 percubaan log masuk seminit untuk Admin
+@limiter.limit("5 per minute")
 def admin_login():
-    """Proses log masuk admin menggunakan Password + YubiKey"""
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -63,7 +60,6 @@ def admin_login():
 
 @app.route('/admin/dashboard')
 def admin_dashboard():
-    """Panel kawalan utama admin (Papar senarai klien & urus token)"""
     if not session.get('admin_logged_in'):
         flash("Sila log masuk terlebih dahulu!", "warning")
         return redirect(url_for('admin_login'))
@@ -73,7 +69,6 @@ def admin_dashboard():
 
 @app.route('/admin/client/register', methods=['POST'])
 def register_client():
-    """Tindakan admin mendaftarkan klien baru dengan butiran lengkap & automasi Drive"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
         
@@ -106,7 +101,6 @@ def register_client():
     )
     
     if success:
-        # Simpan business_type ke dalam database klien secara langsung
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -127,22 +121,6 @@ def register_client():
                 pass
 
         log_admin_activity(session['admin_username'], f"Mendaftarkan klien baru: {nama_syarikat} ({username}) - Bisnes: {business_type}")
-        
-        try:
-            gas_webhook_url = "https://script.google.com/macros/s/AKfycbwKUDjft8PtsHNityg8M3o9CTkdt_DKX4LC6f60TxKih9TSPC94Ic8t6uJw_tlgSeqTsw/exec"
-            payload = {
-                "action": "CREATE_CLIENT_DB",
-                "client_name": nama_syarikat.replace(" ", "_")
-            }
-            res = requests.post(gas_webhook_url, json=payload, timeout=20)
-            res_data = res.json()
-            
-            if res_data.get("success"):
-                flash(f"{message} (Folder & DB Sheet berjaya dicipta di Google Drive!)", "success")
-            else:
-                flash(f"{message} (Akaun berjaya didaftarkan, tapi DB Sheet gagal dicipta: {res_data.get('error')})", "warning")
-        except Exception as e:
-            flash(f"{message} (Ralat sambungan ke automasi Google Drive)", "warning")
             
     else:
         flash(f"Ralat pendaftaran: {message}", "danger")
@@ -151,7 +129,6 @@ def register_client():
 
 @app.route('/admin/client/topup', methods=['POST'])
 def topup_client_tokens():
-    """Tindakan admin menambah token klien secara manual"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
         
@@ -172,7 +149,6 @@ def topup_client_tokens():
 
 @app.route('/admin/client/delete', methods=['POST'])
 def delete_client():
-    """Tindakan admin memadam akaun klien yang tidak diperlukan dari database"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
         
@@ -194,7 +170,6 @@ def delete_client():
 
 @app.route('/admin/client/update_bot', methods=['POST'])
 def admin_update_bot():
-    """Tindakan admin menyambungkan Zulfa-Bot kepada klien tertentu"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
         
@@ -222,7 +197,6 @@ def admin_update_bot():
 
 @app.route('/admin/client/update_business', methods=['POST'])
 def admin_update_business():
-    """Tindakan admin menukar skop perniagaan klien sedia ada secara manual"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
         
@@ -248,22 +222,48 @@ def admin_update_business():
     
     return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/send-announcement', methods=['POST'])
+def admin_send_announcement():
+    """Admin menghantar pengumuman/mesej kepada semua client atau client tertentu (CLI-1000 hingga CLI-1200)"""
+    if not session.get('admin_logged_in'):
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+        
+    data = request.json or {}
+    target_type = data.get('target_type', 'all') 
+    client_id = data.get('client_id') 
+    title = data.get('title', 'Notifikasi Penting dari Admin')
+    message = data.get('message', '')
+    
+    if not message:
+        return jsonify({"success": False, "error": "Mesej tidak boleh kosong"}), 400
+        
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "error": "Database error"}), 500
+        
+    try:
+        cursor = conn.cursor()
+        if target_type == 'all':
+            cursor.execute("INSERT INTO admin_notifications (client_id, title, message) VALUES (NULL, %s, %s);", (title, message))
+        else:
+            cursor.execute("INSERT INTO admin_notifications (client_id, title, message) VALUES (%s, %s, %s);", (client_id, title, message))
+            
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"success": True, "message": "Pengumuman berjaya dihantar kepada klien!"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/admin/logout')
 def admin_logout():
-    """Log keluar admin"""
-    admin_name = session.get('admin_username', 'Unknown')
-    log_admin_activity(admin_name, "Log keluar dari Admin Panel.")
     session.clear()
     flash("Sesi admin telah ditamatkan.", "info")
     return redirect(url_for('admin_login'))
 
-
-# --- LALUAN PORTAL KLIEN ---
-
 @app.route('/client/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
 def client_login():
-    """Proses log masuk khusus untuk klien menggunakan Username & Password"""
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -300,7 +300,6 @@ def client_login():
 
 @app.route('/client/dashboard')
 def client_dashboard():
-    """Papan pemuka khas untuk klien melihat baki token & status"""
     if not session.get('client_logged_in'):
         flash("Sila log masuk akaun klien terlebih dahulu!", "warning")
         return redirect(url_for('client_login'))
@@ -315,12 +314,8 @@ def client_dashboard():
     
     return render_template('client_dashboard.html', client=client)
 
-
-# --- API REAL-DATA DARI PANGKALAN DATA (DATABASE) ---
-
 @app.route('/api/client/dashboard-stats/<int:client_id>', methods=['GET'])
 def api_client_dashboard_stats(client_id):
-    """Mengekstrak data dan statistik asli murni dari rekod interaksi WhatsApp klien"""
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
         
@@ -331,7 +326,6 @@ def api_client_dashboard_stats(client_id):
     try:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        # 1. Dapatkan Aktiviti Terkini (Mesej terakhir yang masuk)
         cursor.execute("""
             SELECT sender, message, TO_CHAR(timestamp, 'HH24:MI:SS') as time_str
             FROM messages 
@@ -346,11 +340,9 @@ def api_client_dashboard_stats(client_id):
             msg_preview = latest_msg['message'][:40] + ("..." if len(latest_msg['message']) > 40 else "")
             live_activity = f"Log Terkini [{latest_msg['time_str']}]: {sender_display} - {msg_preview}"
 
-        # 2. Kira Keseluruhan Mesej
         cursor.execute("SELECT COUNT(*) as total FROM messages WHERE client_id = %s;", (client_id,))
         total_msgs = cursor.fetchone()['total'] or 0
 
-        # 3. Kira Jumlah Pelanggan Unik (Leads)
         cursor.execute("""
             SELECT COUNT(DISTINCT sender) as leads 
             FROM messages 
@@ -358,11 +350,9 @@ def api_client_dashboard_stats(client_id):
         """, (client_id,))
         total_leads = cursor.fetchone()['leads'] or 0
 
-        # 4. Kira Mesej Hari Ini
         cursor.execute("SELECT COUNT(*) as today FROM messages WHERE client_id = %s AND DATE(timestamp) = CURRENT_DATE;", (client_id,))
         msgs_today = cursor.fetchone()['today'] or 0
 
-        # 5. Kira Nisbah AI vs Manual
         cursor.execute("SELECT COUNT(*) as bot_total FROM messages WHERE client_id = %s AND sender ILIKE '%%Zulfa%%';", (client_id,))
         total_bot = cursor.fetchone()['bot_total'] or 0
         
@@ -376,11 +366,9 @@ def api_client_dashboard_stats(client_id):
             ai_rate = (total_bot / total_replies) * 100
             manual_rate = (total_admin / total_replies) * 100
 
-        # PENGIRAAN ROI SEBENAR (Berasaskan total interaksi bot sebenar)
         real_estimated_sales = total_bot * 50.00
         real_closed_deals = int(total_bot / 3) if total_bot > 0 else 0
 
-        # Konstruksi Widget Dinamis Asli
         widget_data = {
             'stat1_title': 'JUMLAH PROSPEK UNIK', 
             'stat1_val': f"{total_leads} Orang", 
@@ -412,10 +400,8 @@ def api_client_dashboard_stats(client_id):
         logging.error(f"Ralat statistik real-data: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-
 @app.route('/api/client/analytics-stats/<int:client_id>', methods=['GET'])
 def api_client_analytics_stats(client_id):
-    """API untuk menarik data asli carta graf mingguan"""
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
     
@@ -425,29 +411,20 @@ def api_client_analytics_stats(client_id):
         
     try:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
-        
         cursor.execute("""
-            SELECT 
-                EXTRACT(ISODOW FROM timestamp) as dow,
-                COUNT(*) as msg_count
-            FROM messages
-            WHERE client_id = %s AND timestamp >= NOW() - INTERVAL '7 days'
-            GROUP BY dow
-            ORDER BY dow;
+            SELECT EXTRACT(ISODOW FROM timestamp) as dow, COUNT(*) as msg_count
+            FROM messages WHERE client_id = %s AND timestamp >= NOW() - INTERVAL '7 days'
+            GROUP BY dow ORDER BY dow;
         """, (client_id,))
         rows = cursor.fetchall()
         msg_data_map = {int(row['dow']): row['msg_count'] for row in rows}
         msg_counts = [msg_data_map.get(i, 0) for i in range(1, 8)]
         
         cursor.execute("""
-            SELECT 
-                EXTRACT(ISODOW FROM timestamp) as dow,
-                COUNT(DISTINCT sender) as lead_count
-            FROM messages
-            WHERE client_id = %s AND timestamp >= NOW() - INTERVAL '7 days'
+            SELECT EXTRACT(ISODOW FROM timestamp) as dow, COUNT(DISTINCT sender) as lead_count
+            FROM messages WHERE client_id = %s AND timestamp >= NOW() - INTERVAL '7 days'
               AND sender NOT ILIKE '%%Admin%%' AND sender NOT ILIKE '%%Zulfa%%'
-            GROUP BY dow
-            ORDER BY dow;
+            GROUP BY dow ORDER BY dow;
         """, (client_id,))
         lead_rows = cursor.fetchall()
         lead_data_map = {int(row['dow']): row['lead_count'] for row in lead_rows}
@@ -456,15 +433,9 @@ def api_client_analytics_stats(client_id):
         cursor.close()
         conn.close()
 
-        return jsonify({
-            'success': True,
-            'msg_counts': msg_counts,
-            'lead_counts': lead_counts
-        })
+        return jsonify({'success': True, 'msg_counts': msg_counts, 'lead_counts': lead_counts})
     except Exception as e:
-        logging.error(f"Ralat graf carta: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
-
 
 @app.route('/api/client/senders/<int:client_id>')
 def api_get_client_senders(client_id):
@@ -475,8 +446,7 @@ def api_get_client_senders(client_id):
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
         cursor.execute("""
-            SELECT DISTINCT sender 
-            FROM messages 
+            SELECT DISTINCT sender FROM messages 
             WHERE client_id = %s AND sender NOT ILIKE '%%Admin%%' AND sender NOT ILIKE '%%Zulfa%%'
             ORDER BY sender DESC;
         """, (client_id,))
@@ -484,11 +454,8 @@ def api_get_client_senders(client_id):
         cursor.close()
         conn.close()
         return jsonify(senders)
-    except Exception as e:
-        if cursor: cursor.close()
-        if conn: conn.close()
+    except Exception:
         return jsonify([])
-
 
 @app.route('/api/client/chat/<int:client_id>', methods=['GET'])
 def api_get_chat_by_sender(client_id):
@@ -501,19 +468,15 @@ def api_get_chat_by_sender(client_id):
     try:
         cursor.execute("""
             SELECT sender, message, TO_CHAR(timestamp, 'DD-MM-YYYY HH24:MI:SS') as timestamp 
-            FROM messages 
-            WHERE client_id = %s AND (sender = %s OR sender LIKE 'Zulfa%%' OR sender = 'Admin')
+            FROM messages WHERE client_id = %s AND (sender = %s OR sender LIKE 'Zulfa%%' OR sender = 'Admin')
             ORDER BY id ASC;
         """, (client_id, phone))
         messages = cursor.fetchall()
         cursor.close()
         conn.close()
         return jsonify(messages)
-    except Exception as e:
-        if cursor: cursor.close()
-        if conn: conn.close()
+    except Exception:
         return jsonify([])
-
 
 @app.route('/api/client/reply', methods=['POST'])
 def api_client_manual_reply():
@@ -550,7 +513,6 @@ def api_client_manual_reply():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-
 @app.route('/api/client/toggle-mode', methods=['POST'])
 def api_toggle_client_mode():
     if not session.get('client_logged_in'):
@@ -573,10 +535,8 @@ def api_toggle_client_mode():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-
 @app.route('/api/client/update-admin-phone', methods=['POST'])
 def api_update_admin_phone():
-    """API untuk mengemas kini nombor telefon admin bot pilihan klien"""
     if not session.get('client_logged_in'):
         return jsonify({"success": False, "error": "Unauthorized"}), 401
         
@@ -598,6 +558,57 @@ def api_update_admin_phone():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+# ENDPOINT API NOTIFIKASI INBOX ADMIN UNTUK KLIEN
+@app.route('/api/client/notifications/<int:client_id>', methods=['GET'])
+def api_get_client_notifications(client_id):
+    if not session.get('client_logged_in') or session.get('client_id') != client_id:
+        return jsonify([]), 401
+    conn = get_db_connection()
+    if not conn:
+        return jsonify([]), 200
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT id, title, message, is_read, TO_CHAR(created_at, 'DD/MM/YYYY HH24:MI') as time 
+            FROM admin_notifications 
+            WHERE client_id IS NULL OR client_id = %s 
+            ORDER BY created_at DESC LIMIT 15;
+        """, (client_id,))
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        notifs = []
+        for r in rows:
+            notifs.append({
+                "id": r['id'],
+                "title": r['title'],
+                "message": r['message'],
+                "read": r['is_read'],
+                "time": r['time']
+            })
+        return jsonify(notifs), 200
+    except Exception:
+        return jsonify([]), 200
+
+@app.route('/api/client/notification/read', methods=['POST'])
+def api_mark_notification_read():
+    if not session.get('client_logged_in'):
+        return jsonify({"success": False}), 401
+    data = request.json or {}
+    notif_id = data.get('id')
+    conn = get_db_connection()
+    if conn and notif_id:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE admin_notifications SET is_read = TRUE WHERE id = %s;", (notif_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return jsonify({"success": True}), 200
+        except Exception:
+            pass
+    return jsonify({"success": False}), 400
 
 @app.route('/client/update_profile', methods=['POST'])
 def client_update_profile():
@@ -641,13 +652,11 @@ def client_update_profile():
     conn.close()
     return redirect(url_for('client_dashboard'))
 
-
 @app.route('/client/logout')
 def client_logout():
     session.clear()
     flash("Sesi klien telah ditamatkan.", "info")
     return redirect(url_for('client_login'))
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=True)
