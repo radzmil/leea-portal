@@ -383,8 +383,14 @@
             <div id="tab-chat" class="tab-content">
                 <div class="info-label" style="margin-bottom: 12px;">Pemantauan Sembang Langsung & Analisis Bisnes Semasa</div>
                 
-                <!-- WIDGET BOX ANALISIS DINAMIK -->
-                <div class="dynamic-widget-grid" id="dynamicWidgetBoxContainer" style="margin-bottom: 15px;"></div>
+                <!-- WIDGET BOX ANALISIS DINAMIK (REAL DATA) -->
+                <div class="dynamic-widget-grid" id="dynamicWidgetBoxContainer" style="margin-bottom: 15px;">
+                    <div class="widget-box-card">
+                        <div class="widget-box-title">Memuat Analisis...</div>
+                        <div class="widget-box-value">--</div>
+                        <div class="widget-box-sub">Sila tunggu</div>
+                    </div>
+                </div>
 
                 <div class="crm-workspace">
                     
@@ -499,87 +505,30 @@
         let myLeadChart = null;
         let clientNamesMap = JSON.parse(localStorage.getItem('client_names_' + clientId) || '{}');
 
-        function renderDynamicWidgets(type) {
+        // Fungsi Render Widget Dinamik Mengikut Real Data Backend
+        function renderRealWidgets(w) {
             const container = document.getElementById('dynamicWidgetBoxContainer');
-            if (!container) return;
-            let html = '';
-
-            if (type === 'ecommerce') {
-                html = `
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">📦 Jumlah Produk Terjual</div>
-                        <div class="widget-box-value">1,240 Unit</div>
-                        <div class="widget-box-sub">📈 Prestasi Tinggi</div>
-                    </div>
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">💰 Jumlah Pendapatan</div>
-                        <div class="widget-box-value" style="color: #34d399;">RM 45,200</div>
-                        <div class="widget-box-sub" style="color: #34d399;">🚀 Keuntungan Bersih</div>
-                    </div>
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">🛒 Troli Ditinggalkan</div>
-                        <div class="widget-box-value" style="color: #f59e0b;">38 Klien</div>
-                        <div class="widget-box-sub" style="color: #f59e0b;">⚡ Perlu Follow-up</div>
-                    </div>
-                `;
-            } else if (type === 'transport') {
-                html = `
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">🚚 Trip Penghantaran Aktif</div>
-                        <div class="widget-box-value">14 Trip</div>
-                        <div class="widget-box-sub">📍 Operasi Semasa</div>
-                    </div>
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">📍 Destinasi Utama</div>
-                        <div class="widget-box-value" style="color: #38bdf8;">Klang Valley</div>
-                        <div class="widget-box-sub">🌐 Liputan Luas</div>
-                    </div>
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">📅 Tarikh Puncak Tempahan</div>
-                        <div class="widget-box-value" style="color: #f59e0b;">28hb Bulan Ini</div>
-                        <div class="widget-box-sub" style="color: #f59e0b;">🔥 Peak Season</div>
-                    </div>
-                `;
-            } else if (type === 'booking') {
-                html = `
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">📅 Temujanji Hari Ini</div>
-                        <div class="widget-box-value">8 Sesi</div>
-                        <div class="widget-box-sub">⭐ Jadual Penuh</div>
-                    </div>
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">⭐ Slot Kosong Tersedia</div>
-                        <div class="widget-box-value" style="color: #34d399;">3 Slot Lagi</div>
-                        <div class="widget-box-sub" style="color: #34d399;">🟢 Boleh Tempah</div>
-                    </div>
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">👥 Jumlah Klien Berdaftar</div>
-                        <div class="widget-box-value" style="color: #38bdf8;">320 Orang</div>
-                        <div class="widget-box-sub">📈 Pangkalan Klien</div>
-                    </div>
-                `;
-            } else if (type === 'agency') {
-                html = `
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">💼 Leads Masuk (Prospek)</div>
-                        <div class="widget-box-value">64 Leads</div>
-                        <div class="widget-box-sub">🚀 Potensi Tinggi</div>
-                    </div>
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">🤝 Deal Berjaya (Closed)</div>
-                        <div class="widget-box-value" style="color: #34d399;">12 Klien</div>
-                        <div class="widget-box-sub" style="color: #34d399;">💰 Sasaran Tercapai</div>
-                    </div>
-                    <div class="widget-box-card">
-                        <div class="widget-box-title">📈 Kadar Penukaran (CR)</div>
-                        <div class="widget-box-value" style="color: #f59e0b;">18.5%</div>
-                        <div class="widget-box-sub" style="color: #f59e0b;">⚡ Prestasi CRM</div>
-                    </div>
-                `;
-            }
-            container.innerHTML = html;
+            if (!container || !w) return;
+            container.innerHTML = `
+                <div class="widget-box-card">
+                    <div class="widget-box-title">${w.stat1_title}</div>
+                    <div class="widget-box-value">${w.stat1_val}</div>
+                    <div class="widget-box-sub">${w.stat1_sub}</div>
+                </div>
+                <div class="widget-box-card">
+                    <div class="widget-box-title">${w.stat2_title}</div>
+                    <div class="widget-box-value" style="color: #34d399;">${w.stat2_val}</div>
+                    <div class="widget-box-sub" style="color: #34d399;">${w.stat2_sub}</div>
+                </div>
+                <div class="widget-box-card">
+                    <div class="widget-box-title">${w.stat3_title}</div>
+                    <div class="widget-box-value" style="color: #f59e0b;">${w.stat3_val}</div>
+                    <div class="widget-box-sub" style="color: #f59e0b;">${w.stat3_sub}</div>
+                </div>
+            `;
         }
 
+        // Mengambil data Live dari DB melalui API backend
         function fetchLiveDashboardData() {
             if (!clientId) return;
             
@@ -598,6 +547,11 @@
                         document.getElementById('valAiRate').innerText = data.ai_rate;
                         document.getElementById('valConversionPct').innerText = data.conversion_pct;
                         document.getElementById('valManualPct').innerText = data.manual_pct;
+
+                        // Paparkan widget berasaskan real data dari backend
+                        if (data.widgets) {
+                            renderRealWidgets(data.widgets);
+                        }
                     }
                 })
                 .catch(err => console.error("Ralat memuat data live:", err));
@@ -868,7 +822,6 @@
             checkServerHealth();
             fetchLiveDashboardData();
             loadSendersList();
-            renderDynamicWidgets(clientBusinessType);
         };
     </script>
 </body>
