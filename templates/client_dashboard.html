@@ -262,7 +262,11 @@
             <div class="header">
                 <div class="brand-section">
                     {% if client.logo_path %}
-                        <img src="{{ url_for('static', filename=client.logo_path) }}" alt="Logo Syarikat" class="client-logo">
+                        {% if client.logo_path.startswith('data:image') %}
+                            <img src="{{ client.logo_path }}" alt="Logo Syarikat" class="client-logo">
+                        {% else %}
+                            <img src="{{ url_for('static', filename=client.logo_path) }}" alt="Logo Syarikat" class="client-logo">
+                        {% endif %}
                     {% else %}
                         <div class="client-logo" style="display: flex; align-items: center; justify-content: center; font-size: 18px;">⚡</div>
                     {% endif %}
