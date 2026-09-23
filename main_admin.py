@@ -617,6 +617,7 @@ def api_delete_notification():
 
 @app.route('/client/update_profile', methods=['POST'])
 def client_update_profile():
+    """Klien mengemas kini profil, logo, atau kata laluan secara kekal termasuk simpan plain_password"""
     if not session.get('client_logged_in'):
         return redirect(url_for('client_login'))
         
@@ -626,25 +627,29 @@ def client_update_profile():
     logo_file = request.files.get('logo_file')
     
     conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("SELECT * FROM clients WHERE id = %s", (client_id,))
-    client = cursor.fetchone()
-    
-    if new_password and current_password:
-        stored_hash = client.get('password_hash', '')
-        is_current_valid = check_password_hash(stored_hash, current_password) if (stored_hash and len(stored_hash) > 5) else (current_password == 'defaultpass123' or current_password == client.get('plain_password'))
+    if not conn:
+        flash("Ralat sambungan pangkalan data.", "danger")
+        return redirect(url_for('client_dashboard'))
         
-        if is_current_valid:
-            new_hash = generate_password_hash(new_password)
-            # Kemas kini password_hash dan plain_password serentak supaya admin boleh melihatnya
-            cursor.execute("UPDATE clients SET password_hash = %s, plain_password = %s WHERE id = %s", (new_hash, new_password, client_id))
-            conn.commit()
-            flash("Kata laluan berjaya dikemaskini!", "success")
-        else:
-            flash("Kata laluan semasa salah!", "danger")
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT * FROM clients WHERE id = %s", (client_id,))
+        client = cursor.fetchone()
+        
+        if new_password and current_password:
+            stored_hash = client.get('password_hash', '')
+            is_current_valid = check_password_hash(stored_hash, current_password) if (stored_hash and len(stored_hash) > 5) else (current_password == 'defaultpass123' or current_password == client.get('plain_password'))
             
-    if logo_file and logo_file.filename:
-        try:
+            if is_current_valid:
+                new_hash = generate_password_hash(new_password)
+                # Menyimpan password_hash dan plain_password serentak ke database
+                cursor.execute("UPDATE clients SET password_hash = %s, plain_password = %s WHERE id = %s", (new_hash, new_password, client_id))
+                conn.commit()
+                flash("Kata laluan berjaya dikemaskini dan disimpan secara kekal!", "success")
+            else:
+                flash("Kata laluan semasa salah!", "danger")
+                
+        if logo_file and logo_file.filename:
             file_data = logo_file.read()
             base64_encoded = base64.b64encode(file_data).decode('utf-8')
             mime_type = logo_file.content_type
@@ -653,11 +658,12 @@ def client_update_profile():
             cursor.execute("UPDATE clients SET logo_path = %s WHERE id = %s", (logo_base64_url, client_id))
             conn.commit()
             flash("Logo berjaya dimuat naik!", "success")
-        except Exception as e:
-            flash(f"Ralat memproses gambar: {str(e)}", "danger")
+            
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        flash(f"Ralat kemaskini profil: {e}", "danger")
         
-    cursor.close()
-    conn.close()
     return redirect(url_for('client_dashboard'))
 
 @app.route('/client/logout')
