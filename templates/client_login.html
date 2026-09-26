@@ -45,6 +45,14 @@
             border-radius: 10px; color: #ffffff; font-size: 14px; 
         }
         input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); }
+        .password-wrapper { position: relative; }
+        .password-wrapper input { padding-right: 48px; }
+        .password-toggle {
+            position: absolute; top: 50%; right: 12px; transform: translateY(-50%);
+            border: 0; background: transparent; color: #94a3b8; cursor: pointer;
+            font-size: 17px; line-height: 1; padding: 4px;
+        }
+        .password-toggle:hover { color: #60a5fa; }
         .btn {
             width: 100%; padding: 13px; border: none; border-radius: 10px; 
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
@@ -52,9 +60,32 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35); transition: all 0.25s ease;
         }
         .btn:hover { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); transform: translateY(-1px); }
+        .live-support {
+            display: flex; align-items: center; gap: 12px; margin-top: 22px; padding: 13px 14px;
+            border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 12px;
+            background: rgba(127, 29, 29, 0.16); color: #fecaca; text-decoration: none;
+            text-align: left; transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .live-support:hover { background: rgba(127, 29, 29, 0.28); border-color: rgba(248, 113, 113, 0.65); }
+        .support-light {
+            width: 10px; height: 10px; flex: 0 0 auto; border-radius: 50%; background: #ef4444;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); animation: support-pulse 1.5s infinite;
+        }
+        .support-copy { min-width: 0; }
+        .support-title { display: block; color: #fca5a5; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .support-number { display: block; margin-top: 3px; color: #fecaca; font-size: 11px; font-family: monospace; overflow-wrap: anywhere; }
+        .support-arrow { margin-left: auto; color: #f87171; font-size: 18px; }
+        @keyframes support-pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65); }
+            50% { opacity: 0.45; box-shadow: 0 0 0 7px rgba(239, 68, 68, 0); }
+        }
         .alert { padding: 12px; margin-bottom: 20px; border-radius: 8px; font-size: 13px; text-align: left; }
         .alert-danger { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
         .alert-success { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+        @media (max-width: 480px) {
+            body { padding: 14px; }
+            .login-card { padding: 28px 20px; }
+        }
     </style>
 </head>
 <body>
@@ -80,10 +111,33 @@
             </div>
             <div class="form-group">
                 <label for="password">Kata Sandi</label>
-                <input type="password" id="password" name="password" placeholder="••••••••••••" required>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="••••••••••••" required>
+                    <button type="button" class="password-toggle" id="passwordToggle" onclick="togglePassword()" aria-label="Papar kata laluan" title="Papar kata laluan">👁</button>
+                </div>
             </div>
             <button type="submit" class="btn">Log Masuk</button>
         </form>
+
+        <a class="live-support" href="https://wa.me/60183172114" target="_blank" rel="noopener noreferrer" aria-label="Hubungi Live Support melalui WhatsApp">
+            <span class="support-light" aria-hidden="true"></span>
+            <span class="support-copy">
+                <span class="support-title">Live Support · Online</span>
+                <span class="support-number">WhatsApp: +60 18-317 2114</span>
+            </span>
+            <span class="support-arrow" aria-hidden="true">›</span>
+        </a>
     </div>
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const passwordToggle = document.getElementById('passwordToggle');
+            const isHidden = passwordInput.type === 'password';
+            passwordInput.type = isHidden ? 'text' : 'password';
+            passwordToggle.textContent = isHidden ? '🙈' : '👁';
+            passwordToggle.setAttribute('aria-label', isHidden ? 'Sembunyikan kata laluan' : 'Papar kata laluan');
+            passwordToggle.setAttribute('title', isHidden ? 'Sembunyikan kata laluan' : 'Papar kata laluan');
+        }
+    </script>
 </body>
 </html>
