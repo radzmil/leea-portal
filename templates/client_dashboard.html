@@ -308,6 +308,47 @@
         .modal-close:hover { color: #fff; }
 
         .system-footer { text-align: center; margin-top: 25px; font-size: 11px; color: #475569; font-family: monospace; letter-spacing: 0.5px; }
+
+        @media (max-width: 768px) {
+            body { padding: 12px 8px; }
+            .glass-card { padding: 14px; margin-bottom: 14px; border-radius: 12px; }
+            .header { align-items: stretch; flex-direction: column; gap: 14px; margin-bottom: 16px; padding-bottom: 14px; }
+            .brand-section { gap: 10px; padding: 0; min-width: 0; }
+            .brand-section > div:last-child { min-width: 0; }
+            .brand-title { font-size: 14px; overflow-wrap: anywhere; }
+            .brand-subtitle { font-size: 9px; line-height: 1.4; overflow-wrap: anywhere; }
+            .client-logo { width: 42px; height: 42px; flex: 0 0 auto; }
+            .header-right { width: 100%; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+            .server-status-wrapper { max-width: 100%; padding: 6px 9px; font-size: 9px; }
+            .notification-dropdown { position: fixed; top: 64px; right: 8px; left: 8px; width: auto; max-width: none; }
+            .tab-nav { gap: 6px; margin-bottom: 16px; padding-bottom: 10px; }
+            .tab-btn { flex: 1 1 100%; justify-content: center; padding: 9px 10px; font-size: 11px; }
+            .live-terminal { align-items: flex-start; padding: 11px 12px; font-size: 10px; line-height: 1.45; }
+            .analytics-percentage-grid, .dynamic-widget-grid, .info-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .metric-card, .widget-box-card, .info-box { padding: 12px; min-width: 0; }
+            .metric-title, .widget-box-title, .info-label { font-size: 9px; letter-spacing: 0.4px; }
+            .metric-main-value { font-size: 18px; overflow-wrap: anywhere; }
+            .widget-box-value, .info-value { font-size: 14px; overflow-wrap: anywhere; }
+            .bot-config-grid, .system-status-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+            .chart-grid { gap: 10px; }
+            .chart-container { height: 220px; padding: 12px; }
+            .crm-workspace { grid-template-columns: 1fr; gap: 10px; height: auto; }
+            .chat-list { max-height: 180px; }
+            .chat-room { min-height: 390px; padding: 10px; }
+            .chat-room > div:first-child { align-items: flex-start !important; gap: 8px; }
+            .chat-room > div:last-child { flex-wrap: wrap; }
+            .chat-room > div:last-child .form-input { flex: 1 1 160px; }
+            .crm-right-panel { display: flex; min-height: 360px; }
+            .modal-card { width: calc(100% - 24px); padding: 18px; }
+            .system-footer { font-size: 9px; line-height: 1.5; }
+        }
+
+        @media (max-width: 420px) {
+            .analytics-percentage-grid, .dynamic-widget-grid, .info-grid { grid-template-columns: 1fr; }
+            .header-right { justify-content: space-between; }
+            .server-status-wrapper { flex: 1; }
+            .btn-danger { padding: 7px 10px; }
+        }
     </style>
 </head>
 <body>
@@ -426,7 +467,7 @@
                 <div class="glass-card" style="background: rgba(15, 23, 42, 0.4); margin-bottom: 20px;">
                     <h3 style="font-size: 13px; margin-bottom: 12px; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px;">🤖 Konfigurasi Enjin Bot AI</h3>
                     <form onsubmit="saveBotProfile(event)">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                        <div class="bot-config-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                             <div>
                                 <label class="info-label">Nama Paparan Bot</label>
                                 <input type="text" id="botName" class="form-input" value="Bot_{{ client.username }}" style="margin-bottom:0;">
@@ -533,7 +574,7 @@
 
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <div class="system-status-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
                     
                     <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
                         <div class="info-label" style="color: #38bdf8;">🌐 Meta Cloud API</div>
